@@ -1,0 +1,63 @@
+{
+  "name": "circles-username-resolver",
+  "version": "0.1.0",
+  "description": "Simple service to resolve Circles usernames from public adresses",
+  "main": "src/index.js",
+  "private": true,
+  "contributors": [
+    "adzialocha"
+  ],
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/CirclesUBI/circles-username-resolver.git"
+  },
+  "scripts": {
+    "build": "babel ./src --out-dir ./build",
+    "clear": "rimraf ./build",
+    "db:migrate": "sequelize db:migrate",
+    "db:seed": "sequelize db:seed:all",
+    "lint": "eslint --ignore-path .gitignore .",
+    "serve": "nodemon --watch ./src --exec cross-env NODE_ENV=development babel-node ./src/index.js --source-maps inline",
+    "start": "cross-env NODE_ENV=production node ./build/index.js",
+    "test": "jest --forceExit",
+    "test:watch": "npm run test -- --watch"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/node": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-eslint": "^10.0.3",
+    "babel-plugin-add-module-exports": "^1.0.2",
+    "cross-env": "^5.2.0",
+    "eslint": "^6.2.2",
+    "eslint-config-prettier": "^6.1.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "husky": "^3.0.4",
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.1",
+    "prettier": "^1.18.2",
+    "rimraf": "^3.0.0",
+    "sequelize-cli": "^5.5.0",
+    "supertest": "^4.0.2"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.5.5",
+    "@hapi/joi": "^15.1.1",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^8.1.0",
+    "express": "^4.17.1",
+    "express-validation": "^1.0.2",
+    "helmet": "^3.20.0",
+    "http-status": "^1.3.2",
+    "morgan": "^1.9.1",
+    "pg": "^7.12.1",
+    "sequelize": "^5.16.0",
+    "winston": "^3.2.1"
+  }
+}
