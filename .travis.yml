@@ -1,7 +1,17 @@
 language: node_js
 node_js:
   - '10'
-script:
-  - npm test
+env:
+  - NODE_ENV=test
+  - DATABASE_URL=postgres://postgres@localhost:5432/circles_test
+  - DATABASE_DIALECT=postgres
+services:
+  - postgresql
 install:
   - npm install
+  - npm run db:migrate
+  - npm run db:seed
+before_script:
+  - psql -c 'create database circles_test;' -U postgres
+script:
+  - npm test
