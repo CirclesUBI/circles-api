@@ -44,13 +44,7 @@ A very simple offchain API service to store and resolve [Circles](https://joinci
   Create a new entry in the database, connecting a `username` with a `safeAddress`.
 
   **Request:**
-
-  - `address`: Public address of user wallet
-  - `signature`: Signed data payload of this request via the users keypair
-  - `nonce`: Optional nonce which is required to predict the Safe address
-  - `data/safeAddress`: Public address of the owned Safe of the user
-  - `data/username`: Username which should be connected to the `safeAddress`
-
+  
   ```
   {
     address: <string>,
@@ -62,11 +56,18 @@ A very simple offchain API service to store and resolve [Circles](https://joinci
     }
   }
   ```
+
+  - `address`: Public address of user wallet
+  - `signature`: Signed data payload of this request via the users keypair
+  - `nonce`: Optional nonce which is required to predict the Safe address
+  - `data/safeAddress`: Public address of the owned Safe of the user
+  - `data/username`: Username which should be connected to the `safeAddress`
+
   **Verification steps:**
 
-  - I. Check if the `signature` can be verified successfully.
-  - II. Check if `nonce` is given, if not, assume the Safe is already deployed.
-  - III. When Safe is deployed: Check if `address` is owner of the given Safe. When safe is not deployed yet: Check if `nonce` and `address` generate the same `safeAddress`.
+  1. Check if the `signature` can be verified successfully.
+  2. Check if `nonce` is given, if not, assume the Safe is already deployed.
+  3. When Safe is deployed: Check if `address` is owner of the given Safe. When safe is not deployed yet: Check if `nonce` and `address` generate the same `safeAddress`.
 
 * `GET /api/users?address[]=<string>&username[]=<string>&...`
 
