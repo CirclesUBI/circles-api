@@ -1,3 +1,5 @@
 .env
+.env.test
+
 build
 node_modules
