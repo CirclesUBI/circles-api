@@ -5,7 +5,7 @@ services:
   - postgresql
 env:
   - NODE_ENV=test DATABASE_URL=postgres://postgres@localhost:5432/circles_test DATABASE_DIALECT=postgres
-before_script:
+before_install:
   - psql -c 'create database circles_test;' -U postgres
 install:
   - npm install
