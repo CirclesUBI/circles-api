@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 
 import APIError from '../helpers/errors';
 import logger from '../helpers/logger';
+import { respondWithError } from '../helpers/responses';
 
 // eslint-disable-next-line no-unused-vars
 export default function errorsMiddleware(err, req, res, next) {
@@ -23,9 +24,12 @@ export default function errorsMiddleware(err, req, res, next) {
   }
 
   // Respond with error message and status
-  res.status(err.code).json({
-    code: err.code,
-    message: err.message || httpStatus[err.code],
-    status: 'error',
-  });
+  respondWithError(
+    res,
+    {
+      code: err.code,
+      message: err.message || httpStatus[err.code],
+    },
+    err.code,
+  );
 }

@@ -2,13 +2,12 @@ import express from 'express';
 import httpStatus from 'http-status';
 
 import APIError from '../helpers/errors';
+import { respondWithSuccess } from '../helpers/responses';
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.json({
-    status: 'ok',
-  });
+  respondWithSuccess(res);
 });
 
 router.use(() => {
