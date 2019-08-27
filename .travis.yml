@@ -2,9 +2,7 @@ language: node_js
 node_js:
   - '10'
 env:
-  - NODE_ENV=test
-  - DATABASE_URL=postgres://postgres@localhost:5432/circles_test
-  - DATABASE_DIALECT=postgres
+  - NODE_ENV=test DATABASE_URL=postgres://postgres@localhost:5432/circles_test DATABASE_DIALECT=postgres
 services:
   - postgresql
 install:
