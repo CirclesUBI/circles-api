@@ -18,7 +18,7 @@
   </a>
 </p>
 
-A very simple offchain API service to store and resolve [Circles](https://joincircles.net) user data from public adresses.
+A very simple offchain API service to safely store and resolve [Circles](https://joincircles.net) user data from public adresses.
 
 ## API
 
