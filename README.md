@@ -20,6 +20,11 @@
 
 A very simple offchain API service to safely store and resolve [Circles](https://joincircles.net) user data from public adresses.
 
+## Requirements
+
+* NodeJS environment
+* PostgreSQL database
+
 ## API
 
 ### Get entry by username
