@@ -22,75 +22,101 @@ A very simple offchain API service to store and resolve [Circles](https://joinci
 
 ## API
 
-* `GET /api/users/<username>`
+### Get entry by username
 
-  Get the users entry including its `safeAddress`.
+Get the users entry including its `safeAddress`.
 
-  **Response:**
+**Request:**
 
-  ```
-  {
-    success: 'ok',
-    data: {
+`GET /api/users/<username>`
+
+**Response:**
+
+```
+{
+  success: 'ok',
+  data: {
+    id: <int>,
+    safeAddress: <string>,
+    username: <string>
+  }
+}
+```
+
+**Errors:**
+
+* `404` Not found
+
+### Get multiple entries by username / address
+
+Resolve multiple usernames (via `username[]`) and/or Safe addresses (via `address[]`) in a batch.
+
+**Request:**
+
+`GET /api/users?address[]=<string>&username[]=<string>&...`
+
+**Response:**
+
+```
+{
+  success: 'ok',
+  data: [
+    {
       id: <int>,
       safeAddress: <string>,
       username: <string>
-    }
-  }
-  ```
-
-* `PUT /api/users`
-
-  Create a new entry in the database, connecting a `username` with a `safeAddress`.
-
-  **Request:**
-  
-  ```
-  {
-    address: <string>,
-    signature: <string>,
-    nonce: <int> (optional),
-    data: {
-      safeAddress: <string>,
-      username: <string>,
-    }
-  }
-  ```
-
-  - `address`: Public address of user wallet
-  - `signature`: Signed data payload of this request via the users keypair
-  - `nonce`: Optional nonce which is required to predict the Safe address
-  - `data/safeAddress`: Public address of the owned Safe of the user
-  - `data/username`: Username which should be connected to the `safeAddress`
-
-  **Verification steps:**
-
-  1. Check if the `signature` can be verified successfully.
-  2. Check if `nonce` is given, if not, assume the Safe is already deployed.
-  3. When Safe is deployed: Check if `address` is owner of the given Safe. When safe is not deployed yet: Check if `nonce` and `address` generate the same `safeAddress`.
-
-* `GET /api/users?address[]=<string>&username[]=<string>&...`
-
-  Resolve multiple usernames (via `username[]`) and/or Safe addresses (via `address[]`) in a batch.
-
-  **Response:**
-
-  ```
-  {
-    success: 'ok',
-    data: [
-      {
-        id: <int>,
-        safeAddress: <string>,
-        username: <string>
-      },
-      {
-        [...]
-      },
+    },
+    {
       [...]
-    ]
+    },
+    [...]
+  ]
+}
+```
+
+**Errors:**
+
+Not found entries silently fail and simply do not get returned in the response.
+
+### Create new entry
+
+**Request:**
+
+`PUT /api/users`
+
+Create a new entry in the database, connecting a `username` with a `safeAddress`.
+
+**Parameters:**
+
+```
+{
+  address: <string>,
+  signature: <string>,
+  nonce: <int> (optional),
+  data: {
+    safeAddress: <string>,
+    username: <string>
   }
-  ```
+}
+```
+
+- `address`: Public address of user wallet
+- `signature`: Signed data payload of this request via the users keypair
+- `nonce`: Optional nonce which is required to [predict the Safe address](https://gnosis-safe.readthedocs.io/en/latest/contracts/deployment.html#trustless-deployment-with-create2)
+- `data/safeAddress`: Public address of the owned Safe of the user
+- `data/username`: Username which should be connected to the `safeAddress`
+
+**Verification steps:**
+
+1. Check if the `signature` can be verified successfully.
+2. Check if `nonce` is given, if not, assume the Safe is already deployed.
+3. When Safe is deployed: Check if `address` is owner of the given Safe. When safe is not deployed yet: Check if `nonce` and `address` generate the same `safeAddress`.
+
+**Errors:**
+
+* `400` Parameters missing or malformed
+* `403` Verification failed
+* `409` Entry already exists
 
 ## Development
 
