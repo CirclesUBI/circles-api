@@ -2,13 +2,13 @@ import httpStatus from 'http-status';
 
 import APIError from '../helpers/errors';
 import logger from '../helpers/logger';
+import { isCelebrate as isValidationError } from 'celebrate';
 import { respondWithError } from '../helpers/responses';
-import { isCelebrate } from 'celebrate';
 
 // eslint-disable-next-line no-unused-vars
 export default function errorsMiddleware(err, req, res, next) {
   // Check if error is public facing and known to us
-  if (isCelebrate(err)) {
+  if (isValidationError(err)) {
     const { joi } = err;
 
     // Show validation errors to user

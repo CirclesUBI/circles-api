@@ -9,7 +9,12 @@ export default {
         .web3()
         .address()
         .required(),
-      signature: Joi.string().required(),
+      nonce: Joi.number()
+        .min(0)
+        .integer(),
+      signature: Joi.string()
+        .length(132)
+        .required(),
       data: Joi.object({
         safeAddress: customJoi
           .web3()
