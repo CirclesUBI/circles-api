@@ -8,6 +8,7 @@ export default {
       address: customJoi
         .web3()
         .address()
+        .addressChecksum()
         .required(),
       nonce: Joi.number()
         .min(0)
@@ -19,6 +20,7 @@ export default {
         safeAddress: customJoi
           .web3()
           .address()
+          .addressChecksum()
           .required(),
         username: Joi.string()
           .alphanum()

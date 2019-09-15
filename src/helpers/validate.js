@@ -8,6 +8,7 @@ export const customJoi = Joi.extend(joi => {
     base: joi.string(),
     language: {
       address: 'is invalid Ethereum address',
+      addressChecksum: 'is invalid address checksum',
     },
     rules: [
       {
@@ -15,6 +16,16 @@ export const customJoi = Joi.extend(joi => {
         validate(schema, value, state, options) {
           if (!web3.utils.isAddress(value)) {
             return this.createError('web3.address', {}, state, options);
+          }
+
+          return value;
+        },
+      },
+      {
+        name: 'addressChecksum',
+        validate(schema, value, state, options) {
+          if (!web3.utils.checkAddressChecksum(value)) {
+            return this.createError('web3.addressChecksum', {}, state, options);
           }
 
           return value;
