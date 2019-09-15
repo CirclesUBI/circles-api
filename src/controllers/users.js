@@ -1,6 +1,8 @@
 import httpStatus from 'http-status';
+import { Op } from 'sequelize';
 
 import APIError from '../helpers/errors';
+import User from '../models/users';
 import core from '../services/core';
 import web3 from '../services/web3';
 import { respondWithSuccess } from '../helpers/responses';
@@ -92,9 +94,32 @@ async function createNewUser(req, res, next) {
     return next(new APIError(httpStatus.FORBIDDEN, err.message));
   }
 
+  const { safeAddress, username } = data;
+
+  // Check if entry already exists
+  User.findOne({
+    where: {
+      [Op.or]: [
+        {
+          username,
+        },
+        {
+          safeAddress,
+        },
+      ],
+    },
+  })
+    .then(response => {
+      if (response) {
+        return next(new APIError(httpStatus.CONFLICT, 'Entry already exists'));
+      }
+    })
+    .catch(err => {
+      return next(err);
+    });
+
   // Check if claimed safe is correct and owned by address
   const isNonceGiven = nonce !== UNSET_NONCE;
-  const { safeAddress } = data;
 
   try {
     await checkSafeStatus(isNonceGiven, safeAddress);
@@ -108,7 +133,17 @@ async function createNewUser(req, res, next) {
     return next(new APIError(httpStatus.BAD_REQUEST, err.message));
   }
 
-  respondWithSuccess(res);
+  // Everything is fine, create entry!
+  User.create({
+    username,
+    safeAddress,
+  })
+    .then(() => {
+      respondWithSuccess(res, null, httpStatus.CREATED);
+    })
+    .catch(err => {
+      next(err);
+    });
 }
 
 export default {

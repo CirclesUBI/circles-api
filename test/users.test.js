@@ -4,6 +4,7 @@ import nock from 'nock';
 import request from 'supertest';
 
 import app from '~';
+import User from '~/models/users';
 
 let web3;
 
@@ -124,114 +125,216 @@ describe('API /users', () => {
       );
     });
 
-    it('should return an error on invalid body', async () => {
-      const correctBody = {
-        address: randomChecksumAddress(),
-        signature: web3.utils.randomHex(65),
-        nonce: 123456,
-        data: {
-          safeAddress: randomChecksumAddress(),
-          username: 'zebra',
-        },
-      };
-
-      // Missing fields
-      await expectErrorStatus({
-        ...correctBody,
-        address: 'invalid',
-      });
-
-      // Missing signature
-      await expectErrorStatus({
-        ...correctBody,
-        signature: '',
-      });
-
-      // Wrong address
-      await expectErrorStatus({
-        ...correctBody,
-        address: web3.utils.randomHex(21),
-      });
-
-      // Wrong address checksum
-      await expectErrorStatus({
-        ...correctBody,
-        address: web3.utils.randomHex(20),
-      });
-
-      // Invalid nonce
-      await expectErrorStatus({
-        ...correctBody,
-        nonce: -1,
-      });
-
-      // Username too short
-      await expectErrorStatus({
-        ...correctBody,
-        data: {
-          ...correctBody.data,
-          username: 'ab',
-        },
-      });
-    });
-
-    it('should return an error on invalid signature', async () => {
-      // Wrong address
-      await expectErrorStatus(
-        {
+    describe('when using invalid parameters', () => {
+      it('should return errors', async () => {
+        const correctBody = {
           address: randomChecksumAddress(),
-          nonce,
-          signature,
+          signature: web3.utils.randomHex(65),
+          nonce: 123456,
           data: {
-            safeAddress,
-            username,
-          },
-        },
-        httpStatus.FORBIDDEN,
-      );
-
-      // Wrong username
-      await expectErrorStatus(
-        {
-          address,
-          nonce,
-          signature,
-          data: {
-            safeAddress,
+            safeAddress: randomChecksumAddress(),
             username: 'zebra',
           },
-        },
-        httpStatus.FORBIDDEN,
-      );
+        };
 
-      // Wrong nonce
-      await expectErrorStatus(
-        {
-          address,
-          nonce: nonce + 1,
-          signature,
+        // Missing fields
+        await expectErrorStatus({
+          ...correctBody,
+          address: 'invalid',
+        });
+
+        // Missing signature
+        await expectErrorStatus({
+          ...correctBody,
+          signature: '',
+        });
+
+        // Wrong address
+        await expectErrorStatus({
+          ...correctBody,
+          address: web3.utils.randomHex(21),
+        });
+
+        // Wrong address checksum
+        await expectErrorStatus({
+          ...correctBody,
+          address: web3.utils.randomHex(20),
+        });
+
+        // Invalid nonce
+        await expectErrorStatus({
+          ...correctBody,
+          nonce: -1,
+        });
+
+        // Username too short
+        await expectErrorStatus({
+          ...correctBody,
           data: {
-            safeAddress,
-            username,
+            ...correctBody.data,
+            username: 'ab',
           },
-        },
-        httpStatus.FORBIDDEN,
-      );
+        });
+      });
     });
 
-    it('should return an error when we do not get the Safe state right', async () => {
-      // We send a nonce, even though the Safe is already deployed ...
-      mockRelayerSafe({
-        address,
-        nonce,
-        safeAddress,
-        isCreated: true,
-        isDeployed: true,
+    describe('when using invalid signatures', () => {
+      it('should return errors', async () => {
+        // Wrong address
+        await expectErrorStatus(
+          {
+            address: randomChecksumAddress(),
+            nonce,
+            signature,
+            data: {
+              safeAddress,
+              username,
+            },
+          },
+          httpStatus.FORBIDDEN,
+        );
+
+        // Wrong username
+        await expectErrorStatus(
+          {
+            address,
+            nonce,
+            signature,
+            data: {
+              safeAddress,
+              username: 'zebra',
+            },
+          },
+          httpStatus.FORBIDDEN,
+        );
+
+        // Wrong nonce
+        await expectErrorStatus(
+          {
+            address,
+            nonce: nonce + 1,
+            signature,
+            data: {
+              safeAddress,
+              username,
+            },
+          },
+          httpStatus.FORBIDDEN,
+        );
+      });
+    });
+
+    describe('when trying to hijack someones Safe', () => {
+      it('should return an error when we do not get the Safe state right', async () => {
+        // We send a nonce, even though the Safe is already deployed ...
+        mockRelayerSafe({
+          address,
+          nonce,
+          safeAddress,
+          isCreated: true,
+          isDeployed: true,
+        });
+
+        return await request(app)
+          .put('/api/users')
+          .send({
+            address,
+            nonce,
+            signature,
+            data: {
+              safeAddress,
+              username,
+            },
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.BAD_REQUEST);
       });
 
-      return await request(app)
-        .put('/api/users')
-        .send({
+      it('should return an error when we cant guess the right nonce', async () => {
+        const victimAddress = randomChecksumAddress();
+        const victimSafeAddress = randomChecksumAddress();
+
+        const signature = getSignature(
+          address,
+          nonce,
+          victimSafeAddress,
+          username,
+          privateKey,
+        );
+
+        // We try to hijack someone elses safe address
+        mockRelayerSafe({
+          address: victimAddress,
+          nonce,
+          safeAddress: victimSafeAddress,
+          isCreated: true,
+          isDeployed: false,
+        });
+
+        // .. but receive this instead
+        mockRelayerSafe({
+          address,
+          nonce,
+          safeAddress: victimSafeAddress,
+          isCreated: false,
+          isDeployed: false,
+        });
+
+        return await request(app)
+          .put('/api/users')
+          .send({
+            address,
+            nonce,
+            signature,
+            data: {
+              safeAddress: victimSafeAddress,
+              username,
+            },
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.BAD_REQUEST);
+      });
+
+      it('should return an error when owner is wrong', async () => {
+        const victimAddress = randomChecksumAddress();
+        const victimSafeAddress = randomChecksumAddress();
+
+        const signature = getSignature(
+          address,
+          0,
+          victimSafeAddress,
+          username,
+          privateKey,
+        );
+
+        mockRelayerSafe({
+          address: victimAddress,
+          nonce,
+          safeAddress: victimSafeAddress,
+          isCreated: true,
+          isDeployed: true,
+        });
+
+        return await request(app)
+          .put('/api/users')
+          .send({
+            address,
+            signature,
+            data: {
+              safeAddress: victimSafeAddress,
+              username,
+            },
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.BAD_REQUEST);
+      });
+    });
+
+    describe('when creating a new user', () => {
+      let payload;
+
+      beforeEach(() => {
+        payload = {
           address,
           nonce,
           signature,
@@ -239,88 +342,40 @@ describe('API /users', () => {
             safeAddress,
             username,
           },
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
-    });
+        };
 
-    it('should return an error when we cant guess the right nonce', async () => {
-      const victimAddress = randomChecksumAddress();
-      const victimSafeAddress = randomChecksumAddress();
-
-      const signature = getSignature(
-        address,
-        nonce,
-        victimSafeAddress,
-        username,
-        privateKey,
-      );
-
-      // We try to hijack someone elses safe address
-      mockRelayerSafe({
-        address: victimAddress,
-        nonce,
-        safeAddress: victimSafeAddress,
-        isCreated: true,
-        isDeployed: false,
-      });
-
-      // .. but receive this instead
-      mockRelayerSafe({
-        address,
-        nonce,
-        safeAddress: victimSafeAddress,
-        isCreated: false,
-        isDeployed: false,
-      });
-
-      return await request(app)
-        .put('/api/users')
-        .send({
+        mockRelayerSafe({
           address,
           nonce,
-          signature,
-          data: {
-            safeAddress: victimSafeAddress,
-            username,
-          },
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
-    });
-
-    it('should return an error when owner is wrong', async () => {
-      const victimAddress = randomChecksumAddress();
-      const victimSafeAddress = randomChecksumAddress();
-
-      const signature = getSignature(
-        address,
-        0,
-        victimSafeAddress,
-        username,
-        privateKey,
-      );
-
-      mockRelayerSafe({
-        address: victimAddress,
-        nonce,
-        safeAddress: victimSafeAddress,
-        isCreated: true,
-        isDeployed: true,
+          safeAddress,
+          isCreated: true,
+          isDeployed: false,
+        });
       });
 
-      return await request(app)
-        .put('/api/users')
-        .send({
-          address,
-          signature,
-          data: {
-            safeAddress: victimSafeAddress,
+      afterAll(async () => {
+        return await User.destroy({
+          where: {
             username,
           },
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
+        });
+      });
+
+      it('should successfully respond', async () => {
+        await request(app)
+          .put('/api/users')
+          .send(payload)
+          .set('Accept', 'application/json')
+          .expect(httpStatus.CREATED);
+      });
+
+      it('should fail if we use the same username again', async () => {
+        await request(app)
+          .put('/api/users')
+          .send(payload)
+          .set('Accept', 'application/json')
+          .expect(httpStatus.CONFLICT);
+      });
     });
   });
 });

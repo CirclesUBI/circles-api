@@ -7,8 +7,8 @@ function respond(res, status, data, code) {
   });
 }
 
-export function respondWithSuccess(res, data) {
-  respond(res, 'ok', { data }, 200);
+export function respondWithSuccess(res, data, status = httpStatus.OK) {
+  respond(res, 'ok', { data }, status);
 }
 
 export function respondWithError(
