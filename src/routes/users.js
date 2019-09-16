@@ -13,6 +13,12 @@ router.put(
 );
 
 router.get(
+  '/',
+  validate(usersValidation.resolveBatch),
+  usersController.resolveBatch,
+);
+
+router.get(
   '/:username',
   validate(usersValidation.getByUsername),
   usersController.getByUsername,

@@ -37,4 +37,15 @@ export default {
         .required(),
     },
   },
+  resolveBatch: {
+    query: Joi.object({
+      username: Joi.array().items(Joi.string().alphanum()),
+      address: Joi.array().items(
+        customJoi
+          .web3()
+          .address()
+          .addressChecksum(),
+      ),
+    }).or('username', 'address'),
+  },
 };
