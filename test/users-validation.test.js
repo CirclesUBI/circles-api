@@ -133,3 +133,29 @@ describe('PUT /users - validation', () => {
     });
   });
 });
+
+describe('GET /users - validation', () => {
+  it('should fail when no or empty array was given', async () => {
+    await request(app)
+      .get('/api/users')
+      .expect(httpStatus.BAD_REQUEST);
+
+    await request(app)
+      .get('/api/users?username')
+      .expect(httpStatus.BAD_REQUEST);
+
+    await request(app)
+      .get('/api/users?address[]')
+      .expect(httpStatus.BAD_REQUEST);
+  });
+
+  it('should fail when invalid values are given', async () => {
+    await request(app)
+      .get('/api/users?address[]=bubu')
+      .expect(httpStatus.BAD_REQUEST);
+
+    await request(app)
+      .get('/api/users?username[]=__22as0-&username[]=panda')
+      .expect(httpStatus.BAD_REQUEST);
+  });
+});

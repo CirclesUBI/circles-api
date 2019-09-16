@@ -111,3 +111,85 @@ describe('GET /users/:username - Find by username', () => {
       .expect(httpStatus.NOT_FOUND);
   });
 });
+
+describe('GET /users/?username[]=... - Find by usernames and addresses', () => {
+  it('should return a list of all results', async () => {
+    const params = users
+      .reduce((acc, user) => {
+        if (Math.random() > 0.5) {
+          acc.push(`username[]=${user.username}`);
+        } else {
+          acc.push(`address[]=${user.safeAddress}`);
+        }
+
+        return acc;
+      }, [])
+      .join('&');
+
+    await request(app)
+      .get(`/api/users/?${params}`)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK)
+      .expect(({ body }) => {
+        let foundTotal = 0;
+
+        users.forEach(user => {
+          const isFound = body.data.find(item => {
+            return (
+              item.username === user.username &&
+              item.safeAddress === user.safeAddress
+            );
+          });
+
+          if (isFound) {
+            foundTotal += 1;
+          } else {
+            throw new Error('User was not resolved');
+          }
+        });
+
+        if (foundTotal > body.data.length) {
+          throw new Error('Too many results where returned');
+        }
+      });
+  });
+
+  it('should filter duplicates automatically', async () => {
+    const { username, safeAddress } = users[1];
+
+    await request(app)
+      .get(`/api/users/?address[]=${safeAddress}&username[]=${username}`)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK)
+      .expect(({ body }) => {
+        if (body.data.length !== 1) {
+          throw new Error('Duplicates found');
+        }
+      });
+  });
+
+  it('should fail silently and not include the failed results', async () => {
+    const { username, safeAddress } = users[4];
+
+    const params = [
+      `address[]=${safeAddress}`,
+      `username[]=${username}`,
+      `username[]=notexisting`,
+      `address[]=${randomChecksumAddress()}`,
+    ].join('&');
+
+    await request(app)
+      .get(`/api/users/?${params}`)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK)
+      .expect(({ body }) => {
+        if (body.data.length !== 1) {
+          throw new Error('Invalid entries found');
+        }
+
+        if (body.data[0].username !== username) {
+          throw new Error('Invalid result found');
+        }
+      });
+  });
+});
