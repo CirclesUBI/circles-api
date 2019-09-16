@@ -30,4 +30,11 @@ export default {
       }).required(),
     }),
   },
+  getByUsername: {
+    params: {
+      username: Joi.string()
+        .alphanum()
+        .required(),
+    },
+  },
 };

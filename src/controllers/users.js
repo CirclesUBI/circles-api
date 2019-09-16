@@ -146,6 +146,31 @@ async function createNewUser(req, res, next) {
     });
 }
 
+async function getByUsername(req, res, next) {
+  const { username } = req.params;
+
+  return User.findOne({
+    where: {
+      username,
+    },
+  })
+    .then(response => {
+      if (response) {
+        respondWithSuccess(res, {
+          id: response.id,
+          username: response.username,
+          safeAddress: response.safeAddress,
+        });
+      } else {
+        next(new APIError(httpStatus.NOT_FOUND));
+      }
+    })
+    .catch(err => {
+      return next(err);
+    });
+}
+
 export default {
   createNewUser,
+  getByUsername,
 };
