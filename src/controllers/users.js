@@ -31,11 +31,13 @@ function checkSignature(address, nonce, signature, data) {
   }
 
   if (recoveredAddress !== address) {
-    throw new Error('Invalid signature');
+    throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
   }
 }
 
 async function checkSafeStatus(isNonceGiven, safeAddress) {
+  let isDeployed;
+
   try {
     const { txHash } = await core.utils.requestRelayer({
       path: ['safe', safeAddress, 'funded'],
@@ -43,13 +45,13 @@ async function checkSafeStatus(isNonceGiven, safeAddress) {
       version: 2,
     });
 
-    const isDeployed = txHash !== null;
-
-    if ((!isNonceGiven && !isDeployed) || (isNonceGiven && isDeployed)) {
-      throw new Error('Wrong claimed Safe state');
-    }
+    isDeployed = txHash !== null;
   } catch (err) {
     throw new Error(err);
+  }
+
+  if ((!isNonceGiven && !isDeployed) || (isNonceGiven && isDeployed)) {
+    throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe state');
   }
 }
 
@@ -62,10 +64,10 @@ async function checkOwner(address, safeAddress) {
     });
 
     if (!owners.includes(address)) {
-      throw new Error('Not owner of Safe');
+      throw new Error();
     }
   } catch (err) {
-    throw new Error(err);
+    throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
   }
 }
 
@@ -84,51 +86,64 @@ async function checkSaltNonce(nonce, address) {
       },
     });
   } catch (err) {
-    isSafeExisting = true;
+    // Relayer responded with error 422 ..
+    if (err.toString().includes(httpStatus.UNPROCESSABLE_ENTITY)) {
+      isSafeExisting = true;
+    } else {
+      throw new Error(err);
+    }
   }
 
   if (!isSafeExisting) {
-    throw new Error('Invalid nonce');
+    throw new APIError(httpStatus.BAD_REQUEST, 'Invalid nonce');
+  }
+}
+
+async function checkIfExists(username, safeAddress) {
+  let response;
+
+  try {
+    response = await User.findOne({
+      where: {
+        [Op.or]: [
+          {
+            username,
+          },
+          {
+            safeAddress,
+          },
+        ],
+      },
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+
+  if (response) {
+    throw new APIError(httpStatus.CONFLICT, 'Entry already exists');
   }
 }
 
 async function createNewUser(req, res, next) {
   const { address, nonce = UNSET_NONCE, signature, data } = req.body;
+  const { safeAddress, username } = data;
+  const isNonceGiven = nonce !== UNSET_NONCE;
 
   // Check signature
   try {
     checkSignature(address, nonce, signature, data);
   } catch (err) {
-    return next(new APIError(httpStatus.FORBIDDEN, err.message));
+    return next(err);
   }
 
-  const { safeAddress, username } = data;
-
   // Check if entry already exists
-  User.findOne({
-    where: {
-      [Op.or]: [
-        {
-          username,
-        },
-        {
-          safeAddress,
-        },
-      ],
-    },
-  })
-    .then(response => {
-      if (response) {
-        return next(new APIError(httpStatus.CONFLICT, 'Entry already exists'));
-      }
-    })
-    .catch(err => {
-      return next(err);
-    });
+  try {
+    await checkIfExists(username, safeAddress);
+  } catch (err) {
+    return next(err);
+  }
 
   // Check if claimed safe is correct and owned by address
-  const isNonceGiven = nonce !== UNSET_NONCE;
-
   try {
     await checkSafeStatus(isNonceGiven, safeAddress);
 
@@ -138,7 +153,7 @@ async function createNewUser(req, res, next) {
       await checkSaltNonce(nonce, address, safeAddress);
     }
   } catch (err) {
-    return next(new APIError(httpStatus.BAD_REQUEST, err.message));
+    return next(err);
   }
 
   // Everything is fine, create entry!
@@ -197,7 +212,7 @@ async function resolveBatch(req, res, next) {
       respondWithSuccess(res, response.map(prepareUserResult));
     })
     .catch(err => {
-      return next(err);
+      next(err);
     });
 }
 
