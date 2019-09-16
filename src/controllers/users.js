@@ -197,12 +197,12 @@ async function resolveBatch(req, res, next) {
       [Op.or]: [
         {
           username: {
-            [Op.in]: username,
+            [Op.in]: username || [],
           },
         },
         {
           safeAddress: {
-            [Op.in]: address,
+            [Op.in]: address || [],
           },
         },
       ],
