@@ -1,7 +1,9 @@
+import bodyParser from 'body-parser';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import methodOverride from 'method-override';
 import morgan from 'morgan';
 
 import './helpers/env';
@@ -28,6 +30,8 @@ app.set('port', process.env.PORT || DEFAULT_PORT);
 
 // Use HTTP middlewares
 app.use(compression());
+app.use(methodOverride());
+app.use(bodyParser.json());
 
 // Use CORS and security middlewares
 app.use(cors());
@@ -49,10 +53,13 @@ app.use('/api', require('./routes'));
 app.use(errorsMiddleware);
 
 // Start server
-app.listen(app.get('port'), () => {
-  logger.info(
-    `Server is listening at port ${app.get('port')} in ${app.get('env')} mode`,
-  );
-});
+if (process.env.NODE_ENV !== 'test') {
+  const env = app.get('env');
+  const port = app.get('port');
+
+  app.listen(port, () => {
+    logger.info(`Server is listening at port ${port} in ${env} mode`);
+  });
+}
 
 export default app;

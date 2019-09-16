@@ -4,7 +4,7 @@ node_js:
 services:
   - postgresql
 env:
-  - NODE_ENV=test DATABASE_URL=postgres://postgres@localhost:5432/circles_test DATABASE_DIALECT=postgres
+  - NODE_ENV=test DATABASE_URL=postgres://postgres@localhost:5432/circles_test DATABASE_DIALECT=postgres HUB_ADDRESS=0xCfEB869F69431e42cdB54A4F4f105C19C080A601 PROXY_FACTORY_ADDRESS=0xC89Ce4735882C9F0f0FE26686c53074E09B0D550 RELAY_SERVICE_ENDPOINT=http://relay.circles.local SAFE_ADDRESS=0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb
 before_install:
   - psql -c 'create database circles_test;' -U postgres
 install:
