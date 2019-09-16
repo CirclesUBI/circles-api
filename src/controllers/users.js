@@ -9,6 +9,14 @@ import { respondWithSuccess } from '../helpers/responses';
 
 const UNSET_NONCE = 0;
 
+function prepareUserResult(response) {
+  return {
+    id: response.id,
+    username: response.username,
+    safeAddress: response.safeAddress,
+  };
+}
+
 function checkSignature(address, nonce, signature, data) {
   const { safeAddress, username } = data;
 
@@ -146,6 +154,55 @@ async function createNewUser(req, res, next) {
     });
 }
 
+async function getByUsername(req, res, next) {
+  const { username } = req.params;
+
+  User.findOne({
+    where: {
+      username,
+    },
+  })
+    .then(response => {
+      if (response) {
+        respondWithSuccess(res, prepareUserResult(response));
+      } else {
+        next(new APIError(httpStatus.NOT_FOUND));
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
+}
+
+async function resolveBatch(req, res, next) {
+  const { username, address } = req.query;
+
+  User.findAll({
+    where: {
+      [Op.or]: [
+        {
+          username: {
+            [Op.in]: username,
+          },
+        },
+        {
+          safeAddress: {
+            [Op.in]: address,
+          },
+        },
+      ],
+    },
+  })
+    .then(response => {
+      respondWithSuccess(res, response.map(prepareUserResult));
+    })
+    .catch(err => {
+      return next(err);
+    });
+}
+
 export default {
   createNewUser,
+  getByUsername,
+  resolveBatch,
 };

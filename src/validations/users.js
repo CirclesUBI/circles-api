@@ -30,4 +30,22 @@ export default {
       }).required(),
     }),
   },
+  getByUsername: {
+    params: {
+      username: Joi.string()
+        .alphanum()
+        .required(),
+    },
+  },
+  resolveBatch: {
+    query: Joi.object({
+      username: Joi.array().items(Joi.string().alphanum()),
+      address: Joi.array().items(
+        customJoi
+          .web3()
+          .address()
+          .addressChecksum(),
+      ),
+    }).or('username', 'address'),
+  },
 };

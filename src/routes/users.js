@@ -12,4 +12,16 @@ router.put(
   usersController.createNewUser,
 );
 
+router.get(
+  '/',
+  validate(usersValidation.resolveBatch),
+  usersController.resolveBatch,
+);
+
+router.get(
+  '/:username',
+  validate(usersValidation.getByUsername),
+  usersController.getByUsername,
+);
+
 export default router;

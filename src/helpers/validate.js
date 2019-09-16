@@ -14,7 +14,7 @@ export const customJoi = Joi.extend(joi => {
       {
         name: 'address',
         validate(schema, value, state, options) {
-          if (!web3.utils.isAddress(value)) {
+          if (!value || !web3.utils.isAddress(value)) {
             return this.createError('web3.address', {}, state, options);
           }
 
@@ -24,7 +24,7 @@ export const customJoi = Joi.extend(joi => {
       {
         name: 'addressChecksum',
         validate(schema, value, state, options) {
-          if (!web3.utils.checkAddressChecksum(value)) {
+          if (!value || !web3.utils.checkAddressChecksum(value)) {
             return this.createError('web3.addressChecksum', {}, state, options);
           }
 
