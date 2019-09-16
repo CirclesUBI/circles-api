@@ -40,7 +40,7 @@ async function checkSafeStatus(isNonceGiven, safeAddress) {
 
   try {
     const { txHash } = await core.utils.requestRelayer({
-      path: ['safe', safeAddress, 'funded'],
+      path: ['safes', safeAddress, 'funded'],
       method: 'GET',
       version: 2,
     });
@@ -56,17 +56,21 @@ async function checkSafeStatus(isNonceGiven, safeAddress) {
 }
 
 async function checkOwner(address, safeAddress) {
+  let owners = [];
+
   try {
-    const { owners } = await core.utils.requestRelayer({
-      path: ['safe', safeAddress],
+    const response = await core.utils.requestRelayer({
+      path: ['safes', safeAddress],
       method: 'GET',
       version: 1,
     });
 
-    if (!owners.includes(address)) {
-      throw new Error();
-    }
+    owners = response.owners;
   } catch (err) {
+    throw new Error(err);
+  }
+
+  if (!owners.includes(address)) {
     throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
   }
 }
@@ -76,7 +80,7 @@ async function checkSaltNonce(nonce, address) {
 
   try {
     await core.utils.requestRelayer({
-      path: ['safe'],
+      path: ['safes'],
       method: 'POST',
       version: 2,
       data: {

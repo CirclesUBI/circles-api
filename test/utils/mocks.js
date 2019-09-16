@@ -12,20 +12,20 @@ export function mockRelayerSafe({
 }) {
   if (isCreated) {
     nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .get(`/api/v2/safe/${safeAddress}/funded/`)
+      .get(`/api/v2/safes/${safeAddress}/funded/`)
       .reply(httpStatus.OK, {
         blockNumber: null,
         txHash: isDeployed ? web3.utils.randomHex(32) : null,
       });
   } else {
     nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .get(`/api/v2/safe/${safeAddress}/funded/`)
+      .get(`/api/v2/safes/${safeAddress}/funded/`)
       .reply(httpStatus.NOT_FOUND);
   }
 
   if (isCreated) {
     nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .post('/api/v2/safe/', {
+      .post('/api/v2/safes/', {
         nonce,
         owners: [address],
         threshold: 1,
@@ -35,7 +35,7 @@ export function mockRelayerSafe({
       });
   } else {
     nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .post('/api/v2/safe/', {
+      .post('/api/v2/safes/', {
         nonce,
         owners: [address],
         threshold: 1,
@@ -46,7 +46,7 @@ export function mockRelayerSafe({
   if (isCreated) {
     if (isDeployed) {
       nock(process.env.RELAY_SERVICE_ENDPOINT)
-        .get(`/api/v1/safe/${safeAddress}/`)
+        .get(`/api/v1/safes/${safeAddress}/`)
         .reply(httpStatus.OK, {
           address: safeAddress,
           masterCopy: process.env.SAFE_ADDRESS,
@@ -57,14 +57,14 @@ export function mockRelayerSafe({
         });
     } else {
       nock(process.env.RELAY_SERVICE_ENDPOINT)
-        .get(`/api/v1/safe/${safeAddress}/`)
+        .get(`/api/v1/safes/${safeAddress}/`)
         .reply(httpStatus.UNPROCESSABLE_ENTITY, {
           exception: `"SafeNotDeployed: Safe with address=${safeAddress} not deployed"`,
         });
     }
   } else {
     nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .get(`/api/v1/safe/${safeAddress}`)
+      .get(`/api/v1/safes/${safeAddress}`)
       .reply(httpStatus.NOT_FOUND);
   }
 }
