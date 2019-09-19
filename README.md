@@ -36,7 +36,7 @@ Get the users entry including its `safeAddress`.
 
 ```
 {
-  success: 'ok',
+  status: 'ok',
   data: {
     id: <int>,
     safeAddress: <string>,
@@ -61,7 +61,7 @@ Resolve multiple usernames (via `username[]`) and/or Safe addresses (via `addres
 
 ```
 {
-  success: 'ok',
+  status: 'ok',
   data: [
     {
       id: <int>,
