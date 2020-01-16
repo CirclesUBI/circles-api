@@ -12,18 +12,18 @@ export const customJoi = Joi.extend(joi => {
     },
     rules: {
       address: {
-        validate(schema, value, state, options) {
+        validate(value, helpers) {
           if (!value || !web3.utils.isAddress(value)) {
-            return this.createError('web3.address', {}, state, options);
+            return helpers.error('web3.address');
           }
 
           return value;
         },
       },
       addressChecksum: {
-        validate(schema, value, state, options) {
+        validate(value, helpers) {
           if (!value || !web3.utils.checkAddressChecksum(value)) {
-            return this.createError('web3.addressChecksum', {}, state, options);
+            return helpers.error('web3.addressChecksum');
           }
 
           return value;
