@@ -129,9 +129,6 @@ npm install
 // Copy .env file for local development
 cp .env.example .env
 
-// Copy .env file for local testing
-cp .env.example .env.test
-
 // Seed and migrate database
 npm run db:migrate
 npm run db:seed
