@@ -40,7 +40,7 @@ export default {
         .required(),
     },
   },
-  resolveBatch: {
+  findUsers: {
     query: Joi.object({
       username: Joi.array().items(Joi.string().alphanum()),
       address: Joi.array().items(
@@ -49,6 +49,9 @@ export default {
           .address()
           .addressChecksum(),
       ),
-    }).or('username', 'address'),
+      query: Joi.string()
+        .alphanum()
+        .max(24),
+    }).or('username', 'address', 'query'),
   },
 };

@@ -221,8 +221,36 @@ async function resolveBatch(req, res, next) {
     });
 }
 
+async function findByUsername(req, res, next) {
+  const { query } = req.query;
+
+  User.findAll({
+    where: {
+      username: {
+        [Op.iLike]: `%${query}%`,
+      },
+    },
+    order: [['username', 'ASC']],
+    limit: 5,
+  })
+    .then(response => {
+      respondWithSuccess(res, response.map(prepareUserResult));
+    })
+    .catch(err => {
+      next(err);
+    });
+}
+
+async function findUsers(req, res, next) {
+  if (req.query.query) {
+    return await findByUsername(req, res, next);
+  }
+
+  return await resolveBatch(req, res, next);
+}
+
 export default {
   createNewUser,
   getByUsername,
-  resolveBatch,
+  findUsers,
 };
