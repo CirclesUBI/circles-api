@@ -45,7 +45,7 @@
     "rimraf": "^3.0.0",
     "sequelize-cli": "^5.5.1",
     "supertest": "^4.0.2",
-    "truffle": "^5.1.8"
+    "truffle": "^5.1.9"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.3",
