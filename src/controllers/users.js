@@ -130,7 +130,7 @@ async function checkIfExists(username, safeAddress) {
 
 async function createNewUser(req, res, next) {
   const { address, nonce = UNSET_NONCE, signature, data } = req.body;
-  const { safeAddress, username } = data;
+  const { safeAddress, username, email } = data;
   const isNonceGiven = nonce !== UNSET_NONCE;
 
   // Check signature
@@ -162,6 +162,7 @@ async function createNewUser(req, res, next) {
 
   // Everything is fine, create entry!
   User.create({
+    email,
     username,
     safeAddress,
   })
