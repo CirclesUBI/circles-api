@@ -12,11 +12,7 @@ router.put(
   usersController.createNewUser,
 );
 
-router.get(
-  '/',
-  validate(usersValidation.resolveBatch),
-  usersController.resolveBatch,
-);
+router.get('/', validate(usersValidation.findUsers), usersController.findUsers);
 
 router.get(
   '/:username',

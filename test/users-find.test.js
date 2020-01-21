@@ -97,7 +97,7 @@ afterAll(async () => {
   );
 });
 
-describe('GET /users/:username - Find by username', () => {
+describe('GET /users/:username - Resolve by username', () => {
   it('should find one user', async () => {
     await Promise.all(
       users.map(async ({ username, safeAddress }) => {
@@ -114,7 +114,7 @@ describe('GET /users/:username - Find by username', () => {
   });
 });
 
-describe('GET /users/?username[]=... - Find by usernames and addresses', () => {
+describe('GET /users/?username[]=... - Resolve by usernames and addresses', () => {
   it('should return a list of all results', async () => {
     const params = users
       .reduce((acc, user) => {
@@ -193,5 +193,52 @@ describe('GET /users/?username[]=... - Find by usernames and addresses', () => {
           throw new Error('Invalid result found');
         }
       });
+  });
+});
+
+describe('GET /users/?query=... - Search via username', () => {
+  it('should return all matching users', async () => {
+    await request(app)
+      .get('/api/users/?query=panda')
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK)
+      .expect(({ body }) => {
+        if (body.data.length !== NUM_TEST_USERS) {
+          throw new Error('Did not return all expected entries');
+        }
+      });
+
+    await request(app)
+      .get(`/api/users/?query=${users[1].username}`)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK)
+      .expect(({ body }) => {
+        if (
+          body.data.length !== 1 ||
+          body.data[0].username !== users[1].username ||
+          body.data[0].safeAddress !== users[1].safeAddress
+        ) {
+          throw new Error('Did not return expected entry');
+        }
+      });
+  });
+
+  it('should fail silently when no items were found', async () => {
+    await request(app)
+      .get('/api/users/?query=lala')
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK)
+      .expect(({ body }) => {
+        if (body.data.length !== 0) {
+          throw new Error('Invalid entries found');
+        }
+      });
+  });
+
+  it('should fail when query is empty', async () => {
+    await request(app)
+      .get('/api/users/?query=')
+      .set('Accept', 'application/json')
+      .expect(httpStatus.BAD_REQUEST);
   });
 });
