@@ -15,6 +15,7 @@ describe('PUT /users - Creating a new user', () => {
   let safeAddress;
   let signature;
   let username;
+  let email;
 
   let payload;
 
@@ -26,6 +27,7 @@ describe('PUT /users - Creating a new user', () => {
     safeAddress = randomChecksumAddress();
     nonce = new Date().getTime();
     username = 'donkey';
+    email = 'dk@kong.com';
 
     signature = getSignature(address, nonce, safeAddress, username, privateKey);
 
@@ -36,6 +38,7 @@ describe('PUT /users - Creating a new user', () => {
       data: {
         safeAddress,
         username,
+        email,
       },
     };
 
