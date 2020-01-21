@@ -20,6 +20,13 @@ const User = db.define('users', {
     ...uniqueAndNotNull,
     type: Sequelize.STRING,
   },
+  email: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  },
   safeAddress: {
     ...uniqueAndNotNull,
     type: Sequelize.STRING,
