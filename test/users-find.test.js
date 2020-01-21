@@ -44,6 +44,7 @@ beforeAll(async () => {
       const safeAddress = randomChecksumAddress();
       const nonce = index + 1;
       const username = `panda${index + 1}`;
+      const email = `panda${index + 1}@zoo.org`;
 
       const signature = getSignature(
         address,
@@ -70,6 +71,7 @@ beforeAll(async () => {
           data: {
             safeAddress,
             username,
+            email,
           },
         })
         .set('Accept', 'application/json')

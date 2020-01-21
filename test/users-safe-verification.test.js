@@ -15,6 +15,7 @@ describe('PUT /users - Safe verification', () => {
   let safeAddress;
   let signature;
   let username;
+  let email;
 
   beforeEach(() => {
     const account = web3.eth.accounts.create();
@@ -24,6 +25,7 @@ describe('PUT /users - Safe verification', () => {
     safeAddress = randomChecksumAddress();
     nonce = new Date().getTime();
     username = 'donkey';
+    email = 'dk@kong.com';
 
     signature = getSignature(address, nonce, safeAddress, username, privateKey);
   });
@@ -48,6 +50,7 @@ describe('PUT /users - Safe verification', () => {
           data: {
             safeAddress,
             username,
+            email,
           },
         })
         .set('Accept', 'application/json')
@@ -93,6 +96,7 @@ describe('PUT /users - Safe verification', () => {
           data: {
             safeAddress: victimSafeAddress,
             username,
+            email,
           },
         })
         .set('Accept', 'application/json')
@@ -127,6 +131,7 @@ describe('PUT /users - Safe verification', () => {
           data: {
             safeAddress: victimSafeAddress,
             username,
+            email,
           },
         })
         .set('Accept', 'application/json')

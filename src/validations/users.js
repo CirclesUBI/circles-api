@@ -27,6 +27,9 @@ export default {
           .min(3)
           .max(24)
           .required(),
+        email: Joi.string()
+          .email()
+          .required(),
       }).required(),
     }),
   },

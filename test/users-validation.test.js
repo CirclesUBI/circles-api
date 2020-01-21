@@ -21,6 +21,7 @@ describe('PUT /users - validation', () => {
   let safeAddress;
   let signature;
   let username;
+  let email;
 
   beforeEach(() => {
     const account = web3.eth.accounts.create();
@@ -30,6 +31,7 @@ describe('PUT /users - validation', () => {
     safeAddress = randomChecksumAddress();
     nonce = new Date().getTime();
     username = 'donkey';
+    email = 'dk@kong.com';
 
     signature = getSignature(address, nonce, safeAddress, username, privateKey);
   });
@@ -43,6 +45,7 @@ describe('PUT /users - validation', () => {
         data: {
           safeAddress: randomChecksumAddress(),
           username: 'zebra',
+          email: 'zebra@zoo.org',
         },
       };
 
@@ -98,6 +101,7 @@ describe('PUT /users - validation', () => {
           data: {
             safeAddress,
             username,
+            email,
           },
         },
         httpStatus.FORBIDDEN,
@@ -112,6 +116,7 @@ describe('PUT /users - validation', () => {
           data: {
             safeAddress,
             username: 'zebra',
+            email,
           },
         },
         httpStatus.FORBIDDEN,
@@ -126,6 +131,7 @@ describe('PUT /users - validation', () => {
           data: {
             safeAddress,
             username,
+            email,
           },
         },
         httpStatus.FORBIDDEN,
