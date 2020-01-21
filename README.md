@@ -49,6 +49,37 @@ Get the users entry including its `safeAddress`.
 
 * `404` Not found
 
+### Search database by usernames
+
+Find a user in the database.
+
+**Request:**
+
+`GET /api/users?query=<string>`
+
+**Response:**
+
+```
+{
+  status: 'ok',
+  data: [
+    {
+      id: <int>,
+      safeAddress: <string>,
+      username: <string>
+    },
+    {
+      [...]
+    },
+    [...]
+  ]
+}
+```
+
+**Errors:**
+
+When no user was found an empty response will be returned.
+
 ### Get multiple entries by username / address
 
 Resolve multiple usernames (via `username[]`) and/or Safe addresses (via `address[]`) in a batch.
