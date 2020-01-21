@@ -97,6 +97,7 @@ Create a new entry in the database, connecting a `username` with a `safeAddress`
   nonce: <int> (optional),
   data: {
     safeAddress: <string>,
+    email: <string>
     username: <string>
   }
 }
@@ -106,6 +107,7 @@ Create a new entry in the database, connecting a `username` with a `safeAddress`
 - `signature`: Signed data payload of this request via the users keypair. The data contains: `address + nonce + safeAddress + username` with `nonce` being `0` when not given
 - `nonce`: Optional nonce which is required to [predict the Safe address](https://gnosis-safe.readthedocs.io/en/latest/contracts/deployment.html#trustless-deployment-with-create2)
 - `data/safeAddress`: Public address of the owned Safe of the user
+- `data/email`: Private email address of the user (not unique)
 - `data/username`: Username which should be connected to the `safeAddress`
 
 **Verification steps:**
