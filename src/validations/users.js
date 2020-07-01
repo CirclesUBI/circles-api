@@ -35,9 +35,7 @@ export default {
   },
   getByUsername: {
     params: {
-      username: Joi.string()
-        .alphanum()
-        .required(),
+      username: Joi.string().required(),
     },
   },
   findUsers: {
@@ -49,9 +47,7 @@ export default {
           .address()
           .addressChecksum(),
       ),
-      query: Joi.string()
-        .alphanum()
-        .max(24),
+      query: Joi.string().max(256),
     }).or('username', 'address', 'query'),
   },
 };
