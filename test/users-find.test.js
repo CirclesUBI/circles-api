@@ -235,6 +235,13 @@ describe('GET /users/?query=... - Search via username', () => {
       });
   });
 
+  it('should fail silently when query contains non alphanumeric characters', async () => {
+    await request(app)
+      .get('/api/users/?query=lala%20lulu')
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK);
+  });
+
   it('should fail when query is empty', async () => {
     await request(app)
       .get('/api/users/?query=')
