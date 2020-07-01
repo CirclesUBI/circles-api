@@ -87,7 +87,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await Promise.all(
-    users.map(async user => {
+    users.map(async (user) => {
       return await User.destroy({
         where: {
           username: user.username,
@@ -135,8 +135,8 @@ describe('GET /users/?username[]=... - Resolve by usernames and addresses', () =
       .expect(({ body }) => {
         let foundTotal = 0;
 
-        users.forEach(user => {
-          const isFound = body.data.find(item => {
+        users.forEach((user) => {
+          const isFound = body.data.find((item) => {
             return (
               item.username === user.username &&
               item.safeAddress === user.safeAddress

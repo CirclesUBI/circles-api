@@ -41,7 +41,7 @@ app.use(helmet());
 app.use(
   morgan('dev', {
     stream: {
-      write: message => logger.verbose(message.replace('\n', '')),
+      write: (message) => logger.verbose(message.replace('\n', '')),
     },
   }),
 );

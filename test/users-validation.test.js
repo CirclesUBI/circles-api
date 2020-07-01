@@ -142,9 +142,7 @@ describe('PUT /users - validation', () => {
 
 describe('GET /users - validation', () => {
   it('should fail when no or empty array was given', async () => {
-    await request(app)
-      .get('/api/users')
-      .expect(httpStatus.BAD_REQUEST);
+    await request(app).get('/api/users').expect(httpStatus.BAD_REQUEST);
 
     await request(app)
       .get('/api/users?username')

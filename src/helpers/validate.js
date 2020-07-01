@@ -2,7 +2,7 @@ import { celebrate, Joi } from 'celebrate';
 
 import web3 from '../services/web3';
 
-export const customJoi = Joi.extend(joi => {
+export const customJoi = Joi.extend((joi) => {
   return {
     type: 'web3',
     base: joi.string(),

@@ -169,7 +169,7 @@ async function createNewUser(req, res, next) {
     .then(() => {
       respondWithSuccess(res, null, httpStatus.CREATED);
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 }
@@ -182,14 +182,14 @@ async function getByUsername(req, res, next) {
       username,
     },
   })
-    .then(response => {
+    .then((response) => {
       if (response) {
         respondWithSuccess(res, prepareUserResult(response));
       } else {
         next(new APIError(httpStatus.NOT_FOUND));
       }
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 }
@@ -213,10 +213,10 @@ async function resolveBatch(req, res, next) {
       ],
     },
   })
-    .then(response => {
+    .then((response) => {
       respondWithSuccess(res, response.map(prepareUserResult));
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 }
@@ -233,10 +233,10 @@ async function findByUsername(req, res, next) {
     order: [['username', 'ASC']],
     limit: 5,
   })
-    .then(response => {
+    .then((response) => {
       respondWithSuccess(res, response.map(prepareUserResult));
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 }

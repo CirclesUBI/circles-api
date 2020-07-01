@@ -7,7 +7,7 @@ const { url, dialect } = config[process.env.NODE_ENV];
 
 export default new Sequelize(url, {
   dialect,
-  logging: msg => {
+  logging: (msg) => {
     logger.debug(msg);
   },
 });
