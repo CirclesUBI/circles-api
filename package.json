@@ -1,6 +1,6 @@
 {
   "name": "circles-username-resolver",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Simple service to resolve Circles usernames from public adresses",
   "main": "src/index.js",
   "private": true,
