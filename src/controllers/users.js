@@ -75,7 +75,7 @@ async function checkOwner(address, safeAddress) {
   }
 }
 
-async function checkSaltNonce(nonce, address) {
+async function checkSaltNonce(saltNonce, address) {
   let isSafeExisting = false;
 
   try {
@@ -84,7 +84,7 @@ async function checkSaltNonce(nonce, address) {
       method: 'POST',
       version: 2,
       data: {
-        nonce,
+        saltNonce,
         owners: [address],
         threshold: 1,
       },
