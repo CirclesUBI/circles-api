@@ -26,7 +26,7 @@ export function mockRelayerSafe({
   if (isCreated) {
     nock(process.env.RELAY_SERVICE_ENDPOINT)
       .post('/api/v2/safes/', {
-        nonce,
+        saltNonce: nonce,
         owners: [address],
         threshold: 1,
       })
@@ -36,7 +36,7 @@ export function mockRelayerSafe({
   } else {
     nock(process.env.RELAY_SERVICE_ENDPOINT)
       .post('/api/v2/safes/', {
-        nonce,
+        saltNonce: nonce,
         owners: [address],
         threshold: 1,
       })
