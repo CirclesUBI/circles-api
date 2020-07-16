@@ -1,7 +1,7 @@
 {
-  "name": "circles-username-resolver",
+  "name": "circles-api",
   "version": "0.2.4",
-  "description": "Simple service to resolve Circles usernames from public adresses",
+  "description": "Offchain database and API service for Circles",
   "main": "src/index.js",
   "private": true,
   "contributors": [
@@ -10,7 +10,7 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/CirclesUBI/circles-username-resolver.git"
+    "url": "git://github.com/CirclesUBI/circles-api.git"
   },
   "scripts": {
     "build": "babel ./src --out-dir ./build",
