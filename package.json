@@ -20,7 +20,7 @@
     "lint": "eslint --ignore-path .gitignore .",
     "serve": "nodemon --watch ./src --exec cross-env NODE_ENV=development babel-node ./src/index.js --source-maps inline",
     "start": "cross-env NODE_ENV=production node ./build/index.js",
-    "test": "jest --detectOpenHandles",
+    "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "npm run test -- --watch"
   },
   "devDependencies": {
