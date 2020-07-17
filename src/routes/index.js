@@ -2,6 +2,7 @@ import express from 'express';
 import httpStatus from 'http-status';
 
 import APIError from '../helpers/errors';
+import transfersRouter from './transfers';
 import usersRouter from './users';
 import { respondWithSuccess } from '../helpers/responses';
 
@@ -12,6 +13,7 @@ router.get('/', (req, res) => {
 });
 
 router.use('/users', usersRouter);
+router.use('/transfers', transfersRouter);
 
 router.use(() => {
   throw new APIError(httpStatus.NOT_FOUND);

@@ -12,7 +12,7 @@
   </a>
 </p>
 
-A very simple offchain API service to safely store and resolve [Circles](https://joincircles.net) user data from public adresses.
+An offchain API service to safely store and resolve [Circles](https://joincircles.net) user data from public adresses and find transitive transfer paths to send tokens within the trust graph.
 
 ## Requirements
 
@@ -20,6 +20,49 @@ A very simple offchain API service to safely store and resolve [Circles](https:/
 * PostgreSQL database
 
 ## API
+
+### Find transitive transfer path
+
+Finds a path to transfer transitively through trust graph from one node to another.
+
+**Request:**
+
+`POST /api/transfers`
+
+**Parameters:**
+
+```
+{
+  from: <string>,
+  to: <string>,
+  value: <number>,
+}
+```
+
+- `from`: Sender address
+- `to`: Receiver address
+- `value`: Amount of Circles to send between sender and receiver
+
+**Response:**
+
+```
+{
+  status: 'ok',
+  data: {
+    from: <string>,
+    to: <string>,
+    maxFlowValue: <number>,
+    transferSteps: <array>,
+    transferValue: <number>,
+    statistics: <object>
+  }
+}
+```
+
+**Errors:**
+
+* `400` Parameters missing or malformed
+* `422` Invalid transfer
 
 ### Get entry by username
 
