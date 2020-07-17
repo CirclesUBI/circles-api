@@ -95,7 +95,7 @@ async function getTrustNetworkEdges() {
     userAddress
   }`;
 
-  const safeFields = `{
+  const safeFields = `
     id
     outgoing ${safeQuery}
     incoming ${safeQuery}
@@ -108,7 +108,7 @@ async function getTrustNetworkEdges() {
         }
       }
     }
-  }`;
+  `;
 
   const response = await fetchAllFromGraph('safes', safeFields);
 
