@@ -54,7 +54,7 @@ describe('POST /transfers - Find transfer steps', () => {
 
         expect(data.from).toBe(from);
         expect(data.to).toBe(to);
-        expect(data.maxFlowValue).toBe(61);
+        expect(data.maxFlowValue).toBe(50);
         expect(data.transferValue).toBe(value);
         expect(data.transferSteps.length).toBe(4);
       });
