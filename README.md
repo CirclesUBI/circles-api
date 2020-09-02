@@ -21,9 +21,9 @@ An offchain API service to safely store and resolve [Circles](https://joincircle
 
 ## API
 
-### Find transitive transfer path
+### Find transitive transfer steps
 
-Finds a path to transfer transitively through trust graph from one node to another.
+Returns steps to transfer transitively through trust graph from one node to another.
 
 **Request:**
 
@@ -80,7 +80,8 @@ Get the users entry including its `safeAddress`.
   data: {
     id: <int>,
     safeAddress: <string>,
-    username: <string>
+    username: <string>,
+    avatarUrl: <string>
   }
 }
 ```
@@ -106,7 +107,8 @@ Find a user in the database.
     {
       id: <int>,
       safeAddress: <string>,
-      username: <string>
+      username: <string>,
+      avatarUrl: <string>
     },
     {
       [...]
@@ -137,7 +139,8 @@ Resolve multiple usernames (via `username[]`) and/or Safe addresses (via `addres
     {
       id: <int>,
       safeAddress: <string>,
-      username: <string>
+      username: <string>,
+      avatarUrl: <string>
     },
     {
       [...]
@@ -168,8 +171,9 @@ Create a new entry in the database, connecting a `username` with a `safeAddress`
   nonce: <int> (optional),
   data: {
     safeAddress: <string>,
-    email: <string>
-    username: <string>
+    email: <string>,
+    username: <string>,
+    avatarUrl: <string>
   }
 }
 ```
@@ -180,6 +184,7 @@ Create a new entry in the database, connecting a `username` with a `safeAddress`
 - `data/safeAddress`: Public address of the owned Safe of the user
 - `data/email`: Private email address of the user (not unique)
 - `data/username`: Username which should be connected to the `safeAddress`
+- `data/avatarUrl` (optional): URL of avatar image
 
 **Verification steps:**
 
