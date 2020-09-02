@@ -154,6 +154,31 @@ Resolve multiple usernames (via `username[]`) and/or Safe addresses (via `addres
 
 Not found entries silently fail and simply do not get returned in the response.
 
+### Check user fields (dry run)
+
+**Request:**
+
+`POST /api/users`
+
+Do a dry-run to check if `email` and `username` fields are valid before creating a user account. This is helpful for giving early user feedback in onboarding flows.
+
+**Parameters:**
+
+```
+{
+  email: <string>,
+  username: <string>
+}
+```
+
+- `email`: E-Mail-Address of the to-be-created user
+- `username`: Username of the to-be-created user
+
+**Errors:**
+
+* `400` Parameters missing or malformed
+* `409` Entry already exists
+
 ### Create new entry
 
 **Request:**
