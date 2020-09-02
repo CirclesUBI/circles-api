@@ -1,19 +1,16 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
-import web3 from './utils/web3';
+import { createUserPayload } from './utils/users';
 import { mockRelayerSafe } from './utils/mocks';
-import { randomChecksumAddress, getSignature } from './utils/common';
+import { randomChecksumAddress } from './utils/common';
 
 import User from '~/models/users';
 import app from '~';
 
 describe('PUT /users - Creating a new user', () => {
-  let address;
   let nonce;
-  let privateKey;
   let safeAddress;
-  let signature;
   let username;
   let email;
   let avatarUrl;
@@ -21,32 +18,22 @@ describe('PUT /users - Creating a new user', () => {
   let payload;
 
   beforeEach(() => {
-    const account = web3.eth.accounts.create();
-    address = account.address;
-    privateKey = account.privateKey;
-
     safeAddress = randomChecksumAddress();
     nonce = new Date().getTime();
     username = 'donkey';
     email = 'dk@kong.com';
     avatarUrl = 'https://storage.com/image.jpg';
 
-    signature = getSignature(address, nonce, safeAddress, username, privateKey);
-
-    payload = {
-      address,
+    payload = createUserPayload({
       nonce,
-      signature,
-      data: {
-        safeAddress,
-        username,
-        email,
-        avatarUrl,
-      },
-    };
+      safeAddress,
+      username,
+      email,
+      avatarUrl,
+    });
 
     mockRelayerSafe({
-      address,
+      address: payload.address,
       nonce,
       safeAddress,
       isCreated: true,
@@ -60,17 +47,6 @@ describe('PUT /users - Creating a new user', () => {
         username,
       },
     });
-  });
-
-  it('should fail if avatarUrl is invalid', async () => {
-    await request(app)
-      .put('/api/users')
-      .send({
-        ...payload,
-        avatarUrl: 'http://lala',
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.BAD_REQUEST);
   });
 
   it('should successfully respond', async () => {

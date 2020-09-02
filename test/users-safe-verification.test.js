@@ -2,7 +2,6 @@ import httpStatus from 'http-status';
 import request from 'supertest';
 
 import web3 from './utils/web3';
-
 import { mockRelayerSafe } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
 

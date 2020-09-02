@@ -109,16 +109,20 @@ async function checkIfExists(username, safeAddress) {
 
   try {
     response = await User.findOne({
-      where: {
-        [Op.or]: [
-          {
+      where: safeAddress
+        ? {
+            [Op.or]: [
+              {
+                username,
+              },
+              {
+                safeAddress,
+              },
+            ],
+          }
+        : {
             username,
           },
-          {
-            safeAddress,
-          },
-        ],
-      },
     });
   } catch (err) {
     throw new Error(err);
@@ -127,6 +131,19 @@ async function checkIfExists(username, safeAddress) {
   if (response) {
     throw new APIError(httpStatus.CONFLICT, 'Entry already exists');
   }
+}
+
+async function dryRunCreateNewUser(req, res, next) {
+  const { username } = req.body;
+
+  // Check if entry already exists
+  try {
+    await checkIfExists(username);
+  } catch (err) {
+    return next(err);
+  }
+
+  respondWithSuccess(res, null, httpStatus.OK);
 }
 
 async function createNewUser(req, res, next) {
@@ -252,6 +269,7 @@ async function findUsers(req, res, next) {
 }
 
 export default {
+  dryRunCreateNewUser,
   createNewUser,
   getByUsername,
   findUsers,

@@ -3,6 +3,12 @@ import { Joi } from 'celebrate';
 import { customJoi } from '../helpers/validate';
 
 export default {
+  dryRunCreateNewUser: {
+    body: Joi.object({
+      username: Joi.string().alphanum().min(3).max(24),
+      email: Joi.string().email(),
+    }),
+  },
   createNewUser: {
     body: Joi.object({
       address: customJoi.web3().address().addressChecksum().required(),
