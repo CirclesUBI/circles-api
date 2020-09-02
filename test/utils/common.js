@@ -12,8 +12,6 @@ export function getSignature(
   privateKey,
 ) {
   const data = `${address}${nonce}${safeAddress}${username}`;
-
   const { signature } = web3.eth.accounts.sign(data, privateKey);
-
   return signature;
 }

@@ -6,6 +6,12 @@ import validate from '../helpers/validate';
 
 const router = express.Router();
 
+router.post(
+  '/',
+  validate(usersValidation.dryRunCreateNewUser),
+  usersController.dryRunCreateNewUser,
+);
+
 router.put(
   '/',
   validate(usersValidation.createNewUser),
