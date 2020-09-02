@@ -27,6 +27,10 @@ const User = db.define('users', {
       notEmpty: true,
     },
   },
+  avatarUrl: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
   safeAddress: {
     ...uniqueAndNotNull,
     type: Sequelize.STRING,

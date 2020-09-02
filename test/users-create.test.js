@@ -16,6 +16,7 @@ describe('PUT /users - Creating a new user', () => {
   let signature;
   let username;
   let email;
+  let avatarUrl;
 
   let payload;
 
@@ -28,6 +29,7 @@ describe('PUT /users - Creating a new user', () => {
     nonce = new Date().getTime();
     username = 'donkey';
     email = 'dk@kong.com';
+    avatarUrl = 'https://storage.com/image.jpg';
 
     signature = getSignature(address, nonce, safeAddress, username, privateKey);
 
@@ -39,6 +41,7 @@ describe('PUT /users - Creating a new user', () => {
         safeAddress,
         username,
         email,
+        avatarUrl,
       },
     };
 
@@ -57,6 +60,17 @@ describe('PUT /users - Creating a new user', () => {
         username,
       },
     });
+  });
+
+  it('should fail if avatarUrl is invalid', async () => {
+    await request(app)
+      .put('/api/users')
+      .send({
+        ...payload,
+        avatarUrl: 'http://lala',
+      })
+      .set('Accept', 'application/json')
+      .expect(httpStatus.BAD_REQUEST);
   });
 
   it('should successfully respond', async () => {

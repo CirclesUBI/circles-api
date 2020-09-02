@@ -12,6 +12,7 @@ export default {
         safeAddress: customJoi.web3().address().addressChecksum().required(),
         username: Joi.string().alphanum().min(3).max(24).required(),
         email: Joi.string().email().required(),
+        avatarUrl: Joi.string().uri().empty(''),
       }).required(),
     }),
   },

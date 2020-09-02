@@ -14,6 +14,7 @@ function prepareUserResult(response) {
     id: response.id,
     username: response.username,
     safeAddress: response.safeAddress,
+    avatarUrl: response.avatarUrl,
   };
 }
 
@@ -130,7 +131,7 @@ async function checkIfExists(username, safeAddress) {
 
 async function createNewUser(req, res, next) {
   const { address, nonce = UNSET_NONCE, signature, data } = req.body;
-  const { safeAddress, username, email } = data;
+  const { safeAddress, username, email, avatarUrl } = data;
   const isNonceGiven = nonce !== UNSET_NONCE;
 
   // Check signature
@@ -162,9 +163,10 @@ async function createNewUser(req, res, next) {
 
   // Everything is fine, create entry!
   User.create({
+    avatarUrl,
     email,
-    username,
     safeAddress,
+    username,
   })
     .then(() => {
       respondWithSuccess(res, null, httpStatus.CREATED);
