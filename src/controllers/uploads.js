@@ -1,4 +1,5 @@
 import httpStatus from 'http-status';
+import mime from 'mime';
 
 import { s3 } from '../services/aws';
 import { respondWithSuccess } from '../helpers/responses';
@@ -16,6 +17,7 @@ async function uploadAvatarImage(req, res, next) {
         Key: key,
         Body: buffer,
         ACL: 'public-read',
+        ContentType: mime.getType(fileType),
       })
       .promise();
 
