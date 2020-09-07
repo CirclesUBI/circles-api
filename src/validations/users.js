@@ -5,8 +5,9 @@ import { customJoi } from '../helpers/validate';
 export default {
   dryRunCreateNewUser: {
     body: Joi.object({
-      username: Joi.string().alphanum().min(3).max(24),
-      email: Joi.string().email(),
+      avatarUrl: Joi.string().uri().empty(''),
+      email: Joi.string().email().empty(''),
+      username: Joi.string().alphanum().min(3).max(24).empty(''),
     }),
   },
   createNewUser: {
