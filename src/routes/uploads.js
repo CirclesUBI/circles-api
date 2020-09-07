@@ -19,8 +19,8 @@ router.post(
       name: 'avatar',
       versions: [
         {
-          width: 800,
-          height: 800,
+          width: 300,
+          height: 300,
         },
       ],
     },
