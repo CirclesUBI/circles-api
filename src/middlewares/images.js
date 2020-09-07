@@ -102,11 +102,7 @@ export default function convertImages(fields) {
             acc[fieldname] = [];
           }
 
-          if (!acc[fieldname][index]) {
-            acc[fieldname][index] = [];
-          }
-
-          acc[fieldname][index].push(rest);
+          acc[fieldname][index] = rest;
 
           return acc;
         },
