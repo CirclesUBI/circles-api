@@ -65,10 +65,6 @@ export default function convertImages(fields) {
                   position: sharp.strategy.entropy,
                   withoutEnlargement: true,
                 })
-                .extract({
-                  width,
-                  height,
-                })
                 .toFormat(fileType, { quality })
                 .toBuffer((error, buffer) => {
                   if (error) {
