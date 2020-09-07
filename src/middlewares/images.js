@@ -95,6 +95,7 @@ export default function convertImages(fields) {
       const results = await Promise.all(operations);
 
       // Group versions by original image
+      req.locals = req.locals || {};
       req.locals.images = results.reduce(
         (acc, { index, fieldname, ...rest }) => {
           if (!acc[fieldname]) {
