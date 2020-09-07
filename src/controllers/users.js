@@ -136,11 +136,13 @@ async function checkIfExists(username, safeAddress) {
 async function dryRunCreateNewUser(req, res, next) {
   const { username } = req.body;
 
-  // Check if entry already exists
-  try {
-    await checkIfExists(username);
-  } catch (err) {
-    return next(err);
+  if (username) {
+    // Check if entry already exists
+    try {
+      await checkIfExists(username);
+    } catch (err) {
+      return next(err);
+    }
   }
 
   respondWithSuccess(res, null, httpStatus.OK);
