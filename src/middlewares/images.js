@@ -34,6 +34,7 @@ export default function convertImages(fields) {
   const fileTypeExt = 'jpg';
 
   return async (req, res, next) => {
+    // Check if there are files uploaded via multer
     if (!req.files) {
       return next();
     }
@@ -56,7 +57,8 @@ export default function convertImages(fields) {
             // Rename file based on version suffix
             const originalFileName = file.filename;
             const originalFileNameBase = originalFileName.split('.')[0];
-            const newFileName = `${originalFileNameBase}-${suffix}.${fileTypeExt}`;
+            const fileSuffix = suffix ? `-${suffix}` : '';
+            const newFileName = `${originalFileNameBase}${fileSuffix}.${fileTypeExt}`;
 
             const promise = new Promise((resolve, reject) => {
               sharp(file.path)

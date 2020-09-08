@@ -31,7 +31,7 @@ app.set('port', process.env.PORT || DEFAULT_PORT);
 // Use HTTP middlewares
 app.use(compression());
 app.use(methodOverride());
-app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.json());
 
 // Use CORS and security middlewares
 app.use(cors());

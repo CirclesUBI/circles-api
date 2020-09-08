@@ -1,14 +1,19 @@
 import httpStatus from 'http-status';
 import mime from 'mime';
 
-import { s3 } from '../services/aws';
+import { FIELD_NAME } from '../routes/uploads';
 import { respondWithSuccess } from '../helpers/responses';
+import { s3 } from '../services/aws';
 
 async function uploadAvatarImage(req, res, next) {
   const bucket = process.env.AWS_S3_BUCKET;
 
   try {
-    const { buffer, fileName, fileType } = req.locals.images.avatar[0];
+    if (!req.locals || !req.locals[FIELD_NAME]) {
+      throw new Error('No files given');
+    }
+
+    const { buffer, fileName, fileType } = req.locals.images[FIELD_NAME][0];
     const key = `uploads/avatars/${fileName}`;
 
     await s3
