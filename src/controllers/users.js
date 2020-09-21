@@ -83,7 +83,7 @@ async function checkSaltNonce(saltNonce, address) {
     await core.utils.requestRelayer({
       path: ['safes'],
       method: 'POST',
-      version: 2,
+      version: 3,
       data: {
         saltNonce,
         owners: [address],
