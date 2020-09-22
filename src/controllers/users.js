@@ -252,7 +252,7 @@ async function findByUsername(req, res, next) {
       },
     },
     order: [['username', 'ASC']],
-    limit: 5,
+    limit: 10,
   })
     .then((response) => {
       respondWithSuccess(res, response.map(prepareUserResult));
