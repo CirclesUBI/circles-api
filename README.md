@@ -1,11 +1,11 @@
 # Circles API
 
 <p>
-  <a href="https://github.com/CirclesUBI/circles-api/blob/master/LICENSE">
+  <a href="https://github.com/CirclesUBI/circles-api/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-APGLv3-orange.svg" alt="License">
   </a>
   <a href="https://travis-ci.org/CirclesUBI/circles-api">
-    <img src="https://api.travis-ci.com/CirclesUBI/circles-api.svg?branch=master" alt="Build Status">
+    <img src="https://api.travis-ci.com/CirclesUBI/circles-api.svg?branch=main" alt="Build Status">
   </a>
   <a href="https://twitter.com/CirclesUBI">
     <img src="https://img.shields.io/twitter/follow/circlesubi.svg?label=follow+circles" alt="Follow Circles">
