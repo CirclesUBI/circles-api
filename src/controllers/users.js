@@ -20,9 +20,7 @@ function prepareUserResult(response) {
 
 function checkSignature(address, nonce, signature, data) {
   const { safeAddress, username } = data;
-
   const dataString = `${address}${nonce}${safeAddress}${username}`;
-
   let recoveredAddress;
 
   try {
@@ -133,88 +131,6 @@ async function checkIfExists(username, safeAddress) {
   }
 }
 
-async function dryRunCreateNewUser(req, res, next) {
-  const { username } = req.body;
-
-  if (username) {
-    // Check if entry already exists
-    try {
-      await checkIfExists(username);
-    } catch (err) {
-      return next(err);
-    }
-  }
-
-  respondWithSuccess(res, null, httpStatus.OK);
-}
-
-async function createNewUser(req, res, next) {
-  const { address, nonce = UNSET_NONCE, signature, data } = req.body;
-  const { safeAddress, username, email, avatarUrl } = data;
-  const isNonceGiven = nonce !== UNSET_NONCE;
-
-  // Check signature
-  try {
-    checkSignature(address, nonce, signature, data);
-  } catch (err) {
-    return next(err);
-  }
-
-  // Check if entry already exists
-  try {
-    await checkIfExists(username, safeAddress);
-  } catch (err) {
-    return next(err);
-  }
-
-  // Check if claimed safe is correct and owned by address
-  try {
-    await checkSafeStatus(isNonceGiven, safeAddress);
-
-    if (!isNonceGiven) {
-      await checkOwner(address, safeAddress);
-    } else {
-      await checkSaltNonce(nonce, address, safeAddress);
-    }
-  } catch (err) {
-    return next(err);
-  }
-
-  // Everything is fine, create entry!
-  User.create({
-    avatarUrl,
-    email,
-    safeAddress,
-    username,
-  })
-    .then(() => {
-      respondWithSuccess(res, null, httpStatus.CREATED);
-    })
-    .catch((err) => {
-      next(err);
-    });
-}
-
-async function getByUsername(req, res, next) {
-  const { username } = req.params;
-
-  User.findOne({
-    where: {
-      username,
-    },
-  })
-    .then((response) => {
-      if (response) {
-        respondWithSuccess(res, prepareUserResult(response));
-      } else {
-        next(new APIError(httpStatus.NOT_FOUND));
-      }
-    })
-    .catch((err) => {
-      next(err);
-    });
-}
-
 async function resolveBatch(req, res, next) {
   const { username, address } = req.query;
 
@@ -262,17 +178,94 @@ async function findByUsername(req, res, next) {
     });
 }
 
-async function findUsers(req, res, next) {
-  if (req.query.query) {
-    return await findByUsername(req, res, next);
-  }
-
-  return await resolveBatch(req, res, next);
-}
-
 export default {
-  dryRunCreateNewUser,
-  createNewUser,
-  getByUsername,
-  findUsers,
+  dryRunCreateNewUser: async (req, res, next) => {
+    const { username } = req.body;
+
+    if (username) {
+      // Check if entry already exists
+      try {
+        await checkIfExists(username);
+      } catch (err) {
+        return next(err);
+      }
+    }
+
+    respondWithSuccess(res, null, httpStatus.OK);
+  },
+
+  createNewUser: async (req, res, next) => {
+    const { address, nonce = UNSET_NONCE, signature, data } = req.body;
+    const { safeAddress, username, email, avatarUrl } = data;
+    const isNonceGiven = nonce !== UNSET_NONCE;
+
+    // Check signature
+    try {
+      checkSignature(address, nonce, signature, data);
+    } catch (err) {
+      return next(err);
+    }
+
+    // Check if entry already exists
+    try {
+      await checkIfExists(username, safeAddress);
+    } catch (err) {
+      return next(err);
+    }
+
+    // Check if claimed safe is correct and owned by address
+    try {
+      await checkSafeStatus(isNonceGiven, safeAddress);
+
+      if (!isNonceGiven) {
+        await checkOwner(address, safeAddress);
+      } else {
+        await checkSaltNonce(nonce, address, safeAddress);
+      }
+    } catch (err) {
+      return next(err);
+    }
+
+    // Everything is fine, create entry!
+    User.create({
+      avatarUrl,
+      email,
+      safeAddress,
+      username,
+    })
+      .then(() => {
+        respondWithSuccess(res, null, httpStatus.CREATED);
+      })
+      .catch((err) => {
+        next(err);
+      });
+  },
+
+  getByUsername: async (req, res, next) => {
+    const { username } = req.params;
+
+    User.findOne({
+      where: {
+        username,
+      },
+    })
+      .then((response) => {
+        if (response) {
+          respondWithSuccess(res, prepareUserResult(response));
+        } else {
+          next(new APIError(httpStatus.NOT_FOUND));
+        }
+      })
+      .catch((err) => {
+        next(err);
+      });
+  },
+
+  findUsers: async (req, res, next) => {
+    if (req.query.query) {
+      return await findByUsername(req, res, next);
+    }
+
+    return await resolveBatch(req, res, next);
+  },
 };
