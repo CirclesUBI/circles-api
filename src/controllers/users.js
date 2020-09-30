@@ -20,9 +20,9 @@ function prepareUserResult(response) {
 
 function checkSignature(address, nonce, signature, data) {
   const { safeAddress, username } = data;
-  const dataString = `${address}${nonce}${safeAddress}${username}`;
-  let recoveredAddress;
+  const dataString = [address, nonce, safeAddress, username].join('');
 
+  let recoveredAddress;
   try {
     recoveredAddress = web3.eth.accounts.recover(dataString, signature);
   } catch {
@@ -35,96 +35,67 @@ function checkSignature(address, nonce, signature, data) {
 }
 
 async function checkSafeStatus(isNonceGiven, safeAddress) {
-  let isDeployed;
+  const { txHash } = await core.utils.requestRelayer({
+    path: ['safes', safeAddress, 'funded'],
+    method: 'GET',
+    version: 2,
+  });
 
-  try {
-    const { txHash } = await core.utils.requestRelayer({
-      path: ['safes', safeAddress, 'funded'],
-      method: 'GET',
-      version: 2,
-    });
+  const isCreated = txHash !== null;
 
-    isDeployed = txHash !== null;
-  } catch (err) {
-    throw new Error(err);
-  }
-
-  if ((!isNonceGiven && !isDeployed) || (isNonceGiven && isDeployed)) {
+  if ((!isNonceGiven && !isCreated) || (isNonceGiven && isCreated)) {
     throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe state');
   }
 }
 
 async function checkOwner(address, safeAddress) {
-  let owners = [];
+  const response = await core.utils.requestRelayer({
+    path: ['safes', safeAddress],
+    method: 'GET',
+    version: 1,
+  });
 
-  try {
-    const response = await core.utils.requestRelayer({
-      path: ['safes', safeAddress],
-      method: 'GET',
-      version: 1,
-    });
-
-    owners = response.owners;
-  } catch (err) {
-    throw new Error(err);
-  }
-
-  if (!owners.includes(address)) {
+  if (!response.owners.includes(address)) {
     throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
   }
 }
 
-async function checkSaltNonce(saltNonce, address) {
-  let isSafeExisting = false;
+async function checkSaltNonce(saltNonce, address, safeAddress) {
+  const predictedSafeAddress = await core.safe.predictAddress(
+    {
+      address,
+      // Fake private key to work around core validation
+      privateKey: web3.utils.randomHex(64),
+    },
+    {
+      nonce: saltNonce,
+      owners: [address],
+      threshold: 1,
+    },
+  );
 
-  try {
-    await core.utils.requestRelayer({
-      path: ['safes'],
-      method: 'POST',
-      version: 3,
-      data: {
-        saltNonce,
-        owners: [address],
-        threshold: 1,
-      },
-    });
-  } catch (err) {
-    // Relayer responded with error 422 ..
-    if (err.toString().includes(httpStatus.UNPROCESSABLE_ENTITY)) {
-      isSafeExisting = true;
-    } else {
-      throw new Error(err);
-    }
-  }
-
-  if (!isSafeExisting) {
+  if (predictedSafeAddress !== safeAddress) {
     throw new APIError(httpStatus.BAD_REQUEST, 'Invalid nonce');
   }
 }
 
 async function checkIfExists(username, safeAddress) {
-  let response;
-
-  try {
-    response = await User.findOne({
-      where: safeAddress
-        ? {
-            [Op.or]: [
-              {
-                username,
-              },
-              {
-                safeAddress,
-              },
-            ],
-          }
-        : {
-            username,
-          },
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
+  const response = await User.findOne({
+    where: safeAddress
+      ? {
+          [Op.or]: [
+            {
+              username,
+            },
+            {
+              safeAddress,
+            },
+          ],
+        }
+      : {
+          username,
+        },
+  });
 
   if (response) {
     throw new APIError(httpStatus.CONFLICT, 'Entry already exists');
@@ -199,28 +170,19 @@ export default {
     const { safeAddress, username, email, avatarUrl } = data;
     const isNonceGiven = nonce !== UNSET_NONCE;
 
-    // Check signature
     try {
+      // Check signature
       checkSignature(address, nonce, signature, data);
-    } catch (err) {
-      return next(err);
-    }
 
-    // Check if entry already exists
-    try {
+      // Check if entry already exists
       await checkIfExists(username, safeAddress);
-    } catch (err) {
-      return next(err);
-    }
 
-    // Check if claimed safe is correct and owned by address
-    try {
+      // Check if claimed safe is correct and owned by address
       await checkSafeStatus(isNonceGiven, safeAddress);
-
-      if (!isNonceGiven) {
-        await checkOwner(address, safeAddress);
-      } else {
+      if (isNonceGiven) {
         await checkSaltNonce(nonce, address, safeAddress);
+      } else {
+        await checkOwner(address, safeAddress);
       }
     } catch (err) {
       return next(err);

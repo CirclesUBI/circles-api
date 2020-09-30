@@ -66,6 +66,16 @@ export function mockRelayerSafe({
       .reply(httpStatus.CREATED);
   }
 
+  nock(process.env.RELAY_SERVICE_ENDPOINT)
+    .post('/api/v3/safes/predict/', {
+      saltNonce: nonce,
+      owners: [address],
+      threshold: 1,
+    })
+    .reply(httpStatus.OK, {
+      safe: safeAddress,
+    });
+
   if (isCreated) {
     if (isDeployed) {
       nock(process.env.RELAY_SERVICE_ENDPOINT)
