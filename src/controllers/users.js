@@ -5,6 +5,7 @@ import APIError from '../helpers/errors';
 import User from '../models/users';
 import core from '../services/core';
 import web3 from '../services/web3';
+import { checkSignature } from '../helpers/signature';
 import { respondWithSuccess } from '../helpers/responses';
 
 const UNSET_NONCE = 0;
@@ -16,22 +17,6 @@ function prepareUserResult(response) {
     safeAddress: response.safeAddress,
     avatarUrl: response.avatarUrl,
   };
-}
-
-function checkSignature(address, nonce, signature, data) {
-  const { safeAddress, username } = data;
-  const dataString = [address, nonce, safeAddress, username].join('');
-
-  let recoveredAddress;
-  try {
-    recoveredAddress = web3.eth.accounts.recover(dataString, signature);
-  } catch {
-    // Do nothing ..
-  }
-
-  if (recoveredAddress !== address) {
-    throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
-  }
 }
 
 async function checkSafeStatus(isNonceGiven, safeAddress) {
@@ -55,7 +40,7 @@ async function checkOwner(address, safeAddress) {
     version: 1,
   });
 
-  if (!response.owners.includes(address)) {
+  if (!response || !response.owners.includes(address)) {
     throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
   }
 }
@@ -172,7 +157,15 @@ export default {
 
     try {
       // Check signature
-      checkSignature(address, nonce, signature, data);
+      if (
+        !checkSignature(
+          [address, nonce, safeAddress, username],
+          signature,
+          address,
+        )
+      ) {
+        throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
+      }
 
       // Check if entry already exists
       await checkIfExists(username, safeAddress);
