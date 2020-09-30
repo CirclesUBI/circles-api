@@ -26,7 +26,10 @@ describe('PUT /users - Safe verification', () => {
     username = 'donkey' + Math.round(Math.random() * 1000);
     email = 'dk@kong.com';
 
-    signature = getSignature(address, nonce, safeAddress, username, privateKey);
+    signature = getSignature(
+      [address, nonce, safeAddress, username],
+      privateKey,
+    );
   });
 
   describe('when trying to hijack someones Safe', () => {
@@ -62,10 +65,7 @@ describe('PUT /users - Safe verification', () => {
       const attackerNonce = 123;
 
       const signature = getSignature(
-        address,
-        attackerNonce,
-        victimSafeAddress,
-        username,
+        [address, attackerNonce, victimSafeAddress, username],
         privateKey,
       );
 
@@ -108,10 +108,7 @@ describe('PUT /users - Safe verification', () => {
       const victimSafeAddress = randomChecksumAddress();
 
       const signature = getSignature(
-        address,
-        0,
-        victimSafeAddress,
-        username,
+        [address, 0, victimSafeAddress, username],
         privateKey,
       );
 

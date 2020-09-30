@@ -4,14 +4,12 @@ export function randomChecksumAddress() {
   return web3.utils.toChecksumAddress(web3.utils.randomHex(20));
 }
 
-export function getSignature(
-  address,
-  nonce,
-  safeAddress,
-  username,
-  privateKey,
-) {
-  const data = `${address}${nonce}${safeAddress}${username}`;
+export function randomTransactionHash() {
+  return web3.utils.randomHex(32);
+}
+
+export function getSignature(fields, privateKey) {
+  const data = fields.join('');
   const { signature } = web3.eth.accounts.sign(data, privateKey);
   return signature;
 }

@@ -47,10 +47,7 @@ beforeAll(async () => {
       const email = `panda${index + 1}@zoo.org`;
 
       const signature = getSignature(
-        address,
-        nonce,
-        safeAddress,
-        username,
+        [address, nonce, safeAddress, username],
         privateKey,
       );
 
