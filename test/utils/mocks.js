@@ -26,6 +26,20 @@ export function mockGraphSafes() {
     });
 }
 
+export function mockGraphUsers(address, safeAddress) {
+  nock(process.env.GRAPH_NODE_ENDPOINT)
+    .post(`/subgraphs/name/${process.env.SUBGRAPH_NAME}`, {
+      query: `{ user(id: "${address.toLowerCase()}") { safeAddresses } }`,
+    })
+    .reply(httpStatus.OK, {
+      data: {
+        user: {
+          safeAddresses: [safeAddress.toLowerCase()],
+        },
+      },
+    });
+}
+
 export function mockRelayerSafe({
   address,
   nonce,
@@ -86,7 +100,7 @@ export function mockRelayerSafe({
           nonce: 0,
           threshold: 1,
           owners: [address],
-          version: '1.0.0',
+          version: '1.1.1',
         });
     } else {
       nock(process.env.RELAY_SERVICE_ENDPOINT)

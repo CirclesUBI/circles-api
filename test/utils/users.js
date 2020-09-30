@@ -9,12 +9,8 @@ export function createUserPayload({
   avatarUrl,
 }) {
   const { address, privateKey } = web3.eth.accounts.create();
-
   const signature = getSignature(
-    address,
-    nonce,
-    safeAddress,
-    username,
+    [address, nonce, safeAddress, username],
     privateKey,
   );
 
