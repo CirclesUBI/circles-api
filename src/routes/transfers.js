@@ -6,6 +6,18 @@ import validate from '../helpers/validate';
 
 const router = express.Router();
 
+router.put(
+  '/',
+  validate(transfersValidation.createNewTransfer),
+  transfersController.createNewTransfer,
+);
+
+router.post(
+  '/:transactionHash',
+  validate(transfersValidation.getByTransactionHash),
+  transfersController.getByTransactionHash,
+);
+
 router.post(
   '/',
   validate(transfersValidation.findTransferSteps),
