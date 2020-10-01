@@ -26,6 +26,20 @@ export function mockGraphSafes() {
     });
 }
 
+export function mockGraphUsers(address, safeAddress) {
+  nock(process.env.GRAPH_NODE_ENDPOINT)
+    .post(`/subgraphs/name/${process.env.SUBGRAPH_NAME}`, {
+      query: `{ user(id: "${address.toLowerCase()}") { safeAddresses } }`,
+    })
+    .reply(httpStatus.OK, {
+      data: {
+        user: {
+          safeAddresses: [safeAddress.toLowerCase()],
+        },
+      },
+    });
+}
+
 export function mockRelayerSafe({
   address,
   nonce,
@@ -66,6 +80,16 @@ export function mockRelayerSafe({
       .reply(httpStatus.CREATED);
   }
 
+  nock(process.env.RELAY_SERVICE_ENDPOINT)
+    .post('/api/v3/safes/predict/', {
+      saltNonce: nonce,
+      owners: [address],
+      threshold: 1,
+    })
+    .reply(httpStatus.OK, {
+      safe: safeAddress,
+    });
+
   if (isCreated) {
     if (isDeployed) {
       nock(process.env.RELAY_SERVICE_ENDPOINT)
@@ -76,7 +100,7 @@ export function mockRelayerSafe({
           nonce: 0,
           threshold: 1,
           owners: [address],
-          version: '1.0.0',
+          version: '1.1.1',
         });
     } else {
       nock(process.env.RELAY_SERVICE_ENDPOINT)

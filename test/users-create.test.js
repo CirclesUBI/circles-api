@@ -49,15 +49,13 @@ describe('PUT /users - Creating a new user', () => {
     });
   });
 
-  it('should successfully respond', async () => {
+  it('should successfully respond and fail when we try again', async () => {
     await request(app)
       .put('/api/users')
       .send(payload)
       .set('Accept', 'application/json')
       .expect(httpStatus.CREATED);
-  });
 
-  it('should fail if we use the same username again', async () => {
     await request(app)
       .put('/api/users')
       .send(payload)

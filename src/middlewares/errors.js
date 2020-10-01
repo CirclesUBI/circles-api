@@ -1,8 +1,8 @@
 import httpStatus from 'http-status';
+import { isCelebrate as isValidationError } from 'celebrate';
 
 import APIError from '../helpers/errors';
 import logger from '../helpers/logger';
-import { isCelebrate as isValidationError } from 'celebrate';
 import { respondWithError } from '../helpers/responses';
 
 // eslint-disable-next-line no-unused-vars

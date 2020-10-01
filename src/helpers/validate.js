@@ -9,8 +9,18 @@ export const customJoi = Joi.extend((joi) => {
     messages: {
       'web3.address': 'is invalid Ethereum address',
       'web3.addressChecksum': 'is invalid address checksum',
+      'web3.transactionHash': 'is invalid transaction hash',
     },
     rules: {
+      transactionHash: {
+        validate(value, helpers) {
+          if (!/^0x([A-Fa-f0-9]{64})$/.test(value)) {
+            return helpers.error('web3.transactionHash');
+          }
+
+          return value;
+        },
+      },
       address: {
         validate(value, helpers) {
           if (!value || !web3.utils.isAddress(value)) {

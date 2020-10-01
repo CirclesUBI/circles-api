@@ -23,10 +23,13 @@ describe('PUT /users - Safe verification', () => {
     privateKey = account.privateKey;
     safeAddress = randomChecksumAddress();
     nonce = new Date().getTime();
-    username = 'donkey';
+    username = 'donkey' + Math.round(Math.random() * 1000);
     email = 'dk@kong.com';
 
-    signature = getSignature(address, nonce, safeAddress, username, privateKey);
+    signature = getSignature(
+      [address, nonce, safeAddress, username],
+      privateKey,
+    );
   });
 
   describe('when trying to hijack someones Safe', () => {
@@ -59,12 +62,10 @@ describe('PUT /users - Safe verification', () => {
     it('should return an error when we cant guess the right nonce', async () => {
       const victimAddress = randomChecksumAddress();
       const victimSafeAddress = randomChecksumAddress();
+      const attackerNonce = 123;
 
       const signature = getSignature(
-        address,
-        nonce,
-        victimSafeAddress,
-        username,
+        [address, attackerNonce, victimSafeAddress, username],
         privateKey,
       );
 
@@ -80,8 +81,8 @@ describe('PUT /users - Safe verification', () => {
       // .. but receive this instead
       mockRelayerSafe({
         address,
-        nonce,
-        safeAddress: victimSafeAddress,
+        nonce: attackerNonce,
+        safeAddress: randomChecksumAddress(),
         isCreated: false,
         isDeployed: false,
       });
@@ -90,7 +91,7 @@ describe('PUT /users - Safe verification', () => {
         .put('/api/users')
         .send({
           address,
-          nonce,
+          nonce: attackerNonce,
           signature,
           data: {
             safeAddress: victimSafeAddress,
@@ -107,10 +108,7 @@ describe('PUT /users - Safe verification', () => {
       const victimSafeAddress = randomChecksumAddress();
 
       const signature = getSignature(
-        address,
-        0,
-        victimSafeAddress,
-        username,
+        [address, 0, victimSafeAddress, username],
         privateKey,
       );
 

@@ -36,7 +36,10 @@ describe('PUT /users - validation', () => {
     username = 'donkey';
     email = 'dk@kong.com';
 
-    signature = getSignature(address, nonce, safeAddress, username, privateKey);
+    signature = getSignature(
+      [address, nonce, safeAddress, username],
+      privateKey,
+    );
   });
 
   describe('when using invalid parameters', () => {

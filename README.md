@@ -64,6 +64,68 @@ Returns steps to transfer transitively through trust graph from one node to anot
 * `400` Parameters missing or malformed
 * `422` Invalid transfer
 
+### Store transfer meta data
+
+Stores meta data like payment note connected to a made transfer. This data is only readable for sender or receiver of that transaction.
+
+**Request:**
+
+`PUT /api/transfers`
+
+**Parameters:**
+
+```
+{
+  address: <string>,
+  signature: <string>,
+  data: {
+    from: <string>,
+    to: <string>,
+    transactionHash: <string>,
+    paymentNote: <string>
+  }
+}
+```
+
+- `address`: Public address of user wallet
+- `signature`: Signed data payload of this request via the users keypair. The data contains: `from + to + transactionHash`
+- `data/from`: Public address of the sender
+- `data/to`: Public address of the receiver
+- `data/transactionHash`: Transaction hash of the actual ethereum transfer
+- `data/paymentNote` (optional): Personal payment note from the sender
+
+**Errors:**
+
+* `400` Parameters missing or malformed
+* `403` Verification failed
+* `409` Entry already exists
+
+### Read transfer meta data
+
+Returns stored transfer meta data including the payment note. This data is only readable for sender or receiver of that transaction.
+
+**Request:**
+
+`POST /api/transfers/<transactionHash>`
+
+**Parameters:**
+
+```
+{
+  address: <string>,
+  signature: <string>
+}
+```
+
+- `address`: Public address of user wallet
+- `signature`: Signed data payload of this request via the users keypair. The data contains: `transactionHash`
+
+**Errors:**
+
+* `400` Parameters missing or malformed
+* `403` Verification failed or not allowed to read data
+* `404` Transaction hash not found
+
 ### Get entry by username
 
 Get the users entry including its `safeAddress`.
