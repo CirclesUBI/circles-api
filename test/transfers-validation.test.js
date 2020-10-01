@@ -105,6 +105,15 @@ describe('PUT /transfers - validation', () => {
           paymentNote: 123,
         },
       });
+
+      // Invalid payment note with special symbols
+      await expectErrorStatus({
+        ...correctBody,
+        data: {
+          ...correctBody.data,
+          paymentNote: '<p>Hack!</p>',
+        },
+      });
     });
   });
 
