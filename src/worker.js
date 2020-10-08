@@ -10,6 +10,8 @@ import logger from './helpers/logger';
 import web3, { subscribeEvent, checkConnection } from './services/web3';
 import { getTrustNetworkEdges, storeEdges } from './services/transfer';
 
+const WAIT_FOR_GRAPH = 1000 * 5;
+
 // Connect with postgres database
 db.authenticate()
   .then(() => {
@@ -45,6 +47,9 @@ async function rebuildTrustNetwork() {
   }
 
   isUpdatePending = true;
+
+  // Delay request a little to give graph time for indexing
+  await new Promise((resolve) => setTimeout(resolve, WAIT_FOR_GRAPH));
 
   try {
     const startTime = performance.now();

@@ -299,17 +299,9 @@ export async function storeEdges(edges) {
 }
 
 export async function getStoredEdges() {
-  return new Promise((resolve, reject) => {
-    Edge.findAll({
-      order: [['from', 'ASC']],
-      raw: true,
-    })
-      .then((response) => {
-        resolve(response);
-      })
-      .catch((err) => {
-        reject(err);
-      });
+  return Edge.findAll({
+    order: [['from', 'ASC']],
+    raw: true,
   });
 }
 
