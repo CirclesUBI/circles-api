@@ -21,7 +21,9 @@
     "serve": "nodemon --watch ./src --exec cross-env NODE_ENV=development babel-node ./src/index.js --source-maps inline",
     "start": "cross-env NODE_ENV=production node ./build/index.js",
     "test": "jest --forceExit --detectOpenHandles",
-    "test:watch": "npm run test -- --watch"
+    "test:watch": "npm run test -- --watch",
+    "worker:serve": "nodemon --watch ./src --exec cross-env NODE_ENV=development babel-node ./src/worker.js --source-maps inline",
+    "worker:start": "cross-env NODE_ENV=production node ./build/worker.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.11.6",

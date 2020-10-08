@@ -1,6 +1,8 @@
 import findTransferSteps from '@circles/transfer';
-import { performance } from 'perf_hooks';
+import { Op } from 'sequelize';
 
+import Edge from '../models/edges';
+import db from '../database';
 import fetchAllFromGraph from './graph';
 import web3 from './web3';
 import { minNumberString } from '../helpers/compare';
@@ -84,8 +86,6 @@ export async function getTrustNetworkEdges() {
     safes.push(safe);
   };
 
-  // @TODO: Cache this data in a database and request it every x seconds via
-  // background task:
   const safeQuery = `{
     limit
     canSendToAddress
@@ -202,10 +202,119 @@ export async function getTrustNetworkEdges() {
   };
 }
 
-export async function transferSteps({ from, to, value }) {
-  const startTime = performance.now();
+export async function storeEdges(edges) {
+  const previousEdges = await getStoredEdges();
+  const getKey = (edge) => {
+    return [edge.from, edge.to, edge.token].join('');
+  };
 
-  const { edges, statistics } = await getTrustNetworkEdges();
+  // Group previous edges by unique key to make lookups a
+  // little faster
+  const groupedPreviousEdges = previousEdges.reduce((acc, previousEdge) => {
+    const key = getKey(previousEdge);
+    acc[key] = previousEdge;
+    return acc;
+  }, {});
+
+  const findPreviousEdge = (edge) => {
+    const key = getKey(edge);
+    return key in groupedPreviousEdges ? groupedPreviousEdges[key] : null;
+  };
+
+  // Calculate the delta between the new edges and
+  // previousEdges
+  const toBeAdded = [];
+  const toBeUpdated = [];
+  const toBeRemoved = [];
+  const latestKeys = {};
+
+  edges.forEach((edge) => {
+    // Mark all latest edges so we can find out which ones
+    // to remove later
+    const key = getKey(edge);
+    latestKeys[key] = edge;
+
+    const previousEdge = findPreviousEdge(edge);
+    if (!previousEdge) {
+      // This entry does not exist yet
+      toBeAdded.push(edge);
+    } else if (edge.capacity !== previousEdge.capacity) {
+      // This entry exists but has a new value
+      toBeUpdated.push({
+        ...previousEdge,
+        capacity: edge.capacity,
+      });
+    }
+  });
+
+  // Find all entries which are not needed anymore
+  Object.keys(groupedPreviousEdges).forEach((previousKey) => {
+    if (!(previousKey in latestKeys)) {
+      toBeRemoved.push(groupedPreviousEdges[previousKey]);
+    }
+  });
+
+  // Do the actual database transactions
+  await db.transaction(async (transaction) => {
+    if (toBeAdded.length > 0) {
+      await Edge.bulkCreate(toBeAdded, { transaction });
+    }
+
+    if (toBeUpdated.length > 0) {
+      await Promise.all(
+        toBeUpdated.map((edge) => {
+          return Edge.update(
+            { capacity: edge.capacity },
+            {
+              where: {
+                id: edge.id,
+              },
+              transaction,
+            },
+          );
+        }),
+      );
+    }
+
+    if (toBeRemoved.length > 0) {
+      await Edge.destroy({
+        where: {
+          id: {
+            [Op.in]: toBeRemoved.map((edge) => {
+              return edge.id;
+            }),
+          },
+        },
+      });
+    }
+
+    return Promise.resolve();
+  });
+
+  return {
+    added: toBeAdded.length,
+    updated: toBeUpdated.length,
+    removed: toBeRemoved.length,
+  };
+}
+
+export async function getStoredEdges() {
+  return new Promise((resolve, reject) => {
+    Edge.findAll({
+      order: [['from', 'ASC']],
+      raw: true,
+    })
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export async function transferSteps({ from, to, value }) {
+  const edges = await getStoredEdges();
 
   const nodes = edges.reduce((acc, edge) => {
     if (!acc.includes(edge.from)) {
@@ -235,8 +344,6 @@ export async function transferSteps({ from, to, value }) {
     edges,
   });
 
-  const endTime = performance.now();
-
   return {
     ...result,
     transferSteps: result.transferSteps.map(({ token, ...step }) => {
@@ -245,9 +352,5 @@ export async function transferSteps({ from, to, value }) {
         tokenOwnerAddress: token,
       };
     }),
-    statistics: {
-      ...statistics,
-      milliseconds: Math.round(endTime - startTime),
-    },
   };
 }
