@@ -103,7 +103,7 @@ export async function waitForBlockNumber(blockNumber) {
         if (chains.length === 0) {
           return false;
         }
-        return chains[0].latestBlock.number >= blockNumber;
+        return parseInt(chains[0].latestBlock.number, 10) >= blockNumber;
       },
     );
   } else {
@@ -128,7 +128,7 @@ export async function waitForBlockNumber(blockNumber) {
         const {
           latestEthereumBlockNumber,
         } = data.subgraphs[0].currentVersion.deployment;
-        return latestEthereumBlockNumber >= blockNumber;
+        return parseInt(latestEthereumBlockNumber, 10) >= blockNumber;
       },
     );
   }
