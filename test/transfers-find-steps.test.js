@@ -1,14 +1,19 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
+import { getTrustNetworkEdges, storeEdges } from '~/services/transfer';
 import { mockGraphSafes } from './utils/mocks';
 import { randomChecksumAddress } from './utils/common';
 
 import app from '~';
 
 describe('POST /transfers - Find transfer steps', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockGraphSafes();
+
+    // Simulate worker task to establish database
+    const { edges } = await getTrustNetworkEdges();
+    await storeEdges(edges);
   });
 
   it('should return an error when value is not positive', async () => {
