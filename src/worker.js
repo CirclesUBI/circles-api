@@ -7,7 +7,11 @@ import './helpers/env';
 
 import db from './database';
 import logger from './helpers/logger';
-import web3, { subscribeEvent, checkConnection } from './services/web3';
+import web3, {
+  checkConnection,
+  getEventSignature,
+  subscribeEvent,
+} from './services/web3';
 import { getTrustNetworkEdges, storeEdges } from './services/transfer';
 import { waitUntilGraphIsReady, waitForBlockNumber } from './services/graph';
 
@@ -39,6 +43,7 @@ const tokenContract = new web3.eth.Contract(TokenContract.abi);
 let isUpdatePending = false;
 let lastTrustChangeAt = 0;
 let lastUpdateAt = 0;
+let knownTokens = [];
 
 async function rebuildTrustNetwork(blockNumber) {
   if (isUpdatePending) {
@@ -54,6 +59,16 @@ async function rebuildTrustNetwork(blockNumber) {
     await waitForBlockNumber(blockNumber);
 
     const { edges, statistics } = await getTrustNetworkEdges();
+
+    // Store all known tokens to identify transfer events
+    knownTokens = edges
+      .reduce((acc, edge) => {
+        if (!acc.includes(edge.token)) {
+          acc.push(edge.token);
+        }
+        return acc;
+      }, [])
+      .sort();
 
     // Put trust network into database to cache it there
     const dbStatistics = await storeEdges(edges);
@@ -78,15 +93,27 @@ async function rebuildTrustNetwork(blockNumber) {
   }
 }
 
-function handleTrustChange({ blockNumber }) {
-  lastTrustChangeAt = Date.now();
-  rebuildTrustNetwork(blockNumber);
+const transferSignature = getEventSignature(tokenContract, 'Transfer');
+
+function handleTrustChange({ blockNumber, address, topics }) {
+  // Check if ERC20 Transfer events came from a known
+  // Circles token address
+  if (
+    (topics.includes(transferSignature) && knownTokens.includes(address)) ||
+    !topics.includes(transferSignature)
+  ) {
+    lastTrustChangeAt = Date.now();
+    rebuildTrustNetwork(blockNumber);
+  }
 }
 
 waitUntilGraphIsReady()
   .then(() => {
     logger.info('Graph node connection has been established successfully');
-
+    // Always rebuild trust network after first start
+    return rebuildTrustNetwork(0);
+  })
+  .then(() => {
     subscribeEvent(
       hubContract,
       process.env.HUB_ADDRESS,
@@ -94,9 +121,6 @@ waitUntilGraphIsReady()
       handleTrustChange,
     );
     subscribeEvent(tokenContract, null, ['Transfer'], handleTrustChange);
-
-    // Always rebuild trust network after first start
-    rebuildTrustNetwork(0);
   })
   .catch(() => {
     logger.error('Unable to connect to graph node');
