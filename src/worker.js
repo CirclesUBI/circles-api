@@ -49,10 +49,10 @@ async function rebuildTrustNetwork(blockNumber) {
   // Measure time of the whole process
   const startTime = performance.now();
 
-  // Wait until graph indexed the last block number
-  await waitForBlockNumber(blockNumber);
-
   try {
+    // Wait until graph indexed the last block number
+    await waitForBlockNumber(blockNumber);
+
     const { edges, statistics } = await getTrustNetworkEdges();
 
     // Put trust network into database to cache it there
