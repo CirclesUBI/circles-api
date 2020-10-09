@@ -96,7 +96,7 @@ waitUntilGraphIsReady()
     subscribeEvent(tokenContract, null, ['Transfer'], handleTrustChange);
 
     // Always rebuild trust network after first start
-    rebuildTrustNetwork();
+    rebuildTrustNetwork(0);
   })
   .catch(() => {
     logger.error('Unable to connect to graph node');

@@ -1,7 +1,5 @@
-import logger from './logger';
-
-const LOOP_INTERVAL = 3000;
-const MAX_ATTEMPTS = 20;
+const LOOP_INTERVAL = 5000;
+const MAX_ATTEMPTS = 12;
 
 export default async function loop(request, condition) {
   return new Promise((resolve, reject) => {
@@ -19,7 +17,6 @@ export default async function loop(request, condition) {
           throw new Error('Too many attempts');
         }
       } catch (error) {
-        logger.error(error);
         clearInterval(interval);
         reject(error);
       }

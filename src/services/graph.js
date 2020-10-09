@@ -81,8 +81,7 @@ export async function waitUntilGraphIsReady() {
 }
 
 export async function waitForBlockNumber(blockNumber) {
-  // Check if we're requesting The Graph's official endpoint
-  // as the API differs
+  // Check if we're requesting The Graph's official endpoint as the API differs
   if (isOfficialNode()) {
     const query = `{
       indexingStatusForCurrentVersion(subgraphName: "${process.env.SUBGRAPH_NAME}") {
@@ -122,7 +121,11 @@ export async function waitForBlockNumber(blockNumber) {
         return fetchFromGraphStatus(query);
       },
       (data) => {
-        if (data.subgraphs.length === 0) {
+        if (
+          data.subgraphs.length === 0 ||
+          !data.subgraphs[0].currentVersion ||
+          !data.subgraphs[0].currentVersion.deployment
+        ) {
           return false;
         }
         const {

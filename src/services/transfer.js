@@ -204,12 +204,12 @@ export async function getTrustNetworkEdges() {
 
 export async function storeEdges(edges) {
   const previousEdges = await getStoredEdges();
+
   const getKey = (edge) => {
     return [edge.from, edge.to, edge.token].join('');
   };
 
-  // Group previous edges by unique key to make lookups a
-  // little faster
+  // Group previous edges by unique key to make lookups a little faster
   const groupedPreviousEdges = previousEdges.reduce((acc, previousEdge) => {
     const key = getKey(previousEdge);
     acc[key] = previousEdge;
@@ -221,16 +221,14 @@ export async function storeEdges(edges) {
     return key in groupedPreviousEdges ? groupedPreviousEdges[key] : null;
   };
 
-  // Calculate the delta between the new edges and
-  // previousEdges
+  // Calculate the delta between the new edges and previousEdges
   const toBeAdded = [];
   const toBeUpdated = [];
   const toBeRemoved = [];
   const latestKeys = {};
 
   edges.forEach((edge) => {
-    // Mark all latest edges so we can find out which ones
-    // to remove later
+    // Mark all latest edges so we can find out which ones to remove later
     const key = getKey(edge);
     latestKeys[key] = edge;
 
@@ -256,39 +254,45 @@ export async function storeEdges(edges) {
 
   // Do the actual database transactions
   await db.transaction(async (transaction) => {
+    const promises = [];
+
     if (toBeAdded.length > 0) {
-      await Edge.bulkCreate(toBeAdded, { transaction });
+      promises.push(Edge.bulkCreate(toBeAdded, { transaction }));
     }
 
     if (toBeUpdated.length > 0) {
-      await Promise.all(
-        toBeUpdated.map((edge) => {
-          return Edge.update(
-            { capacity: edge.capacity },
-            {
-              where: {
-                id: edge.id,
+      promises.push(
+        Promise.all(
+          toBeUpdated.map((edge) => {
+            return Edge.update(
+              { capacity: edge.capacity },
+              {
+                where: {
+                  id: edge.id,
+                },
+                transaction,
               },
-              transaction,
-            },
-          );
-        }),
+            );
+          }),
+        ),
       );
     }
 
     if (toBeRemoved.length > 0) {
-      await Edge.destroy({
-        where: {
-          id: {
-            [Op.in]: toBeRemoved.map((edge) => {
-              return edge.id;
-            }),
+      promises.push(
+        Edge.destroy({
+          where: {
+            id: {
+              [Op.in]: toBeRemoved.map((edge) => {
+                return edge.id;
+              }),
+            },
           },
-        },
-      });
+        }),
+      );
     }
 
-    return Promise.resolve();
+    return Promise.all(promises);
   });
 
   return {
