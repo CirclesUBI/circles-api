@@ -1,6 +1,35 @@
+import fetch from 'isomorphic-fetch';
+
+import loop from '../helpers/loop';
 import core from './core';
 
 const PAGINATION_SIZE = 500;
+
+function isOfficialNode() {
+  return process.env.GRAPH_NODE_ENDPOINT.includes('api.thegraph.com');
+}
+
+async function fetchFromGraphStatus(query) {
+  const endpoint = isOfficialNode()
+    ? `${process.env.GRAPH_NODE_ENDPOINT}/index-node/graphql`
+    : `${process.env.GRAPH_NODE_ENDPOINT}/subgraphs`;
+
+  return await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: query.replace(/\s\s+/g, ' '),
+    }),
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((response) => {
+      return response.data;
+    });
+}
 
 async function fetchFromGraph(
   name,
@@ -45,4 +74,62 @@ export default async function fetchAllFromGraph(name, fields, extra = '') {
   }
 
   return result;
+}
+
+export async function waitUntilGraphIsReady() {
+  return await waitForBlockNumber(0);
+}
+
+export async function waitForBlockNumber(blockNumber) {
+  // Check if we're requesting The Graph's official endpoint
+  // as the API differs
+  if (isOfficialNode()) {
+    const query = `{
+      indexingStatusForCurrentVersion(subgraphName: "${process.env.SUBGRAPH_NAME}") {
+        chains {
+          latestBlock {
+            number
+          }
+        }
+      }
+    }`;
+
+    await loop(
+      () => {
+        return fetchFromGraphStatus(query);
+      },
+      (data) => {
+        const { chains } = data.indexingStatusForCurrentVersion;
+        if (chains.length === 0) {
+          return false;
+        }
+        return chains[0].latestBlock.number >= blockNumber;
+      },
+    );
+  } else {
+    const query = `{
+      subgraphs {
+        currentVersion {
+          deployment {
+            latestEthereumBlockNumber
+          }
+        }
+      }
+    }`;
+
+    await loop(
+      () => {
+        return fetchFromGraphStatus(query);
+      },
+      (data) => {
+        if (data.subgraphs.length === 0) {
+          return false;
+        }
+        const {
+          latestEthereumBlockNumber,
+        } = data.subgraphs[0].currentVersion.deployment;
+        return latestEthereumBlockNumber >= blockNumber;
+      },
+    );
+  }
 }

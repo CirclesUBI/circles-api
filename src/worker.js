@@ -9,8 +9,7 @@ import db from './database';
 import logger from './helpers/logger';
 import web3, { subscribeEvent, checkConnection } from './services/web3';
 import { getTrustNetworkEdges, storeEdges } from './services/transfer';
-
-const WAIT_FOR_GRAPH = 1000 * 5;
+import { waitUntilGraphIsReady, waitForBlockNumber } from './services/graph';
 
 // Connect with postgres database
 db.authenticate()
@@ -41,18 +40,19 @@ let isUpdatePending = false;
 let lastTrustChangeAt = 0;
 let lastUpdateAt = 0;
 
-async function rebuildTrustNetwork() {
+async function rebuildTrustNetwork(blockNumber) {
   if (isUpdatePending) {
     return;
   }
-
   isUpdatePending = true;
 
-  // Delay request a little to give graph time for indexing
-  await new Promise((resolve) => setTimeout(resolve, WAIT_FOR_GRAPH));
+  // Measure time of the whole process
+  const startTime = performance.now();
+
+  // Wait until graph indexed the last block number
+  await waitForBlockNumber(blockNumber);
 
   try {
-    const startTime = performance.now();
     const { edges, statistics } = await getTrustNetworkEdges();
 
     // Put trust network into database to cache it there
@@ -78,18 +78,27 @@ async function rebuildTrustNetwork() {
   }
 }
 
-function handleTrustChange() {
+function handleTrustChange({ blockNumber }) {
   lastTrustChangeAt = Date.now();
-  rebuildTrustNetwork();
+  rebuildTrustNetwork(blockNumber);
 }
 
-subscribeEvent(
-  hubContract,
-  process.env.HUB_ADDRESS,
-  ['Signup', 'Trust', 'HubTransfer'],
-  handleTrustChange,
-);
-subscribeEvent(tokenContract, null, ['Transfer'], handleTrustChange);
+waitUntilGraphIsReady()
+  .then(() => {
+    logger.info('Graph node connection has been established successfully');
 
-// Always rebuild trust network on start of application
-rebuildTrustNetwork();
+    subscribeEvent(
+      hubContract,
+      process.env.HUB_ADDRESS,
+      ['Signup', 'Trust', 'HubTransfer'],
+      handleTrustChange,
+    );
+    subscribeEvent(tokenContract, null, ['Transfer'], handleTrustChange);
+
+    // Always rebuild trust network after first start
+    rebuildTrustNetwork();
+  })
+  .catch(() => {
+    logger.error('Unable to connect to graph node');
+    process.exit(1);
+  });
