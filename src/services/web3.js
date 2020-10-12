@@ -15,21 +15,18 @@ export function getEventSignature(contract, eventName) {
   return signature;
 }
 
-export function subscribeEvent(contract, address, eventNames, callbackFn) {
-  const topics = eventNames.map((eventName) => {
-    return getEventSignature(contract, eventName);
-  });
-
+export function subscribeEvent(contract, address, eventName, callbackFn) {
   web3.eth.subscribe(
     'logs',
     {
       address,
-      topics,
+      topics: [getEventSignature(contract, eventName)],
     },
     (error, result) => {
-      if (!error) {
-        callbackFn(result);
+      if (error) {
+        throw new Error(error);
       }
+      callbackFn(result);
     },
   );
 }

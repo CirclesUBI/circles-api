@@ -96,8 +96,7 @@ async function rebuildTrustNetwork(blockNumber) {
 const transferSignature = getEventSignature(tokenContract, 'Transfer');
 
 function handleTrustChange({ blockNumber, address, topics }) {
-  // Check if ERC20 Transfer events came from a known
-  // Circles token address
+  // Check if ERC20 Transfer events came from a known Circles token address
   if (
     (topics.includes(transferSignature) && knownTokens.includes(address)) ||
     !topics.includes(transferSignature)
@@ -117,10 +116,22 @@ waitUntilGraphIsReady()
     subscribeEvent(
       hubContract,
       process.env.HUB_ADDRESS,
-      ['Signup', 'Trust', 'HubTransfer'],
+      'Signup',
       handleTrustChange,
     );
-    subscribeEvent(tokenContract, null, ['Transfer'], handleTrustChange);
+    subscribeEvent(
+      hubContract,
+      process.env.HUB_ADDRESS,
+      'Trust',
+      handleTrustChange,
+    );
+    subscribeEvent(
+      hubContract,
+      process.env.HUB_ADDRESS,
+      'HubTransfer',
+      handleTrustChange,
+    );
+    subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
   })
   .catch(() => {
     logger.error('Unable to connect to graph node');
