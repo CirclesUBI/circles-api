@@ -5,7 +5,10 @@ import Edge from '../models/edges';
 import db from '../database';
 import fetchAllFromGraph from './graph';
 import web3 from './web3';
+import { getMetrics, setMetrics } from './metrics';
 import { minNumberString } from '../helpers/compare';
+
+const METRICS_TRANSFERS = 'transfers';
 
 export async function getTrustNetworkEdges() {
   // Methods to parse the data we get to break all down into given safe
@@ -297,9 +300,18 @@ export async function storeEdges(edges) {
 
   return {
     added: toBeAdded.length,
-    updated: toBeUpdated.length,
     removed: toBeRemoved.length,
+    updated: toBeUpdated.length,
+    total: edges.length,
   };
+}
+
+export async function setTransferMetrics(metrics) {
+  return setMetrics(METRICS_TRANSFERS, metrics);
+}
+
+export async function getTransferMetrics() {
+  return await getMetrics(METRICS_TRANSFERS);
 }
 
 export async function getStoredEdges() {

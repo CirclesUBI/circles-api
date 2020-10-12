@@ -24,4 +24,6 @@ router.post(
   transfersController.findTransferSteps,
 );
 
+router.get('/status', transfersController.getMetrics);
+
 export default router;

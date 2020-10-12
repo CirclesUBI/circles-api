@@ -5,7 +5,7 @@ import Transfer from '../models/transfers';
 import core from '../services/core';
 import { checkSignature } from '../helpers/signature';
 import { respondWithSuccess } from '../helpers/responses';
-import { transferSteps } from '../services/transfer';
+import { transferSteps, getTransferMetrics } from '../services/transfer';
 
 function prepareTransferResult(response) {
   return {
@@ -123,5 +123,10 @@ export default {
     } catch (error) {
       next(new APIError(httpStatus.UNPROCESSABLE_ENTITY, error.message));
     }
+  },
+
+  getMetrics: async (req, res) => {
+    const result = await getTransferMetrics();
+    respondWithSuccess(res, result);
   },
 };

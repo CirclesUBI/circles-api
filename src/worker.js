@@ -12,7 +12,11 @@ import web3, {
   getEventSignature,
   subscribeEvent,
 } from './services/web3';
-import { getTrustNetworkEdges, storeEdges } from './services/transfer';
+import {
+  getTrustNetworkEdges,
+  setTransferMetrics,
+  storeEdges,
+} from './services/transfer';
 import { waitUntilGraphIsReady, waitForBlockNumber } from './services/graph';
 
 // Connect with postgres database
@@ -35,8 +39,8 @@ checkConnection()
     process.exit(1);
   });
 
-// Listen for blockchain events which might alter the trust
-// limit between users in the trust network
+// Listen for blockchain events which might alter the trust limit between users
+// in the trust network
 const hubContract = new web3.eth.Contract(HubContract.abi);
 const tokenContract = new web3.eth.Contract(TokenContract.abi);
 
@@ -76,12 +80,50 @@ async function rebuildTrustNetwork(blockNumber) {
     const endTime = performance.now();
     const milliseconds = Math.round(endTime - startTime);
 
+    await setTransferMetrics([
+      {
+        name: 'countEdges',
+        value: dbStatistics.total,
+      },
+      {
+        name: 'countSafes',
+        value: statistics.safes,
+      },
+      {
+        name: 'countTokens',
+        value: statistics.tokens,
+      },
+      {
+        name: 'edgesLastAdded',
+        value: dbStatistics.added,
+      },
+      {
+        name: 'edgesLastUpdated',
+        value: dbStatistics.updated,
+      },
+      {
+        name: 'edgesLastRemoved',
+        value: dbStatistics.removed,
+      },
+      {
+        name: 'lastUpdateDuration',
+        value: milliseconds,
+      },
+      {
+        name: 'lastBlockNumber',
+        value: blockNumber,
+      },
+      {
+        name: 'lastUpdateAt',
+        value: Date.now(),
+      },
+    ]);
+
     logger.info(
       `Updated edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (added ${dbStatistics.added}, updated ${dbStatistics.updated}, removed ${dbStatistics.removed}, ${milliseconds}ms)`,
     );
 
-    // Rebuild again if there is already another update
-    // pending
+    // Rebuild again if there is already another update pending
     isUpdatePending = false;
     lastUpdateAt = Date.now();
     if (lastTrustChangeAt > lastUpdateAt) {
