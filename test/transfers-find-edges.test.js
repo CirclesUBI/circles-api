@@ -52,7 +52,6 @@ describe('findEdgesInGraphData', () => {
 
     const safes = [
       {
-        isOrganization: false,
         address: SAFE_A,
         tokens: [
           {
@@ -62,7 +61,6 @@ describe('findEdgesInGraphData', () => {
         ],
       },
       {
-        isOrganization: false,
         address: SAFE_B,
         tokens: [
           {
@@ -142,7 +140,6 @@ describe('findEdgesInGraphData', () => {
 
     const safes = [
       {
-        isOrganization: false,
         address: SAFE_A,
         tokens: [
           {
@@ -152,7 +149,6 @@ describe('findEdgesInGraphData', () => {
         ],
       },
       {
-        isOrganization: false,
         address: SAFE_B,
         tokens: [
           {
@@ -162,7 +158,6 @@ describe('findEdgesInGraphData', () => {
         ],
       },
       {
-        isOrganization: false,
         address: SAFE_C,
         tokens: [
           {
@@ -224,7 +219,6 @@ describe('findEdgesInGraphData', () => {
 
     const safes = [
       {
-        isOrganization: false,
         address: SAFE_A,
         tokens: [
           {
@@ -234,7 +228,6 @@ describe('findEdgesInGraphData', () => {
         ],
       },
       {
-        isOrganization: true,
         address: SAFE_C,
         tokens: [
           {

@@ -63,7 +63,7 @@ export async function getTrustNetworkEdges() {
     });
   };
 
-  const addSafe = (safeAddress, balances, isOrganization = false) => {
+  const addSafe = (safeAddress, balances) => {
     const safe = balances.reduce(
       (acc, { token, amount }) => {
         const tokenAddress = web3.utils.toChecksumAddress(token.id);
@@ -81,7 +81,6 @@ export async function getTrustNetworkEdges() {
         return acc;
       },
       {
-        isOrganization,
         address: web3.utils.toChecksumAddress(safeAddress),
         tokens: [],
       },
@@ -100,7 +99,6 @@ export async function getTrustNetworkEdges() {
     id
     outgoing ${safeQuery}
     incoming ${safeQuery}
-    organization
     balances {
       amount
       token {
@@ -116,7 +114,7 @@ export async function getTrustNetworkEdges() {
 
   response.forEach((safe) => {
     if (!findSafe(safes, safe.id)) {
-      addSafe(safe.id, safe.balances, safe.organization);
+      addSafe(safe.id, safe.balances);
 
       addConnections(safe.outgoing);
       addConnections(safe.incoming);
