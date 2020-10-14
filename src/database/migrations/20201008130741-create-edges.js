@@ -1,4 +1,5 @@
-module.exports = { up: (queryInterface, Sequelize) => {
+module.exports = {
+  up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('edges', {
       id: {
         type: Sequelize.INTEGER,

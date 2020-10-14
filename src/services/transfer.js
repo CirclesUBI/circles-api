@@ -10,6 +10,22 @@ import { minNumberString } from '../helpers/compare';
 
 const METRICS_TRANSFERS = 'transfers';
 
+const findToken = (tokens, tokenAddress) => {
+  return tokens.find((token) => token.address === tokenAddress);
+};
+
+const findSafe = (safes, safeAddress) => {
+  return safes.find((safe) => safe.address === safeAddress);
+};
+
+const findConnection = (connections, userAddress, canSendToAddress) => {
+  return connections.find(
+    (edge) =>
+      edge.canSendToAddress === canSendToAddress &&
+      edge.userAddress === userAddress,
+  );
+};
+
 export async function getTrustNetworkEdges() {
   // Methods to parse the data we get to break all down into given safe
   // addresses, the tokens they own, the trust connections they have between
@@ -17,22 +33,6 @@ export async function getTrustNetworkEdges() {
   const connections = [];
   const safes = [];
   const tokens = [];
-
-  const findToken = (tokenAddress) => {
-    return tokens.find((node) => node.address === tokenAddress);
-  };
-
-  const findSafe = (safeAddress) => {
-    return safes.find((node) => node.address === safeAddress);
-  };
-
-  const findConnection = (userAddress, canSendToAddress) => {
-    return connections.find(
-      (edge) =>
-        edge.canSendToAddress === canSendToAddress &&
-        edge.userAddress === userAddress,
-    );
-  };
 
   const addConnection = (userAddress, canSendToAddress, limit) => {
     connections.push({
@@ -50,7 +50,7 @@ export async function getTrustNetworkEdges() {
       );
       const { limit } = connection;
 
-      if (!findConnection(userAddress, canSendToAddress)) {
+      if (!findConnection(connections, userAddress, canSendToAddress)) {
         addConnection(userAddress, canSendToAddress, limit);
       }
     });
@@ -63,7 +63,7 @@ export async function getTrustNetworkEdges() {
     });
   };
 
-  const addSafe = (safeAddress, balances) => {
+  const addSafe = (safeAddress, balances, isOrganization = false) => {
     const safe = balances.reduce(
       (acc, { token, amount }) => {
         const tokenAddress = web3.utils.toChecksumAddress(token.id);
@@ -74,13 +74,14 @@ export async function getTrustNetworkEdges() {
           balance: amount,
         });
 
-        if (!findToken(tokenAddress)) {
+        if (!findToken(tokens, tokenAddress)) {
           addToken(tokenAddress, tokenSafeAddress);
         }
 
         return acc;
       },
       {
+        isOrganization,
         address: web3.utils.toChecksumAddress(safeAddress),
         tokens: [],
       },
@@ -99,6 +100,7 @@ export async function getTrustNetworkEdges() {
     id
     outgoing ${safeQuery}
     incoming ${safeQuery}
+    organization
     balances {
       amount
       token {
@@ -113,27 +115,63 @@ export async function getTrustNetworkEdges() {
   const response = await fetchAllFromGraph('safes', safeFields);
 
   response.forEach((safe) => {
-    if (!findSafe(safe.id)) {
-      addSafe(safe.id, safe.balances);
+    if (!findSafe(safes, safe.id)) {
+      addSafe(safe.id, safe.balances, safe.organization);
 
       addConnections(safe.outgoing);
       addConnections(safe.incoming);
     }
   });
 
+  return {
+    statistics: {
+      safes: safes.length,
+      connections: connections.length,
+      tokens: tokens.length,
+    },
+    edges: findEdgesInGraphData({
+      connections,
+      safes,
+      tokens,
+    }),
+  };
+}
+
+export function findEdgesInGraphData({ connections, safes, tokens }) {
+  // Add connections between token owners and the original safe of the token as
+  // they might not be represented by trust connections (for example when an
+  // organization owns tokens it can still send them even though noone trusts
+  // the organization)
+  const extendedConnections = safes.reduce(
+    (acc, { address, tokens: ownedTokens }) => {
+      ownedTokens.forEach(({ address: tokenAddress }) => {
+        const token = findToken(tokens, tokenAddress);
+        acc.push({
+          canSendToAddress: token.safeAddress,
+          userAddress: address,
+          limit: token.balance,
+        });
+      });
+
+      return acc;
+    },
+    connections,
+  );
+
   // Find tokens for each connection we can actually use for transitive
   // transactions
-  const edges = connections.reduce((acc, connection) => {
+  const checkedEdges = {};
+
+  const getKey = (from, to, token) => {
+    return [from, to, token].join('');
+  };
+
+  const edges = extendedConnections.reduce((acc, connection) => {
     const senderSafeAddress = connection.userAddress;
     const receiverSafeAddress = connection.canSendToAddress;
 
-    // Ignore connections where we trust ourselves
-    if (senderSafeAddress === receiverSafeAddress) {
-      return acc;
-    }
-
     // Get the senders Safe
-    const senderSafe = findSafe(senderSafeAddress);
+    const senderSafe = findSafe(safes, senderSafeAddress);
 
     if (!senderSafe) {
       return acc;
@@ -145,10 +183,14 @@ export async function getTrustNetworkEdges() {
     // Which of them are trusted by the receiving node?
     const trustedTokens = senderTokens.reduce(
       (tokenAcc, { address, balance }) => {
-        const token = findToken(address);
+        const token = findToken(tokens, address);
 
-        const tokenConnection = connections.find(
+        const tokenConnection = extendedConnections.find(
           ({ limit, userAddress, canSendToAddress }) => {
+            if (!limit) {
+              return false;
+            }
+
             // Calculate what maximum token value we can send. We use this
             // special string comparison method as using BN instances affects
             // performance significantly
@@ -184,6 +226,24 @@ export async function getTrustNetworkEdges() {
         parseFloat(web3.utils.fromWei(trustedToken.capacity, 'ether')),
       );
 
+      // Ignore sending to ourselves
+      if (senderSafeAddress === receiverSafeAddress) {
+        return;
+      }
+
+      // Ignore duplicates
+      const key = getKey(
+        senderSafeAddress,
+        receiverSafeAddress,
+        trustedToken.token,
+      );
+
+      if (checkedEdges[key]) {
+        return;
+      }
+
+      checkedEdges[key] = true;
+
       acc.push({
         from: senderSafeAddress,
         to: receiverSafeAddress,
@@ -195,14 +255,7 @@ export async function getTrustNetworkEdges() {
     return acc;
   }, []);
 
-  return {
-    statistics: {
-      safes: safes.length,
-      connections: connections.length,
-      tokens: tokens.length,
-    },
-    edges,
-  };
+  return edges;
 }
 
 export async function storeEdges(edges) {
@@ -307,7 +360,7 @@ export async function storeEdges(edges) {
 }
 
 export async function setTransferMetrics(metrics) {
-  return setMetrics(METRICS_TRANSFERS, metrics);
+  return await setMetrics(METRICS_TRANSFERS, metrics);
 }
 
 export async function getTransferMetrics() {
@@ -315,7 +368,7 @@ export async function getTransferMetrics() {
 }
 
 export async function getStoredEdges() {
-  return Edge.findAll({
+  return await Edge.findAll({
     order: [['from', 'ASC']],
     raw: true,
   });

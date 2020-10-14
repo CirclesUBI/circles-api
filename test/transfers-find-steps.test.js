@@ -8,7 +8,7 @@ import { randomChecksumAddress } from './utils/common';
 import app from '~';
 
 describe('POST /transfers - Find transfer steps', () => {
-  beforeEach(async () => {
+  beforeAll(async () => {
     mockGraphSafes();
 
     // Simulate worker task to establish database
@@ -59,7 +59,7 @@ describe('POST /transfers - Find transfer steps', () => {
 
         expect(data.from).toBe(from);
         expect(data.to).toBe(to);
-        expect(data.maxFlowValue).toBe(50);
+        expect(data.maxFlowValue).toBe(80);
         expect(data.transferValue).toBe(value);
         expect(data.transferSteps.length).toBe(4);
       });
