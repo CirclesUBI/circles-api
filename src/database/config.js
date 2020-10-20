@@ -26,5 +26,17 @@ module.exports = {
     url,
     dialect,
     timezone,
+    pool: {
+      // Maximum number of connection in pool
+      max: process.env.POOL_MAX || 2,
+      // Minimum number of connection in pool
+      min: process.env.POOL_MIN || 0,
+      // The maximum time, in milliseconds, that pool will try to get
+      // connection before throwing error
+      acquire: process.env.POOL_AQUIRE || 1000 * 30,
+      // The maximum time, in milliseconds, that a connection can be idle
+      // before being released
+      idle: process.env.POOL_IDLE || 1000 * 10,
+    },
   },
 };
