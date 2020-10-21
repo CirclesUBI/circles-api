@@ -1,4 +1,6 @@
 import { performance } from 'perf_hooks';
+import workers from './tasks';
+import submitJob from './tasks/submitJob';
 
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
@@ -39,6 +41,8 @@ checkConnection()
     logger.error('Unable to connect to blockchain');
     process.exit(1);
   });
+
+logger.info(`Started workers for: ${Object.keys(workers)}`);
 
 // Listen for blockchain events which might alter the trust limit between users
 // in the trust network
@@ -136,15 +140,19 @@ async function rebuildTrustNetwork(blockNumber) {
 }
 
 const transferSignature = getEventSignature(tokenContract, 'Transfer');
+const trustSignature = getEventSignature(hubContract, 'Trust');
 
-function handleTrustChange({ blockNumber, address, topics }) {
-  // Check if ERC20 Transfer events came from a known Circles token address
-  if (
-    (topics.includes(transferSignature) && knownTokens.includes(address)) ||
-    !topics.includes(transferSignature)
-  ) {
-    lastTrustChangeAt = Date.now();
-    rebuildTrustNetwork(blockNumber);
+function handleTrustChange({ address, topics }) {
+  if (topics.includes(transferSignature)) {
+    submitJob(workers.syncAddress, address, { type: 'Transfer', topics });
+    logger.info(`Adding ${address} to needs update list`);
+  } else if (topics.includes(trustSignature)) {
+    submitJob(workers.syncAddress, address, { type: 'Trust', topics });
+    logger.info(`Adding ${address} to needs update list`);
+  } else {
+    logger.info(
+      `Found circles event but no trust graph reprocessing is needed`,
+    );
   }
 }
 
@@ -152,27 +160,27 @@ waitUntilGraphIsReady()
   .then(() => {
     logger.info('Graph node connection has been established successfully');
     // Always rebuild trust network after first start
-    return rebuildTrustNetwork(0);
+    // return rebuildTrustNetwork(0);
   })
   .then(() => {
-    subscribeEvent(
-      hubContract,
-      process.env.HUB_ADDRESS,
-      'Signup',
-      handleTrustChange,
-    );
+    // subscribeEvent(
+    //   hubContract,
+    //   process.env.HUB_ADDRESS,
+    //   'Signup',
+    //   handleTrustChange,
+    // );
     subscribeEvent(
       hubContract,
       process.env.HUB_ADDRESS,
       'Trust',
       handleTrustChange,
     );
-    subscribeEvent(
-      hubContract,
-      process.env.HUB_ADDRESS,
-      'HubTransfer',
-      handleTrustChange,
-    );
+    // subscribeEvent(
+    //   hubContract,
+    //   process.env.HUB_ADDRESS,
+    //   'HubTransfer',
+    //   handleTrustChange,
+    // );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
   })
   .catch(() => {

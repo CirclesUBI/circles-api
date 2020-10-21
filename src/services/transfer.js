@@ -35,6 +35,28 @@ const findConnection = (connections, userAddress, canSendToAddress) => {
   );
 };
 
+export const safeQuery = `{
+    limit
+    canSendToAddress
+    userAddress
+  }`;
+
+export const safeFields = `
+    id
+    outgoing ${safeQuery}
+    incoming ${safeQuery}
+    outgoingAddresses
+    balances {
+      amount
+      token {
+        id
+        owner {
+          id
+        }
+      }
+    }
+  `;
+
 export async function getTrustNetworkEdges() {
   // Methods to parse the data we get to break all down into given safe
   // addresses, the tokens they own, the trust connections they have between
@@ -97,27 +119,6 @@ export async function getTrustNetworkEdges() {
 
     safes.push(safe);
   };
-
-  const safeQuery = `{
-    limit
-    canSendToAddress
-    userAddress
-  }`;
-
-  const safeFields = `
-    id
-    outgoing ${safeQuery}
-    incoming ${safeQuery}
-    balances {
-      amount
-      token {
-        id
-        owner {
-          id
-        }
-      }
-    }
-  `;
 
   const response = await fetchAllFromGraph('safes', safeFields);
 

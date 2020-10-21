@@ -31,7 +31,7 @@ async function fetchFromGraphStatus(query) {
     });
 }
 
-async function fetchFromGraph(
+export async function fetchFromGraph(
   name,
   fields,
   extra = '',
