@@ -25,8 +25,8 @@
     "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "npm run test -- --watch",
     "watch": "nodemon --watch ./src --exec npm run serve",
-    "worker:serve": "NODE_ENV=development babel-node -r dotenv/config ./src/worker.js --source-maps inline",
-    "worker:start": "cross-env NODE_ENV=production node ./build/worker.js",
+    "worker:serve": "WORKER=true NODE_ENV=development babel-node -r dotenv/config ./src/worker.js --source-maps inline",
+    "worker:start": "cross-env NODE_ENV=production WORKER=true node ./build/worker.js",
     "worker:watch": "nodemon --watch ./src --exec npm run worker:serve"
   },
   "devDependencies": {

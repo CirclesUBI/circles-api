@@ -1,4 +1,6 @@
 import { performance } from 'perf_hooks';
+import workers from './tasks';
+import submitJob from './tasks/submitJob';
 
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
@@ -7,7 +9,6 @@ import './helpers/env';
 
 import db from './database';
 import logger from './helpers/logger';
-import submitJob from './tasks/submitJob';
 import tasks from './tasks';
 import web3, {
   checkConnection,
@@ -44,6 +45,8 @@ checkConnection()
     logger.error('Unable to connect to blockchain');
     process.exit(1);
   });
+
+logger.info(`Started workers for: ${Object.keys(workers)}`);
 
 // Listen for blockchain events which might alter the trust limit between users
 // in the trust network
