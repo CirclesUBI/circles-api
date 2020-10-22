@@ -1,4 +1,4 @@
-name: Relayer Tag Build
+name: Build docker and upload to registry
 
 on:
   push:
@@ -17,24 +17,23 @@ jobs:
       - name: Install dependencies
         run: |
           sudo snap install doctl
-      - name: Configure auth
-        run: |
-          doctl auth init -t ${CIRCLES_CI_DO_TOKEN}
+          sudo snap connect doctl:dot-docker
       - name: Checkout
         uses: actions/checkout@main
-      - name: Docker build
-        run: |
-          docker build .
-      - name: Registry login
-        run: |
-          doctl registry login
       - name: Get ref
         run: |
           echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
         id: parse_ref
-      - name: Tag and push
-        env: |
+      - name: Docker build and tag
+        env:
           IMAGE_VERSION: ${{ steps.parse_ref.outputs.tag }}
         run: |
-          docker tag api:${IMAGE_VERSION} registry.digitalocean.com/circles-registry/api:${IMAGE_VERSION}
+          docker build -t registry.digitalocean.com/circles-registry/api:${IMAGE_VERSION} .
+      - name: Registry login
+        run: |
+          doctl registry login
+      - name: Docker push
+        env:
+          IMAGE_VERSION: ${{ steps.parse_ref.outputs.tag }}
+        run: |
           docker push registry.digitalocean.com/circles-registry/api:${IMAGE_VERSION}
