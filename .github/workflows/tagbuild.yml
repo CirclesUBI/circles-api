@@ -18,6 +18,9 @@ jobs:
         run: |
           sudo snap install doctl
           sudo snap connect doctl:dot-docker
+      - name: Configure auth
+        run: |
+          doctl auth init -t ${CIRCLES_CI_DO_TOKEN}
       - name: Checkout
         uses: actions/checkout@main
       - name: Get ref
