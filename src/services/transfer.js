@@ -4,7 +4,6 @@ import fs from 'fs';
 import { Op } from 'sequelize';
 import { performance } from 'perf_hooks';
 
-import Edge from '../models/edges';
 import db from '../database';
 import fetchAllFromGraph from './graph';
 import web3 from './web3';
@@ -15,6 +14,7 @@ import {
   EDGES_TMP_FILE_PATH,
   PATHFINDER_FILE_PATH,
 } from '../constants';
+import Edge from '../models/edges';
 
 const METRICS_TRANSFERS = 'transfers';
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 10;

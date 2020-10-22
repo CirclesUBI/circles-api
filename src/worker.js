@@ -1,6 +1,4 @@
-import { performance } from 'perf_hooks';
 import workers from './tasks';
-import submitJob from './tasks/submitJob';
 
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
@@ -10,18 +8,13 @@ import './helpers/env';
 import db from './database';
 import logger from './helpers/logger';
 import tasks from './tasks';
+import submitJob from './tasks/submitJob';
 import web3, {
   checkConnection,
   getEventSignature,
   subscribeEvent,
 } from './services/web3';
 import workers from './tasks';
-import {
-  getTrustNetworkEdges,
-  setTransferMetrics,
-  storeEdges,
-  writeToFile,
-} from './services/transfer';
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
@@ -46,102 +39,12 @@ checkConnection()
     process.exit(1);
   });
 
-logger.info(`Started workers for: ${Object.keys(workers)}`);
-
 // Listen for blockchain events which might alter the trust limit between users
 // in the trust network
 const hubContract = new web3.eth.Contract(HubContract.abi);
 const tokenContract = new web3.eth.Contract(TokenContract.abi);
 
-let isUpdatePending = false;
-let lastTrustChangeAt = 0;
-let lastUpdateAt = 0;
-let knownTokens = [];
-
-async function rebuildTrustNetwork(blockNumber) {
-  if (isUpdatePending) {
-    return;
-  }
-  isUpdatePending = true;
-
-  // Measure time of the whole process
-  const startTime = performance.now();
-
-  try {
-    const { edges, statistics } = await getTrustNetworkEdges();
-
-    await writeToFile(edges);
-
-    // Store all known tokens to identify transfer events
-    knownTokens = edges
-      .reduce((acc, edge) => {
-        if (!acc.includes(edge.token)) {
-          acc.push(edge.token);
-        }
-        return acc;
-      }, [])
-      .sort();
-
-    // Put trust network into database to cache it there
-    const dbStatistics = await storeEdges(edges);
-
-    const endTime = performance.now();
-    const milliseconds = Math.round(endTime - startTime);
-
-    await setTransferMetrics([
-      {
-        name: 'countEdges',
-        value: dbStatistics.total,
-      },
-      {
-        name: 'countSafes',
-        value: statistics.safes,
-      },
-      {
-        name: 'countTokens',
-        value: statistics.tokens,
-      },
-      {
-        name: 'edgesLastAdded',
-        value: dbStatistics.added,
-      },
-      {
-        name: 'edgesLastUpdated',
-        value: dbStatistics.updated,
-      },
-      {
-        name: 'edgesLastRemoved',
-        value: dbStatistics.removed,
-      },
-      {
-        name: 'lastUpdateDuration',
-        value: milliseconds,
-      },
-      {
-        name: 'lastBlockNumber',
-        value: blockNumber,
-      },
-      {
-        name: 'lastUpdateAt',
-        value: Date.now(),
-      },
-    ]);
-
-    logger.info(
-      `Updated edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (added ${dbStatistics.added}, updated ${dbStatistics.updated}, removed ${dbStatistics.removed}, ${milliseconds}ms)`,
-    );
-
-    // Rebuild again if there is already another update pending
-    isUpdatePending = false;
-    lastUpdateAt = Date.now();
-    if (lastTrustChangeAt > lastUpdateAt) {
-      rebuildTrustNetwork();
-    }
-  } catch (error) {
-    isUpdatePending = false;
-    logger.error(`Worker failed [${error.message}]`);
-  }
-}
+logger.info(`Started workers for: ${Object.keys(workers)}`);
 
 logger.info(`Started workers for: ${Object.keys(workers)}`);
 

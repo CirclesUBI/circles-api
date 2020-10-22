@@ -30,6 +30,7 @@ async function rebuildTrustNetwork() {
 
   try {
     const { edges, statistics } = await getTrustNetworkEdges();
+
     logger.info(
       `Finished getting trust network edges (${edges.length} entities). Start updating capacities.`,
     );
