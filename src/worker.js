@@ -1,6 +1,4 @@
-import { performance } from 'perf_hooks';
 import workers from './tasks';
-import submitJob from './tasks/submitJob';
 
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
@@ -41,8 +39,6 @@ checkConnection()
     logger.error('Unable to connect to blockchain');
     process.exit(1);
   });
-
-logger.info(`Started workers for: ${Object.keys(workers)}`);
 
 // Listen for blockchain events which might alter the trust limit between users
 // in the trust network
@@ -139,16 +135,16 @@ async function rebuildTrustNetwork(blockNumber) {
   }
 }
 
+logger.info(`Started workers for: ${Object.keys(workers)}`);
+
 const transferSignature = getEventSignature(tokenContract, 'Transfer');
 const trustSignature = getEventSignature(hubContract, 'Trust');
 
-function handleTrustChange({ address, topics }) {
+function handleTrustChange({ topics }) {
   if (topics.includes(transferSignature)) {
-    submitJob(workers.syncAddress, address, { type: 'Transfer', topics });
-    logger.info(`Adding ${address} to needs update list`);
+    //submitJob(workers.syncAddress, address, { type: 'Transfer', topics });
   } else if (topics.includes(trustSignature)) {
-    submitJob(workers.syncAddress, address, { type: 'Trust', topics });
-    logger.info(`Adding ${address} to needs update list`);
+    //submitJob(workers.syncAddress, address, { type: 'Trust', topics });
   } else {
     logger.info(
       `Found circles event but no trust graph reprocessing is needed`,

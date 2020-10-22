@@ -136,3 +136,48 @@ export async function waitForBlockNumber(blockNumber) {
     );
   }
 }
+
+export async function getBlockNumber() {
+  // Check if we're requesting The Graph's official endpoint as the API differs
+  if (isOfficialNode()) {
+    const query = `{
+      indexingStatusForCurrentVersion(subgraphName: "${process.env.SUBGRAPH_NAME}") {
+        chains {
+          latestBlock {
+            number
+          }
+        }
+      }
+    }`;
+
+    const data = await fetchFromGraphStatus(query);
+    const { chains } = data.indexingStatusForCurrentVersion;
+    if (chains.length === 0) {
+      return 0;
+    }
+    return parseInt(chains[0].latestBlock.number, 10);
+  } else {
+    const query = `{
+      subgraphs {
+        currentVersion {
+          deployment {
+            latestEthereumBlockNumber
+          }
+        }
+      }
+    }`;
+
+    const data = await fetchFromGraphStatus(query);
+    if (
+      data.subgraphs.length === 0 ||
+      !data.subgraphs[0].currentVersion ||
+      !data.subgraphs[0].currentVersion.deployment
+    ) {
+      return 0;
+    }
+    const {
+      latestEthereumBlockNumber,
+    } = data.subgraphs[0].currentVersion.deployment;
+    return parseInt(latestEthereumBlockNumber, 10);
+  }
+}

@@ -11,19 +11,34 @@ const redisOpts = {
     retryProcessDelay: 5000, // delay before processing next job in case of internal error.
   },
 };
-// const redisLongRunningOpts = {
-//   settings: {
-//     lockDuration: 600000,
-//     lockRenewTime: 15000,
-//     stalledInterval: 60000,
-//     maxStalledCount: 2,
-//     guardInterval: 10000,
-//     retryProcessDelay: 15000,
-//   },
-// };
+const redisLongRunningOpts = {
+  settings: {
+    lockDuration: 600000,
+    lockRenewTime: 15000,
+    stalledInterval: 60000,
+    maxStalledCount: 2,
+    guardInterval: 10000,
+    retryProcessDelay: 15000,
+  },
+};
 
 const syncAddress = new Queue('Sync trust graph for address', redis, redisOpts);
+const syncFullGraph = new Queue(
+  'Sync full trust graph',
+  redis,
+  redisLongRunningOpts,
+);
+const nightlyCleanup = new Queue(
+  'Clean up the queues',
+  redis,
+  redisLongRunningOpts,
+);
+
+const allQueues = [syncAddress, syncFullGraph, nightlyCleanup];
 
 export {
   syncAddress,
-}
+  syncFullGraph,
+  nightlyCleanup,
+  allQueues,
+};
