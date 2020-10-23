@@ -6,4 +6,4 @@ export default {
   syncAddress,
   syncFullGraph,
   nightlyCleanup,
-}
+};

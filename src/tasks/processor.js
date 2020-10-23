@@ -5,7 +5,7 @@ const isWorker = !!process.env.WORKER;
 const SECONDS = 1000;
 const MINUTES = 60 * SECONDS;
 const jobOpts = {
-  timeout: 30 * MINUTES,
+  timeout: 40 * MINUTES,
   attempts: 100,
   removeOnComplete: true,
   backoff: { type: 'fixed', delay: 10000 },
@@ -16,7 +16,7 @@ const queues = [];
 const processor = (queue, name) => {
   if (isWorker) {
     queue.on('error', (error) => {
-      logger.error(`${queue.name} job threw error: ${JSON.stringify(error)}`);
+      logger.error(`${queue.name} job threw error: ${error}`);
     });
 
     queue.on('active', (job) => {

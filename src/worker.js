@@ -142,9 +142,9 @@ const trustSignature = getEventSignature(hubContract, 'Trust');
 
 function handleTrustChange({ topics }) {
   if (topics.includes(transferSignature)) {
-    //submitJob(workers.syncAddress, address, { type: 'Transfer', topics });
+    submitJob(workers.syncAddress, address, { type: 'Transfer', topics });
   } else if (topics.includes(trustSignature)) {
-    //submitJob(workers.syncAddress, address, { type: 'Trust', topics });
+    submitJob(workers.syncAddress, address, { type: 'Trust', topics });
   } else {
     logger.info(
       `Found circles event but no trust graph reprocessing is needed`,
@@ -156,27 +156,14 @@ waitUntilGraphIsReady()
   .then(() => {
     logger.info('Graph node connection has been established successfully');
     // Always rebuild trust network after first start
-    // return rebuildTrustNetwork(0);
   })
   .then(() => {
-    // subscribeEvent(
-    //   hubContract,
-    //   process.env.HUB_ADDRESS,
-    //   'Signup',
-    //   handleTrustChange,
-    // );
     subscribeEvent(
       hubContract,
       process.env.HUB_ADDRESS,
       'Trust',
       handleTrustChange,
     );
-    // subscribeEvent(
-    //   hubContract,
-    //   process.env.HUB_ADDRESS,
-    //   'HubTransfer',
-    //   handleTrustChange,
-    // );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
   })
   .catch(() => {

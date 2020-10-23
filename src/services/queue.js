@@ -2,9 +2,12 @@ import Queue from 'bull';
 
 const redis = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
+const SECONDS = 1000;
+const MINUTES = 60 * SECONDS;
+
 const redisOpts = {
   settings: {
-    lockDuration: 30000, // Key expiration time for job locks.
+    lockDuration: 30 * SECONDS, // Key expiration time for job locks.
     stalledInterval: 30000, // How often check for stalled jobs (use 0 for never checking).
     maxStalledCount: 1, // Max amount of times a stalled job will be re-processed.
     guardInterval: 5000, // Poll interval for delayed jobs and added jobs.s
@@ -13,7 +16,7 @@ const redisOpts = {
 };
 const redisLongRunningOpts = {
   settings: {
-    lockDuration: 600000,
+    lockDuration: 30 * MINUTES,
     lockRenewTime: 15000,
     stalledInterval: 60000,
     maxStalledCount: 2,

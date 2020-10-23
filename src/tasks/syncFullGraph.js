@@ -23,8 +23,12 @@ async function rebuildTrustNetwork() {
   try {
     const { edges, statistics } = await getTrustNetworkEdges();
 
+    logger.info(`Finished getting trust network edges`);
+
     // Put trust network into database to cache it there
     const dbStatistics = await storeEdges(edges);
+
+    logger.info(`Finished storing edges edges`);
 
     const endTime = performance.now();
     const milliseconds = Math.round(endTime - startTime);
@@ -71,10 +75,10 @@ async function rebuildTrustNetwork() {
     logger.info(
       `Updated edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (added ${dbStatistics.added}, updated ${dbStatistics.updated}, removed ${dbStatistics.removed}, ${milliseconds}ms)`,
     );
-    return Promise.resolve('success');
+    return true;
   } catch (error) {
     logger.error(`Worker failed [${error.message}]`);
-    return Promise.reject(error);
+    throw error;
   }
 }
 

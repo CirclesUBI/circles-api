@@ -1,8 +1,4 @@
-import {
-  syncFullGraph,
-  nightlyCleanup,
-  allQueues,
-} from '../services/queue';
+import { syncFullGraph, nightlyCleanup, allQueues } from '../services/queue';
 import { processor, jobOpts } from './processor';
 import logger from '../helpers/logger';
 
@@ -10,7 +6,7 @@ const cleanQueues = () => {
   return Promise.all(allQueues.map((queue) => queue.clean(1000, 'completed')));
 };
 
-const nightlyRepeatOpts = { cron: '0 * * * * *' }; // midnight UTC
+const nightlyRepeatOpts = { cron: '0 0 0 * * *' }; // midnight UTC
 
 Promise.all([
   nightlyCleanup.clean(0, 'delayed'),
