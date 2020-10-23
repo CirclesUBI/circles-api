@@ -3,10 +3,10 @@ import TokenContract from 'circles-contracts/build/contracts/Token.json';
 import fastJsonStringify from 'fast-json-stringify';
 import findTransferSteps from '@circles/transfer';
 import fs from 'fs';
-import { Op } from 'sequelize';
 import { performance } from 'perf_hooks';
 
 import Edge from '../models/edges';
+import logger from '../helpers/logger';
 import fetchAllFromGraph from './graph';
 import web3 from './web3';
 import { getMetrics, setMetrics } from './metrics';
@@ -18,6 +18,7 @@ import {
 } from '../constants';
 
 const METRICS_TRANSFERS = 'transfers';
+const DEFAULT_PROCESS_TIMEOUT = 1000 * 10;
 
 const stringify = fastJsonStringify({
   title: 'Circles Edges Schema',
@@ -37,6 +38,11 @@ const stringify = fastJsonStringify({
     },
   },
 });
+
+const hubContract = new web3.eth.Contract(
+  HubContract.abi,
+  process.env.HUB_ADDRESS,
+);
 
 const findToken = (tokens, tokenAddress) => {
   return tokens.find((token) => token.address === tokenAddress);
@@ -237,8 +243,9 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
           });
         }
 
-      return tokenAcc;
-    });
+        return tokenAcc;
+      },
+    );
 
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
@@ -277,7 +284,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
   // organization owns tokens it can still send them even though noone trusts
   // the organization)
   safes.forEach(({ address, tokens: ownedTokens }) => {
-    ownedTokens.forEach(({ address: tokenAddress, balance }) => {
+    ownedTokens.forEach(({ address: tokenAddress }) => {
       const token = findToken(tokens, tokenAddress);
 
       connections.forEach((connection) => {
