@@ -29,7 +29,10 @@ Promise.all([
     processor(nightlyCleanup, 'Nightly').process(() => {
       logger.info('Cleaning queues');
       return cleanQueues().then(() => {
-        return syncFullGraph.add({}, { jobId: 'Full graph', ...jobOpts});
+        return syncFullGraph.add(
+          {},
+          { jobId: `${Date.now().toString()}`, ...jobOpts },
+        );
       });
     });
   });

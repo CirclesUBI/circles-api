@@ -71,8 +71,10 @@ async function rebuildTrustNetwork() {
     logger.info(
       `Updated edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (added ${dbStatistics.added}, updated ${dbStatistics.updated}, removed ${dbStatistics.removed}, ${milliseconds}ms)`,
     );
+    return Promise.resolve('success');
   } catch (error) {
     logger.error(`Worker failed [${error.message}]`);
+    return Promise.reject(error);
   }
 }
 
