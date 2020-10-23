@@ -21,6 +21,10 @@ RUN apt-get purge -y --auto-remove build-essential
 
 EXPOSE 3000
 
-RUN chmod +x scripts/*.sh
+COPY scripts/run.sh .
+COPY scripts/run-worker.sh .
+COPY scripts/wait-for-db.sh .
 
-ENTRYPOINT ["./scripts/wait-for-db.sh"]
+RUN chmod +x ./*.sh
+
+ENTRYPOINT ["./wait-for-db.sh"]
