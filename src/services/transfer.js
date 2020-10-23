@@ -13,17 +13,15 @@ import { minNumberString } from '../helpers/compare';
 
 const METRICS_TRANSFERS = 'transfers';
 
-export const EDGES_FILE_PATH = path.join(__dirname, '..', '..', 'edges.json');
+const PATHFINDER_BASE_PATH = path.join(__dirname, '..', '..', 'pathfinder');
+
+export const EDGES_FILE_PATH = path.join(PATHFINDER_BASE_PATH, 'edges.json');
 export const EDGES_TMP_FILE_PATH = path.join(
-  __dirname,
-  '..',
-  '..',
+  PATHFINDER_BASE_PATH,
   'edges.json-tmp',
 );
 export const PATHFINDER_FILE_PATH = path.join(
-  __dirname,
-  '..',
-  '..',
+  PATHFINDER_BASE_PATH,
   'pathfinder',
 );
 
