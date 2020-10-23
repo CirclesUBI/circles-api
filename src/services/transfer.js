@@ -17,7 +17,6 @@ import {
 import Edge from '../models/edges';
 
 const METRICS_TRANSFERS = 'transfers';
-const DEFAULT_PROCESS_TIMEOUT = 1000 * 10;
 
 const findToken = (tokens, tokenAddress) => {
   return tokens.find((token) => token.address === tokenAddress);
@@ -416,26 +415,24 @@ export async function transferSteps({ from, to, value }) {
     {
       from,
       to,
-      value,
+      value: value.toString(),
     },
     {
       edgesFile: EDGES_FILE_PATH,
       pathfinderExecutable: PATHFINDER_FILE_PATH,
-      timeout: process.env.TRANSFER_STEPS_TIMEOUT || DEFAULT_PROCESS_TIMEOUT,
+      timeout: process.env.TRANSFER_STEPS_TIMEOUT || 0,
     },
   );
 
   const endTime = performance.now();
 
   return {
-    from,
-    to,
-    maxFlowValue: result.maxFlowValue,
+    maxFlowValue: parseFloat(result.maxFlowValue),
     processDuration: Math.round(endTime - startTime),
-    transferValue: value,
-    transferSteps: result.transferSteps.map(({ token, ...step }) => {
+    transferSteps: result.transferSteps.map(({ token, value, ...step }) => {
       return {
         ...step,
+        value: parseFloat(value),
         tokenOwnerAddress: token,
       };
     }),
