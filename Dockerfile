@@ -19,12 +19,12 @@ RUN npm install \
 # Remove unneeded dependencies
 RUN apt-get purge -y --auto-remove build-essential
 
-EXPOSE 3000
-
 COPY scripts/run.sh .
 COPY scripts/run-worker.sh .
 COPY scripts/wait-for-db.sh .
 
 RUN chmod +x ./*.sh
+
+EXPOSE 3000
 
 ENTRYPOINT ["./wait-for-db.sh"]
