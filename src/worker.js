@@ -17,7 +17,7 @@ import {
   setTransferMetrics,
   storeEdges,
 } from './services/transfer';
-import { waitUntilGraphIsReady, waitForBlockNumber } from './services/graph';
+import { waitUntilGraphIsReady } from './services/graph';
 
 // Connect with postgres database
 db.authenticate()
@@ -59,9 +59,6 @@ async function rebuildTrustNetwork(blockNumber) {
   const startTime = performance.now();
 
   try {
-    // Wait until graph indexed the last block number
-    await waitForBlockNumber(blockNumber);
-
     const { edges, statistics } = await getTrustNetworkEdges();
 
     // Store all known tokens to identify transfer events
