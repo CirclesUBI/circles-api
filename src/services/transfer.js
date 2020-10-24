@@ -392,6 +392,10 @@ export async function transferSteps({ from, to, value }) {
     throw new Error(`${EDGES_FILE_PATH} does not exist`);
   }
 
+  if (from === to) {
+    throw new Error('Can not send to yourself');
+  }
+
   const startTime = performance.now();
 
   const result = await findTransferSteps(
