@@ -26,6 +26,13 @@ module.exports = {
     url,
     dialect,
     timezone,
+    ssl: true,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
     pool: {
       // Maximum number of connection in pool
       max: process.env.POOL_MAX || 2,
