@@ -217,7 +217,7 @@ waitUntilGraphIsReady()
     });
 
     // Export edges .json file every minute
-    submitJob(tasks.syncFullGraph, 'exportEdges', null, {
+    submitJob(tasks.exportEdges, 'exportEdges', null, {
       repeat: {
         cron: CRON_EVERY_MINUTE,
       },
