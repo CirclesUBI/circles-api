@@ -95,13 +95,15 @@ npm run test:watch
 npm run lint
 
 # Start local server and watch changes
-npm run serve
+npm run watch
+npm run worker:watch
 
 # Build for production
 npm run build
 
 # Run production server
 npm start
+npm worker:start
 ```
 
 ## License
