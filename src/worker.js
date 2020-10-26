@@ -1,5 +1,3 @@
-import workers from './tasks';
-
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
 
@@ -7,6 +5,7 @@ import './helpers/env';
 
 import db from './database';
 import logger from './helpers/logger';
+import submitJob from './tasks/submitJob';
 import web3, {
   checkConnection,
   getEventSignature,
@@ -18,6 +17,7 @@ import {
   storeEdges,
   writeToFile,
 } from './services/transfer';
+import workers from './tasks';
 import { waitUntilGraphIsReady } from './services/graph';
 
 // Connect with postgres database
@@ -140,7 +140,7 @@ logger.info(`Started workers for: ${Object.keys(workers)}`);
 const transferSignature = getEventSignature(tokenContract, 'Transfer');
 const trustSignature = getEventSignature(hubContract, 'Trust');
 
-function handleTrustChange({ topics }) {
+function handleTrustChange({ address, topics }) {
   if (topics.includes(transferSignature)) {
     submitJob(workers.syncAddress, address, { type: 'Transfer', topics });
   } else if (topics.includes(trustSignature)) {
