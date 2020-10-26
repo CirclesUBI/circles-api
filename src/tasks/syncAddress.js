@@ -95,12 +95,17 @@ async function processTransfer(data) {
 
   const tokenOwner = await hubContract.methods.tokenToUser(tokenAddress).call();
   if (tokenOwner === ZERO_ADDRESS) {
-    logger.info(`${data.id} is not a Circles token`);
+    logger.info(`${tokenAddress} is not a Circles token`);
     return;
   }
 
   const sender = `0x${data.topics[1].slice(26)}`;
   const recipient = `0x${data.topics[2].slice(26)}`;
+
+  if (sender === ZERO_ADDRESS) {
+    logger.info('Skip UBI payout transfer from Hub');
+    return;
+  }
 
   await updateEdge(
     {
