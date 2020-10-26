@@ -27,6 +27,7 @@ const Edge = db.define(
     },
     capacity: {
       type: Sequelize.STRING,
+      allowNull: false,
     },
   },
   {
