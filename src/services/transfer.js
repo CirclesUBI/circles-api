@@ -231,13 +231,33 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
 
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
-    trustedTokens.forEach((trustedToken) => {
-      addEdge({
+    trustedTokens.reduce((acc, trustedToken) => {
+      // Ignore sending to ourselves
+      if (senderSafeAddress === receiverSafeAddress) {
+        return;
+      }
+
+      // Ignore duplicates
+      const key = getKey(
+        senderSafeAddress,
+        receiverSafeAddress,
+        trustedToken.token,
+      );
+
+      if (checkedEdges[key]) {
+        return;
+      }
+
+      checkedEdges[key] = true;
+
+      acc.push({
         from: senderSafeAddress,
         to: receiverSafeAddress,
         capacity: trustedToken.capacity,
         token: trustedToken.token,
       });
+
+      return acc;
     });
   });
 

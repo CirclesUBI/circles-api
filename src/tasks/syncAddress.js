@@ -57,21 +57,20 @@ async function upsert(edge) {
 
 async function updateEdge(edge, tokenAddress) {
   try {
+    // Get send limit
     const limit = await hubContract.methods
       .checkSendLimit(edge.token, edge.from, edge.to)
       .call();
 
+    // Get Token balance
     const tokenContract = new web3.eth.Contract(
       TokenContract.abi,
       tokenAddress,
     );
-
     const balance = await tokenContract.methods.balanceOf(edge.from).call();
 
-    // @TODO: Change this to Wei and string
-    edge.capacity = Math.floor(
-      parseFloat(web3.utils.fromWei(minNumberString(limit, balance), 'ether')),
-    );
+    // Update edge capacity
+    edge.capacity = minNumberString(limit, balance);
 
     await upsert(edge);
   } catch (error) {
