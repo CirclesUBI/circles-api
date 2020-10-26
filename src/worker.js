@@ -1,5 +1,3 @@
-import workers from './tasks';
-
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
 
