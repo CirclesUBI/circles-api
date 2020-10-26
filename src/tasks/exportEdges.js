@@ -8,8 +8,8 @@ import processor from './processor';
 import {
   EDGES_FILE_PATH,
   EDGES_TMP_FILE_PATH,
-  getStoredEges,
-} from './services/transfer';
+  getStoredEdges,
+} from '../services/transfer';
 import { redisUrl, redisOptions } from '../services/redis';
 
 const stringify = fastJsonStringify({
@@ -56,7 +56,7 @@ processor(exportEdges).process(async () => {
   const startTime = performance.now();
 
   // Get edges from database and write them to the .json file
-  const edges = await getStoredEges();
+  const edges = await getStoredEdges();
   await writeToFile(edges);
 
   // Show metrics
@@ -64,6 +64,8 @@ processor(exportEdges).process(async () => {
   const milliseconds = Math.round(endTime - startTime);
 
   logger.info(`Written ${edges.length} edges to file in ${milliseconds}ms`);
+
+  return Promise.resolve();
 });
 
 export default exportEdges;

@@ -2,29 +2,33 @@ import logger from '../helpers/logger';
 
 export default function processor(queue) {
   queue.on('error', (error) => {
-    logger.error(`"${queue.name}" job threw error: ${error}`);
+    logger.error(`ERROR "${queue.name}" job: ${error}`);
+
+    // eslint-disable-next-line
+    console.error(error);
   });
 
   queue.on('active', (job) => {
-    logger.info(`"${queue.name}" job with id ${job.id} started processing`);
+    logger.info(`[${job.id}] ACTIVE "${queue.name}" job started`);
   });
 
   queue.on('progress', (job, progress) => {
-    logger.info(
-      `"${queue.name}" job with id ${job.id} indicated progress: ${progress}`,
-    );
+    logger.info(`[${job.id}]" PROGRESS ${queue.name}" job: ${progress}`);
   });
 
   queue.on('completed', (job) => {
-    logger.info(`"${queue.name}" job with id "${job.id}" completed`);
+    logger.info(`[${job.id}] COMPLETE "${queue.name}" job`);
   });
 
   queue.on('failed', (job, error) => {
-    logger.warn(`"${queue.name}" - ${job.name} - ${job.id} - failed: ${error}`);
+    logger.warn(`[${job.id}] FAILED "${queue.name}": ${error}`);
+
+    // eslint-disable-next-line
+    console.error(error);
   });
 
   queue.on('stalled', (job) => {
-    logger.info(`"${queue.name}" with id "${job.id}" stalled`);
+    logger.info(`[${job.id}] STALLED "${queue.name}"`);
   });
 
   queue.on('cleaned', (jobs, type) => {
@@ -38,8 +42,6 @@ export default function processor(queue) {
   queue.on('resumed', () => {
     logger.info(`"${queue.name}" queue resumed`);
   });
-
-  logger.info(`"${queue.name}" event handlers attached`);
 
   return queue;
 }

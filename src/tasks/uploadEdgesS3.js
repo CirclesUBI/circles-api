@@ -3,7 +3,7 @@ import fs from 'fs';
 
 import logger from '../helpers/logger';
 import processor from './processor';
-import { EDGES_FILE_PATH } from './services/transfer';
+import { EDGES_FILE_PATH } from '../services/transfer';
 import { redisUrl, redisOptions } from '../services/redis';
 import { s3 } from '../services/aws';
 
