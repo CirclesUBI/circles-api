@@ -12,7 +12,6 @@ import web3, {
   getEventSignature,
   subscribeEvent,
 } from './services/web3';
-import workers from './tasks';
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
@@ -41,10 +40,6 @@ checkConnection()
 // in the trust network
 const hubContract = new web3.eth.Contract(HubContract.abi);
 const tokenContract = new web3.eth.Contract(TokenContract.abi);
-
-logger.info(`Started workers for: ${Object.keys(workers)}`);
-
-logger.info(`Started workers for: ${Object.keys(workers)}`);
 
 const transferSignature = getEventSignature(tokenContract, 'Transfer');
 const trustSignature = getEventSignature(hubContract, 'Trust');
