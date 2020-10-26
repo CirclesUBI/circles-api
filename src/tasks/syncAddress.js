@@ -89,9 +89,11 @@ async function updateEdge(edge, tokenAddress) {
 }
 
 async function processTransfer(data) {
-  logger.info(`Processing transfer for ${data.id}`);
+  const tokenAddress = web3.utils.toChecksumAddress(data.tokenAddress);
 
-  const tokenOwner = await hubContract.methods.tokenToUser(data.id).call();
+  logger.info(`Processing transfer for ${tokenAddress}`);
+
+  const tokenOwner = await hubContract.methods.tokenToUser(tokenAddress).call();
   if (tokenOwner === ZERO_ADDRESS) {
     logger.info(`${data.id} is not a Circles token`);
     return;
@@ -106,7 +108,7 @@ async function processTransfer(data) {
       from: web3.utils.toChecksumAddress(sender),
       to: tokenOwner,
     },
-    data.id,
+    tokenAddress,
   );
 
   // Is user sending their own token?
@@ -124,18 +126,18 @@ async function processTransfer(data) {
     }
 
     logger.info(
-      `Found outgoing addreses ${graphData.outgoingAddresses} while processing job for ${data.id}`,
+      `Found outgoing addreses ${graphData.outgoingAddresses} while processing job for Safe ${tokenOwner}`,
     );
 
     return Promise.all(
-      graphData.outgoingAddresses.map(async (connectedAddress) => {
-        await updateEdge(
+      graphData.outgoingAddresses.map((connectedAddress) => {
+        return updateEdge(
           {
             token: tokenOwner,
             from: tokenOwner,
             to: web3.utils.toChecksumAddress(connectedAddress),
           },
-          data.id,
+          tokenAddress,
         );
       }),
     );

@@ -415,7 +415,7 @@ export async function transferSteps({ from, to, value }) {
     {
       from,
       to,
-      value: value.toString(),
+      value: web3.utils.toWei(value.toString(), 'ether'),
     },
     {
       edgesFile: EDGES_FILE_PATH,
@@ -427,12 +427,12 @@ export async function transferSteps({ from, to, value }) {
   const endTime = performance.now();
 
   return {
-    maxFlowValue: parseFloat(result.maxFlowValue),
+    maxFlowValue: result.maxFlowValue.toString(),
     processDuration: Math.round(endTime - startTime),
     transferSteps: result.transferSteps.map(({ token, value, ...step }) => {
       return {
         ...step,
-        value: parseFloat(value),
+        value: value.toString(),
         tokenOwnerAddress: token,
       };
     }),
