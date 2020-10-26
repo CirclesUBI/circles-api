@@ -25,6 +25,9 @@ import {
 } from './services/transfer';
 import { waitUntilGraphIsReady } from './services/graph';
 
+const CRON_NIGHTLY = '0 0 0 * * *';
+const CRON_EVERY_MINUTE = '*/1 * * * *';
+
 // Connect with postgres database
 db.authenticate()
   .then(() => {
@@ -192,21 +195,39 @@ waitUntilGraphIsReady()
     );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
 
-    // Submit worker jobs for daily tasks
+    // Clean up worker queues every night
     submitJob(tasks.cleanup, 'cleanUp-nightly', null, {
       repeat: {
-        cron: '0 0 0 * * *',
+        cron: CRON_NIGHTLY,
       },
     });
 
+    // Sync full graph every night
     submitJob(tasks.syncFullGraph, 'syncFullGraph-nightly', null, {
       repeat: {
-        cron: '0 0 0 * * *',
+        cron: CRON_NIGHTLY,
+      },
+    });
+
+    // Upload latest edges .json to S3 every night
+    submitJob(tasks.uploadEdgesS3, 'uploadEdgesS3-nightly', null, {
+      repeat: {
+        cron: CRON_NIGHTLY,
+      },
+    });
+
+    // Export edges .json file every minute
+    submitJob(tasks.syncFullGraph, 'exportEdges', null, {
+      repeat: {
+        cron: CRON_EVERY_MINUTE,
       },
     });
 
     // Always run full sync on start
     submitJob(tasks.syncFullGraph, 'syncFullGraph-initial');
+
+    // Always write edges .json file on start to make sure it exists
+    submitJob(tasks.exportEdges, 'exportEdges-initial');
   })
   .catch(() => {
     logger.error('Unable to connect to graph node');
