@@ -39,9 +39,4 @@ const nightlyCleanup = new Queue(
 
 const allQueues = [syncAddress, syncFullGraph, nightlyCleanup];
 
-export {
-  syncAddress,
-  syncFullGraph,
-  nightlyCleanup,
-  allQueues,
-};
+export { syncAddress, syncFullGraph, nightlyCleanup, allQueues };

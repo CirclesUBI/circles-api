@@ -1,13 +1,14 @@
-import { processor } from './processor';
-import { syncAddress } from '../services/queue';
-import logger from '../helpers/logger';
-import web3 from '../services/web3';
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
-import { fetchFromGraph } from '../services/graph';
-import { safeFields } from '../services/transfer';
+
 import Edge from '../models/edges';
+import logger from '../helpers/logger';
+import web3 from '../services/web3';
+import { fetchFromGraph } from '../services/graph';
 import { minNumberString } from '../helpers/compare';
+import { processor } from './processor';
+import { safeFields } from '../services/transfer';
+import { syncAddress } from '../services/queue';
 
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
@@ -54,7 +55,10 @@ const updateEdge = async (edge, tokenAddress) => {
     limit = await hubContract.methods
       .checkSendLimit(edge.token, edge.from, edge.to)
       .call();
-    const tokenContract = new web3.eth.Contract(TokenContract.abi, tokenAddress);
+    const tokenContract = new web3.eth.Contract(
+      TokenContract.abi,
+      tokenAddress,
+    );
     let balance = await tokenContract.methods.balanceOf(edge.from).call();
     edge.capacity = Math.floor(
       parseFloat(web3.utils.fromWei(minNumberString(limit, balance), 'ether')),
