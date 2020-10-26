@@ -1,55 +1,14 @@
 import Queue from 'bull';
-import fastJsonStringify from 'fast-json-stringify';
-import fs from 'fs';
 import { performance } from 'perf_hooks';
 
 import logger from '../helpers/logger';
 import processor from './processor';
-import {
-  EDGES_FILE_PATH,
-  EDGES_TMP_FILE_PATH,
-  getStoredEdges,
-} from '../services/transfer';
+import { getStoredEdges, writeToFile } from '../services/transfer';
 import { redisUrl, redisOptions } from '../services/redis';
-
-const stringify = fastJsonStringify({
-  title: 'Circles Edges Schema',
-  type: 'array',
-  properties: {
-    from: {
-      type: 'string',
-    },
-    to: {
-      type: 'string',
-    },
-    token: {
-      type: 'string',
-    },
-    capacity: {
-      type: 'string',
-    },
-  },
-});
 
 const exportEdges = new Queue('Export edges to json file', redisUrl, {
   settings: redisOptions,
 });
-
-// Store edges into .json file for pathfinder executable
-async function writeToFile(edges) {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(EDGES_TMP_FILE_PATH, stringify(edges), (error) => {
-      if (error) {
-        reject(
-          new Error(`Could not write to ${EDGES_TMP_FILE_PATH} file: ${error}`),
-        );
-      } else {
-        fs.renameSync(EDGES_TMP_FILE_PATH, EDGES_FILE_PATH);
-        resolve();
-      }
-    });
-  });
-}
 
 processor(exportEdges).process(async () => {
   // Measure time of the whole process

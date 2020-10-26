@@ -18,6 +18,25 @@ import Edge from '../models/edges';
 
 const METRICS_TRANSFERS = 'transfers';
 
+const stringify = fastJsonStringify({
+  title: 'Circles Edges Schema',
+  type: 'array',
+  properties: {
+    from: {
+      type: 'string',
+    },
+    to: {
+      type: 'string',
+    },
+    token: {
+      type: 'string',
+    },
+    capacity: {
+      type: 'string',
+    },
+  },
+});
+
 const findToken = (tokens, tokenAddress) => {
   return tokens.find((token) => token.address === tokenAddress);
 };
@@ -401,11 +420,27 @@ export async function getStoredEdges() {
   });
 }
 
-export async function transferSteps({ from, to, value }) {
-  if (!fs.existsSync(EDGES_FILE_PATH)) {
-    throw new Error(`${EDGES_FILE_PATH} does not exist`);
-  }
+export function checkFileExists() {
+  return fs.existsSync(EDGES_FILE_PATH);
+}
 
+// Store edges into .json file for pathfinder executable
+export async function writeToFile(edges) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(EDGES_TMP_FILE_PATH, stringify(edges), (error) => {
+      if (error) {
+        reject(
+          new Error(`Could not write to ${EDGES_TMP_FILE_PATH} file: ${error}`),
+        );
+      } else {
+        fs.renameSync(EDGES_TMP_FILE_PATH, EDGES_FILE_PATH);
+        resolve();
+      }
+    });
+  });
+}
+
+export async function transferSteps({ from, to, value }) {
   if (from === to) {
     throw new Error('Can not send to yourself');
   }
@@ -428,12 +463,14 @@ export async function transferSteps({ from, to, value }) {
   const endTime = performance.now();
 
   return {
-    maxFlowValue: result.maxFlowValue.toString(),
+    from,
+    to,
+    maxFlowValue: result.maxFlowValue,
     processDuration: Math.round(endTime - startTime),
-    transferSteps: result.transferSteps.map(({ token, value, ...step }) => {
+    transferValue: value,
+    transferSteps: result.transferSteps.map(({ token, ...step }) => {
       return {
         ...step,
-        value: value.toString(),
         tokenOwnerAddress: token,
       };
     }),

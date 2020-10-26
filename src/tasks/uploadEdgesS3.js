@@ -3,7 +3,7 @@ import fs from 'fs';
 
 import logger from '../helpers/logger';
 import processor from './processor';
-import { EDGES_FILE_PATH } from '../services/transfer';
+import { EDGES_FILE_PATH, checkFileExists } from '../services/transfer';
 import { redisUrl, redisOptions } from '../services/redis';
 import { s3 } from '../services/aws';
 
@@ -12,7 +12,7 @@ const uploadEdgesS3 = new Queue('Upload edges to S3 storage', redisUrl, {
 });
 
 processor(uploadEdgesS3).process(async () => {
-  if (!fs.existsSync(EDGES_FILE_PATH)) {
+  if (!checkFileExists()) {
     logger.log(`${EDGES_FILE_PATH} does not exist yet. Skip job`);
     return;
   }

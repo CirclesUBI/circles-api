@@ -5,7 +5,11 @@ import Transfer from '../models/transfers';
 import core from '../services/core';
 import { checkSignature } from '../helpers/signature';
 import { respondWithSuccess } from '../helpers/responses';
-import { transferSteps, getTransferMetrics } from '../services/transfer';
+import {
+  checkFileExists,
+  getTransferMetrics,
+  transferSteps,
+} from '../services/transfer';
 
 function prepareTransferResult(response) {
   return {
@@ -114,6 +118,15 @@ export default {
   },
 
   findTransferSteps: async (req, res, next) => {
+    if (!checkFileExists()) {
+      next(
+        new APIError(
+          httpStatus.SERVICE_UNAVAILABLE,
+          'Trust network file does not exist',
+        ),
+      );
+    }
+
     try {
       const result = await transferSteps({
         ...req.body,
