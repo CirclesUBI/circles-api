@@ -1,9 +1,11 @@
+import cleanup from './cleanup';
 import syncAddress from './syncAddress';
 import syncFullGraph from './syncFullGraph';
-import nightlyCleanup from './nightlyCleanup';
+
+export const allTasks = [cleanup, syncAddress, syncFullGraph];
 
 export default {
+  cleanup,
   syncAddress,
   syncFullGraph,
-  nightlyCleanup,
 };

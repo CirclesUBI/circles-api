@@ -1,35 +1,41 @@
+import Queue from 'bull';
+
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
 
 import Edge from '../models/edges';
 import logger from '../helpers/logger';
+import processor from './processor';
 import web3 from '../services/web3';
 import { fetchFromGraph } from '../services/graph';
 import { minNumberString } from '../helpers/compare';
-import { processor } from './processor';
+import { redisUrl, redisOptions } from '../services/redis';
 import { safeFields } from '../services/transfer';
-import { syncAddress } from '../services/queue';
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
+const syncAddress = new Queue('Sync trust graph for address', redisUrl, {
+  settings: redisOptions,
+});
 
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
 );
 
-const topicMatchesAddress = (topic, address) => {
-  return topic.slice(2) == address.slice(2).toLowerCase();
-};
+function topicMatchesAddress(topic, address) {
+  return topic.slice(2) === address.slice(2).toLowerCase();
+}
 
-const requestSafe = (safe) => {
+async function requestSafe(safe) {
   return fetchFromGraph(
     'safes',
     safeFields,
-    `where: { id: "${safe.toLowerCase()}"}`,
-    0,
-    1,
+    `where: { id: "${safe.toLowerCase()}" }`,
   );
-};
+}
 
-const upsert = (edge) => {
+async function upsert(edge) {
   if (edge.capacity === 0) {
     return Edge.destroy({
       where: {
@@ -47,28 +53,32 @@ const upsert = (edge) => {
       },
     });
   }
-};
+}
 
-const updateEdge = async (edge, tokenAddress) => {
-  let limit;
+async function updateEdge(edge, tokenAddress) {
   try {
-    limit = await hubContract.methods
+    const limit = await hubContract.methods
       .checkSendLimit(edge.token, edge.from, edge.to)
       .call();
+
     const tokenContract = new web3.eth.Contract(
       TokenContract.abi,
       tokenAddress,
     );
-    let balance = await tokenContract.methods.balanceOf(edge.from).call();
+
+    const balance = await tokenContract.methods.balanceOf(edge.from).call();
+
+    // @TODO: Change this to Wei and string
     edge.capacity = Math.floor(
       parseFloat(web3.utils.fromWei(minNumberString(limit, balance), 'ether')),
     );
+
     await upsert(edge);
-  } catch (err) {
+  } catch (error) {
     logger.error(
-      `Found error with checking sending limit for token of ${edge.token} from ${edge.from} to ${edge.to}`,
+      `Found error with checking sending limit for token of ${edge.token} from ${edge.from} to ${edge.to} [${error}]`,
     );
-    logger.error(err);
+
     await Edge.destroy({
       where: {
         token: edge.token,
@@ -77,88 +87,96 @@ const updateEdge = async (edge, tokenAddress) => {
       },
     });
   }
-};
+}
 
-const transferProcesser = async (data) => {
-  logger.info(`processing as transfer for ${data.id}`);
+async function processTransfer(data) {
+  logger.info(`Processing transfer for ${data.id}`);
+
   const tokenOwner = await hubContract.methods.tokenToUser(data.id).call();
-  if (tokenOwner === '0x0000000000000000000000000000000000000000') {
-    logger.info(`${data.id} is not a circles token`);
+  if (tokenOwner === ZERO_ADDRESS) {
+    logger.info(`${data.id} is not a Circles token`);
     return;
   }
+
   const sender = `0x${data.topics[1].slice(26)}`;
   const recipient = `0x${data.topics[2].slice(26)}`;
-  let edge = {
-    token: tokenOwner,
-    from: web3.utils.toChecksumAddress(sender),
-    to: tokenOwner,
-  };
-  await updateEdge(edge, data.id);
-  edge = {
-    token: tokenOwner,
-    from: web3.utils.toChecksumAddress(recipient),
-    to: tokenOwner,
-  };
 
+  await updateEdge(
+    {
+      token: tokenOwner,
+      from: web3.utils.toChecksumAddress(sender),
+      to: tokenOwner,
+    },
+    data.id,
+  );
+
+  // Is user sending their own token?
   if (
     topicMatchesAddress(sender, tokenOwner) ||
     topicMatchesAddress(recipient, tokenOwner)
   ) {
-    // case sending their own token
-    let graphData = await requestSafe(tokenOwner);
-    graphData = graphData[0];
+    const [graphData] = await requestSafe(tokenOwner);
+
     if (!graphData) {
       logger.error(
-        `safe ${tokenOwner} for job ${data.id} is not registered in graph`,
+        `Safe ${tokenOwner} for job ${data.id} is not registered in graph`,
       );
       return;
     }
+
     logger.info(
       `Found outgoing addreses ${graphData.outgoingAddresses} while processing job for ${data.id}`,
     );
+
     return Promise.all(
       graphData.outgoingAddresses.map(async (connectedAddress) => {
-        let edge = {
-          token: tokenOwner,
-          from: tokenOwner,
-          to: web3.utils.toChecksumAddress(connectedAddress),
-        };
-        await updateEdge(edge, data.id);
+        await updateEdge(
+          {
+            token: tokenOwner,
+            from: tokenOwner,
+            to: web3.utils.toChecksumAddress(connectedAddress),
+          },
+          data.id,
+        );
       }),
     );
   } else {
-    // case no trust graph updates needed
+    // No trust graph updates needed
     logger.info(`Token owner ${tokenOwner} was not sender or receiver`);
-    return;
   }
-};
+}
 
-const trustProcessor = async (data) => {
+async function processTrust(data) {
   const recipient = `0x${data.topics[1].slice(26)}`;
   const sender = `0x${data.topics[2].slice(26)}`;
-  logger.info(`processing as trust for ${recipient}`);
+
+  logger.info(`Processing trust for ${recipient}`);
+
   const tokenAddress = await hubContract.methods.userToToken(recipient).call();
-  if (tokenAddress === '0x0000000000000000000000000000000000000000') {
-    logger.info(`${recipient} is not a circles user`);
+  if (tokenAddress === ZERO_ADDRESS) {
+    logger.info(`${recipient} is not a Circles user`);
     return;
   }
-  let edge = {
-    token: web3.utils.toChecksumAddress(recipient),
-    from: web3.utils.toChecksumAddress(sender),
-    to: web3.utils.toChecksumAddress(recipient),
-  };
-  return updateEdge(edge, tokenAddress);
-};
 
-processor(syncAddress, 'Sync trust graph for address').process((job) => {
-  logger.info(`beginning work on trust graph for ${job.data.id}`);
-  // id is an address, job is either triggered by a trust event or a transfer event
-  // if triggered by a transfer, id is a token address, and we must check if it's part of Circles
-  // if trust, id is the hub address
+  return updateEdge(
+    {
+      token: web3.utils.toChecksumAddress(recipient),
+      from: web3.utils.toChecksumAddress(sender),
+      to: web3.utils.toChecksumAddress(recipient),
+    },
+    tokenAddress,
+  );
+}
+
+processor(syncAddress).process(async (job) => {
+  // `id` is an address, job is either triggered by a trust event or a transfer
+  // event. If triggered by a transfer, id is a token address, and we must
+  // check if it's part of Circles. If triggered by a trust event, id is the
+  // hub address
   if (job.data.type === 'Transfer') {
-    return transferProcesser(job.data);
+    return await processTransfer(job.data);
   } else {
-    return trustProcessor(job.data);
+    return await processTrust(job.data);
   }
 });
 

@@ -1,20 +1,24 @@
+import Queue from 'bull';
 import { performance } from 'perf_hooks';
-import { processor } from './processor';
-import { syncFullGraph } from '../services/queue';
+
 import logger from '../helpers/logger';
-import {
-  getTrustNetworkEdges,
-  setTransferMetrics,
-  storeEdges,
-} from '../services/transfer';
+import processor from './processor';
 import { getBlockNumber } from '../services/graph';
+import { getTrustNetworkEdges, storeEdges } from '../services/transfer';
+import { redisUrl, redisLongRunningOptions } from '../services/redis';
+
+const syncFullGraph = new Queue('Sync full trust graph', redisUrl, {
+  settings: redisLongRunningOptions,
+});
 
 async function rebuildTrustNetwork() {
   const blockNumber = await getBlockNumber();
+
   if (blockNumber === 0) {
     logger.warn('Found block number 0 from graph, aborting');
     return;
   }
+
   logger.info(`Syncing trust graph with current block ${blockNumber}`);
 
   // Measure time of the whole process
@@ -33,45 +37,6 @@ async function rebuildTrustNetwork() {
     const endTime = performance.now();
     const milliseconds = Math.round(endTime - startTime);
 
-    await setTransferMetrics([
-      {
-        name: 'countEdges',
-        value: dbStatistics.total,
-      },
-      {
-        name: 'countSafes',
-        value: statistics.safes,
-      },
-      {
-        name: 'countTokens',
-        value: statistics.tokens,
-      },
-      {
-        name: 'edgesLastAdded',
-        value: dbStatistics.added,
-      },
-      {
-        name: 'edgesLastUpdated',
-        value: dbStatistics.updated,
-      },
-      {
-        name: 'edgesLastRemoved',
-        value: dbStatistics.removed,
-      },
-      {
-        name: 'lastUpdateDuration',
-        value: milliseconds,
-      },
-      {
-        name: 'lastBlockNumber',
-        value: blockNumber,
-      },
-      {
-        name: 'lastUpdateAt',
-        value: Date.now(),
-      },
-    ]);
-
     logger.info(
       `Updated edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (added ${dbStatistics.added}, updated ${dbStatistics.updated}, removed ${dbStatistics.removed}, ${milliseconds}ms)`,
     );
@@ -82,9 +47,8 @@ async function rebuildTrustNetwork() {
   }
 }
 
-processor(syncFullGraph, 'Sync full trust graph').process((job) => {
-  logger.info(`beginning work on sync full trust graph for ${job.id}`);
-  return rebuildTrustNetwork();
+processor(syncFullGraph).process(async () => {
+  return await rebuildTrustNetwork();
 });
 
 export default syncFullGraph;

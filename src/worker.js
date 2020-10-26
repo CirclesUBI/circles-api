@@ -6,6 +6,7 @@ import './helpers/env';
 import db from './database';
 import logger from './helpers/logger';
 import submitJob from './tasks/submitJob';
+import tasks from './tasks';
 import web3, {
   checkConnection,
   getEventSignature,
@@ -142,22 +143,24 @@ const trustSignature = getEventSignature(hubContract, 'Trust');
 
 function handleTrustChange({ address, topics }) {
   if (topics.includes(transferSignature)) {
-    submitJob(workers.syncAddress, address, { type: 'Transfer', topics });
+    submitJob(tasks.syncAddress, `syncAddress-transfer-${address}`, {
+      type: 'Transfer',
+      topics,
+    });
   } else if (topics.includes(trustSignature)) {
-    submitJob(workers.syncAddress, address, { type: 'Trust', topics });
-  } else {
-    logger.info(
-      `Found circles event but no trust graph reprocessing is needed`,
-    );
+    submitJob(tasks.syncAddress, `syncAddress-trust-${address}`, {
+      type: 'Trust',
+      topics,
+    });
   }
 }
 
 waitUntilGraphIsReady()
   .then(() => {
     logger.info('Graph node connection has been established successfully');
-    // Always rebuild trust network after first start
   })
   .then(() => {
+    // Subscribe to events to handle trust graph updates for single addresses
     subscribeEvent(
       hubContract,
       process.env.HUB_ADDRESS,
@@ -165,6 +168,22 @@ waitUntilGraphIsReady()
       handleTrustChange,
     );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
+
+    // Submit worker jobs for daily tasks
+    submitJob(tasks.cleanup, 'cleanUp-nightly', null, {
+      repeat: {
+        cron: '0 0 0 * * *',
+      },
+    });
+
+    submitJob(tasks.syncFullGraph, 'syncFullGraph-nightly', null, {
+      repeat: {
+        cron: '0 0 0 * * *',
+      },
+    });
+
+    // Always run full sync on start
+    submitJob(tasks.syncFullGraph, 'syncFullGraph-initial');
   })
   .catch(() => {
     logger.error('Unable to connect to graph node');
