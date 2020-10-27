@@ -24,8 +24,11 @@ const hubContract = new web3.eth.Contract(
   process.env.HUB_ADDRESS,
 );
 
-function topicMatchesAddress(topic, address) {
-  return topic.slice(2) === address.slice(2).toLowerCase();
+function addressesFromTopics(topics) {
+  const recipient = web3.utils.toChecksumAddress(`0x${topics[1].slice(26)}`);
+  const sender = web3.utils.toChecksumAddress(`0x${topics[2].slice(26)}`);
+
+  return { recipient, sender };
 }
 
 async function requestSafe(safe) {
@@ -103,26 +106,26 @@ async function processTransfer(data) {
     return;
   }
 
-  const sender = `0x${data.topics[1].slice(26)}`;
-  const recipient = `0x${data.topics[2].slice(26)}`;
+  const { sender, recipient } = addressesFromTopics(data.topics);
 
   // Skip UBI payout transfer from Hub
   if (sender !== ZERO_ADDRESS) {
     await updateEdge(
       {
         token: tokenOwner,
-        from: web3.utils.toChecksumAddress(sender),
+        from: sender,
         to: tokenOwner,
       },
       tokenAddress,
     );
   }
 
+  // Skip gas fee payments to the relayer
   if (recipient !== TX_SENDER_ADDRESS) {
     await updateEdge(
       {
         token: tokenOwner,
-        from: web3.utils.toChecksumAddress(recipient),
+        from: recipient,
         to: tokenOwner,
       },
       tokenAddress,
@@ -138,13 +141,13 @@ async function processTransfer(data) {
     return;
   }
 
-  // go through everyone trusts this token, and make an edge
+  // Go through everyone trusts this token, and make an edge
   await Promise.all(
     graphData.outgoing.map(async (trustObject) => {
-      await updateEdge(
+      return await updateEdge(
         {
           token: tokenOwner,
-          from: web3.utils.toChecksumAddress(recipient),
+          from: sender,
           to: web3.utils.toChecksumAddress(trustObject.canSendToAddress),
         },
         tokenAddress,
@@ -153,10 +156,7 @@ async function processTransfer(data) {
   );
 
   // Is user sending their own token?
-  if (
-    topicMatchesAddress(sender, tokenOwner) ||
-    topicMatchesAddress(recipient, tokenOwner)
-  ) {
+  if (sender === tokenOwner || recipient === tokenOwner) {
     logger.info(
       `Found ${graphData.incoming.length} incoming addreses while processing job for Safe ${tokenOwner}`,
     );
@@ -171,7 +171,7 @@ async function processTransfer(data) {
           return;
         }
 
-        return updateEdge(
+        return await updateEdge(
           {
             token: web3.utils.toChecksumAddress(trustObject.userAddress),
             from: web3.utils.toChecksumAddress(trustObject.userAddress),
@@ -188,8 +188,8 @@ async function processTransfer(data) {
 }
 
 async function processTrust(data) {
-  const recipient = `0x${data.topics[1].slice(26)}`;
-  const sender = `0x${data.topics[2].slice(26)}`; // recipient of trust is the sender of tokens
+  // Recipient of trust is the sender of tokens
+  const { sender, recipient } = addressesFromTopics(data.topics);
 
   logger.info(`Processing trust for ${recipient}`);
 
@@ -201,19 +201,16 @@ async function processTrust(data) {
 
   return updateEdge(
     {
-      token: web3.utils.toChecksumAddress(sender),
-      from: web3.utils.toChecksumAddress(sender),
-      to: web3.utils.toChecksumAddress(recipient),
+      token: sender,
+      from: sender,
+      to: recipient,
     },
     tokenAddress,
   );
 }
 
 processor(syncAddress).process(async (job) => {
-  // `id` is an address, job is either triggered by a trust event or a transfer
-  // event. If triggered by a transfer, id is a token address, and we must
-  // check if it's part of Circles. If triggered by a trust event, id is the
-  // hub address
+  // This job is either triggered by a trust event or a transfer event.
   if (job.data.type === 'Transfer') {
     return await processTransfer(job.data);
   } else {
