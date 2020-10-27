@@ -152,19 +152,19 @@ async function processTransfer(data) {
 
 async function processTrust(data) {
   const recipient = `0x${data.topics[1].slice(26)}`;
-  const sender = `0x${data.topics[2].slice(26)}`;
+  const sender = `0x${data.topics[2].slice(26)}`; // recipient of trust is the sender of tokens
 
   logger.info(`Processing trust for ${recipient}`);
 
-  const tokenAddress = await hubContract.methods.userToToken(recipient).call();
+  const tokenAddress = await hubContract.methods.userToToken(sender).call();
   if (tokenAddress === ZERO_ADDRESS) {
-    logger.info(`${recipient} is not a Circles user`);
+    logger.info(`${sender} is not a Circles user`);
     return;
   }
 
   return updateEdge(
     {
-      token: web3.utils.toChecksumAddress(recipient),
+      token: web3.utils.toChecksumAddress(sender),
       from: web3.utils.toChecksumAddress(sender),
       to: web3.utils.toChecksumAddress(recipient),
     },

@@ -169,16 +169,24 @@ const trustSignature = getEventSignature(hubContract, 'Trust');
 
 function handleTrustChange({ address, topics }) {
   if (topics.includes(transferSignature)) {
-    submitJob(tasks.syncAddress, `syncAddress-transfer-${address}`, {
-      tokenAddress: address,
-      type: 'Transfer',
-      topics,
-    });
+    submitJob(
+      tasks.syncAddress,
+      `syncAddress-transfer-${address}-${Date.now()}`,
+      {
+        tokenAddress: address,
+        type: 'Transfer',
+        topics,
+      },
+    );
   } else if (topics.includes(trustSignature)) {
-    submitJob(tasks.syncAddress, `syncAddress-trust-${address}`, {
-      type: 'Trust',
-      topics,
-    });
+    submitJob(
+      tasks.syncAddress,
+      `syncAddress-trust-${topics[1]}-${Date.now()}`,
+      {
+        type: 'Trust',
+        topics,
+      },
+    );
   }
 }
 
