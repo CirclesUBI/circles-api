@@ -412,9 +412,9 @@ export async function getTransferMetrics() {
   return await getMetrics(METRICS_TRANSFERS);
 }
 
-export async function getStoredEdges() {
+export async function getStoredEdges(isWithAttributes = false) {
   return await Edge.findAll({
-    attributes: ['from', 'to', 'token', 'capacity'],
+    attributes: isWithAttributes ? ['from', 'to', 'token', 'capacity'] : null,
     order: [['from', 'ASC']],
     raw: true,
   });

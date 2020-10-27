@@ -15,7 +15,7 @@ processor(exportEdges).process(async () => {
   const startTime = performance.now();
 
   // Get edges from database and write them to the .json file
-  const edges = await getStoredEdges();
+  const edges = await getStoredEdges(true);
   await writeToFile(edges);
 
   // Show metrics
