@@ -8,6 +8,13 @@ import {
   processTransferEvent,
 } from '../services/edgesFromEvents';
 import { redisUrl, redisOptions } from '../services/redis';
+<<<<<<< HEAD
+=======
+import { safeFields } from '../services/transfer';
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const TX_SENDER_ADDRESS = process.env.TX_SENDER_ADDRESS;
+>>>>>>> Extended trust graph and ubi working
 
 const syncAddress = new Queue('Sync trust graph for address', redisUrl, {
   settings: redisOptions,
