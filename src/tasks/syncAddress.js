@@ -114,6 +114,15 @@ async function processTransfer(data) {
     );
   }
 
+  await updateEdge(
+    {
+      token: tokenOwner,
+      from: web3.utils.toChecksumAddress(recipient),
+      to: tokenOwner,
+    },
+    tokenAddress,
+  );
+
   // Is user sending their own token?
   if (
     topicMatchesAddress(sender, tokenOwner) ||
