@@ -13,6 +13,7 @@ import { redisUrl, redisOptions } from '../services/redis';
 import { safeFields } from '../services/transfer';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const TX_SENDER_ADDRESS = process.env.TX_SENDER_ADDRESS;
 
 const syncAddress = new Queue('Sync trust graph for address', redisUrl, {
   settings: redisOptions,
@@ -36,7 +37,7 @@ async function requestSafe(safe) {
 }
 
 async function upsert(edge) {
-  if (edge.capacity === 0) {
+  if (edge.capacity.toString() === '0') {
     return Edge.destroy({
       where: {
         token: edge.token,
@@ -56,6 +57,9 @@ async function upsert(edge) {
 }
 
 async function updateEdge(edge, tokenAddress) {
+  if (edge.from === edge.to) {
+    return;
+  }
   try {
     // Get send limit
     const limit = await hubContract.methods
@@ -114,13 +118,38 @@ async function processTransfer(data) {
     );
   }
 
-  await updateEdge(
-    {
-      token: tokenOwner,
-      from: web3.utils.toChecksumAddress(recipient),
-      to: tokenOwner,
-    },
-    tokenAddress,
+  if (recipient !== TX_SENDER_ADDRESS) {
+    await updateEdge(
+      {
+        token: tokenOwner,
+        from: web3.utils.toChecksumAddress(recipient),
+        to: tokenOwner,
+      },
+      tokenAddress,
+    );
+  }
+
+  const [graphData] = await requestSafe(tokenOwner);
+
+  if (!graphData) {
+    logger.error(
+      `Safe ${tokenOwner} for job ${data.id} is not registered in graph`,
+    );
+    return;
+  }
+
+  // go through everyone trusts this token, and make an edge
+  await Promise.all(
+    graphData.outgoing.map(async (trustObject) => {
+      await updateEdge(
+        {
+          token: tokenOwner,
+          from: web3.utils.toChecksumAddress(recipient),
+          to: web3.utils.toChecksumAddress(trustObject.canSendToAddress),
+        },
+        tokenAddress,
+      );
+    }),
   );
 
   // Is user sending their own token?
@@ -128,26 +157,25 @@ async function processTransfer(data) {
     topicMatchesAddress(sender, tokenOwner) ||
     topicMatchesAddress(recipient, tokenOwner)
   ) {
-    const [graphData] = await requestSafe(tokenOwner);
-
-    if (!graphData) {
-      logger.error(
-        `Safe ${tokenOwner} for job ${data.id} is not registered in graph`,
-      );
-      return;
-    }
-
     logger.info(
-      `Found outgoing addreses ${graphData.outgoingAddresses} while processing job for Safe ${tokenOwner}`,
+      `Found ${graphData.incoming.length} incoming addreses while processing job for Safe ${tokenOwner}`,
     );
 
     return Promise.all(
-      graphData.outgoingAddresses.map((connectedAddress) => {
+      graphData.incoming.map(async (trustObject) => {
+        const tokenAddress = await hubContract.methods
+          .userToToken(trustObject.userAddress)
+          .call();
+        if (tokenAddress === ZERO_ADDRESS) {
+          logger.info(`${sender} is not a Circles user`);
+          return;
+        }
+
         return updateEdge(
           {
-            token: tokenOwner,
-            from: tokenOwner,
-            to: web3.utils.toChecksumAddress(connectedAddress),
+            token: web3.utils.toChecksumAddress(trustObject.userAddress),
+            from: web3.utils.toChecksumAddress(trustObject.userAddress),
+            to: tokenOwner,
           },
           tokenAddress,
         );
