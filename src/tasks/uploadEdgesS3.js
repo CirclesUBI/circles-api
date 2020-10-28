@@ -21,7 +21,7 @@ processor(uploadEdgesS3).process(async () => {
 
   return await s3
     .putObject({
-      Bucket: process.env.AWS_S3_BUCKET_TRUST_NETWORKS,
+      Bucket: process.env.AWS_S3_BUCKET_TRUST_NETWORK,
       Key: `${new Date().toJSON().slice(0, 10)}.json`,
       Body: edges,
       ACL: 'public-read',
