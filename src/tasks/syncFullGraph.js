@@ -3,8 +3,10 @@ import { performance } from 'perf_hooks';
 
 import logger from '../helpers/logger';
 import processor from './processor';
+import submitJob from './submitJob';
+import tasks from './';
 import { getBlockNumber } from '../services/graph';
-import { getTrustNetworkEdges, storeEdges } from '../services/transfer';
+import { getTrustNetworkEdges, updateEdge } from '../services/transfer';
 import { redisUrl, redisLongRunningOptions } from '../services/redis';
 
 const syncFullGraph = new Queue('Sync full trust graph', redisUrl, {
@@ -26,11 +28,17 @@ async function rebuildTrustNetwork() {
 
   try {
     const { edges, statistics } = await getTrustNetworkEdges();
-
     logger.info(`Finished getting trust network edges`);
 
-    // Put trust network into database to cache it there
-    const dbStatistics = await storeEdges(edges);
+    for await (const edge of edges) {
+      await updateEdge(
+        {
+          ...edge,
+          token: edge.tokenOwner,
+        },
+        edge.tokenAddress,
+      );
+    }
 
     logger.info(`Finished storing edges edges`);
 
@@ -38,7 +46,7 @@ async function rebuildTrustNetwork() {
     const milliseconds = Math.round(endTime - startTime);
 
     logger.info(
-      `Updated edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (added ${dbStatistics.added}, updated ${dbStatistics.updated}, removed ${dbStatistics.removed}, ${milliseconds}ms)`,
+      `Updated ${edges.length} edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (${milliseconds}ms)`,
     );
     return true;
   } catch (error) {
@@ -48,7 +56,10 @@ async function rebuildTrustNetwork() {
 }
 
 processor(syncFullGraph).process(async () => {
-  return await rebuildTrustNetwork();
+  await rebuildTrustNetwork();
+
+  // Always write edges .json file afterwards
+  submitJob(tasks.exportEdges, `exportEdges-after-fullSync`);
 });
 
 export default syncFullGraph;

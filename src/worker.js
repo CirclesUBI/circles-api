@@ -26,7 +26,7 @@ import {
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
-const CRON_EVERY_MINUTE = '*/1 * * * *';
+const CRON_EVERY_HOUR = '*/60 * * * *';
 
 // Connect with postgres database
 db.authenticate()
@@ -167,7 +167,7 @@ logger.info(`Started workers for: ${Object.keys(workers)}`);
 const transferSignature = getEventSignature(tokenContract, 'Transfer');
 const trustSignature = getEventSignature(hubContract, 'Trust');
 
-function handleTrustChange({ address, topics }) {
+function handleTrustChange({ address, topics, transactionHash }) {
   if (topics.includes(transferSignature)) {
     submitJob(
       tasks.syncAddress,
@@ -176,6 +176,7 @@ function handleTrustChange({ address, topics }) {
         tokenAddress: address,
         type: 'Transfer',
         topics,
+        transactionHash,
       },
     );
   } else if (topics.includes(trustSignature)) {
@@ -185,6 +186,7 @@ function handleTrustChange({ address, topics }) {
       {
         type: 'Trust',
         topics,
+        transactionHash,
       },
     );
   }
@@ -195,6 +197,14 @@ waitUntilGraphIsReady()
     logger.info('Graph node connection has been established successfully');
   })
   .then(() => {
+    if (process.env.INITIAL_SYNC) {
+      // Run full sync on start. Note that this is a task which is manually
+      // executed by setting the env var, as we don't want to run this
+      // expensive process every time the worker restarts.
+      submitJob(tasks.syncFullGraph, 'syncFullGraph-initial');
+      return;
+    }
+
     // Subscribe to events to handle trust graph updates for single addresses
     subscribeEvent(
       hubContract,
@@ -211,13 +221,6 @@ waitUntilGraphIsReady()
       },
     });
 
-    // Sync full graph every night
-    submitJob(tasks.syncFullGraph, 'syncFullGraph-nightly', null, {
-      repeat: {
-        cron: CRON_NIGHTLY,
-      },
-    });
-
     // Upload latest edges .json to S3 every night
     submitJob(tasks.uploadEdgesS3, 'uploadEdgesS3-nightly', null, {
       repeat: {
@@ -225,15 +228,12 @@ waitUntilGraphIsReady()
       },
     });
 
-    // Export edges .json file every minute
+    // Export edges .json file every hour
     submitJob(tasks.exportEdges, 'exportEdges', null, {
       repeat: {
-        cron: CRON_EVERY_MINUTE,
+        cron: CRON_EVERY_HOUR,
       },
     });
-
-    // Always run full sync on start
-    submitJob(tasks.syncFullGraph, 'syncFullGraph-initial');
 
     // Always write edges .json file on start to make sure it exists
     submitJob(tasks.exportEdges, 'exportEdges-initial');

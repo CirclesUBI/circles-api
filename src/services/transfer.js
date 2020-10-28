@@ -1,11 +1,14 @@
+import HubContract from 'circles-contracts/build/contracts/Hub.json';
+import TokenContract from 'circles-contracts/build/contracts/Token.json';
 import fastJsonStringify from 'fast-json-stringify';
 import findTransferSteps from '@circles/transfer';
 import fs from 'fs';
 import { Op } from 'sequelize';
 import { performance } from 'perf_hooks';
 
-import db from '../database';
+import Edge from '../models/edges';
 import fetchAllFromGraph from './graph';
+import logger from '../helpers/logger';
 import web3 from './web3';
 import { getMetrics, setMetrics } from './metrics';
 import { minNumberString } from '../helpers/compare';
@@ -14,7 +17,6 @@ import {
   EDGES_TMP_FILE_PATH,
   PATHFINDER_FILE_PATH,
 } from '../constants';
-import Edge from '../models/edges';
 
 const METRICS_TRANSFERS = 'transfers';
 
@@ -46,34 +48,32 @@ const findSafe = (safes, safeAddress) => {
 };
 
 const findConnection = (connections, userAddress, canSendToAddress) => {
-  return connections.find(
-    (edge) =>
+  return connections.find((edge) => {
+    return (
       edge.canSendToAddress === canSendToAddress &&
-      edge.userAddress === userAddress,
-  );
+      edge.userAddress === userAddress
+    );
+  });
 };
 
 export const safeQuery = `{
-    limit
-    canSendToAddress
-    userAddress
-  }`;
+  canSendToAddress
+  userAddress
+}`;
 
 export const safeFields = `
-    id
-    outgoing ${safeQuery}
-    incoming ${safeQuery}
-    outgoingAddresses
-    balances {
-      amount
-      token {
+  id
+  outgoing ${safeQuery}
+  incoming ${safeQuery}
+  balances {
+    token {
+      id
+      owner {
         id
-        owner {
-          id
-        }
       }
     }
-  `;
+  }
+`;
 
 export async function getTrustNetworkEdges() {
   // Methods to parse the data we get to break all down into given safe
@@ -83,24 +83,23 @@ export async function getTrustNetworkEdges() {
   const safes = [];
   const tokens = [];
 
-  const addConnection = (userAddress, canSendToAddress, limit) => {
+  const addConnection = (userAddress, canSendToAddress) => {
     connections.push({
       canSendToAddress,
-      limit,
       userAddress,
+      isExtended: false,
     });
   };
 
-  const addConnections = (connections) => {
-    connections.forEach((connection) => {
+  const addConnections = (newConnections) => {
+    newConnections.forEach((connection) => {
       const userAddress = web3.utils.toChecksumAddress(connection.userAddress);
       const canSendToAddress = web3.utils.toChecksumAddress(
         connection.canSendToAddress,
       );
-      const { limit } = connection;
 
       if (!findConnection(connections, userAddress, canSendToAddress)) {
-        addConnection(userAddress, canSendToAddress, limit);
+        addConnection(userAddress, canSendToAddress);
       }
     });
   };
@@ -114,13 +113,12 @@ export async function getTrustNetworkEdges() {
 
   const addSafe = (safeAddress, balances) => {
     const safe = balances.reduce(
-      (acc, { token, amount }) => {
+      (acc, { token }) => {
         const tokenAddress = web3.utils.toChecksumAddress(token.id);
         const tokenSafeAddress = web3.utils.toChecksumAddress(token.owner.id);
 
         acc.tokens.push({
           address: tokenAddress,
-          balance: amount,
         });
 
         if (!findToken(tokens, tokenAddress)) {
@@ -174,14 +172,22 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     return [from, to, token].join('');
   };
 
+<<<<<<< HEAD
   const addEdge = ({ from, to, token, capacity }) => {
+=======
+  const addEdge = ({ from, to, tokenAddress, tokenOwner }) => {
+>>>>>>> Refactor syncFullGraph job to get limit from contracts
     // Ignore sending to ourselves
     if (from === to) {
       return;
     }
 
     // Ignore duplicates
+<<<<<<< HEAD
     const key = getKey(from, to, token);
+=======
+    const key = getKey(from, to, tokenOwner);
+>>>>>>> Refactor syncFullGraph job to get limit from contracts
     if (checkedEdges[key]) {
       return;
     }
@@ -190,8 +196,13 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     edges.push({
       from,
       to,
+<<<<<<< HEAD
       token,
       capacity,
+=======
+      tokenAddress,
+      tokenOwner,
+>>>>>>> Refactor syncFullGraph job to get limit from contracts
     });
   };
 
@@ -210,6 +221,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     const senderTokens = senderSafe.tokens;
 
     // Which of them are trusted by the receiving node?
+<<<<<<< HEAD
     const trustedTokens = senderTokens.reduce(
       (tokenAcc, { address, balance }) => {
         const token = findToken(tokens, address);
@@ -235,20 +247,33 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
 
         if (tokenConnection) {
           const capacity = minNumberString(tokenConnection.limit, balance);
+=======
+    const trustedTokens = senderTokens.reduce((tokenAcc, { address }) => {
+      const token = findToken(tokens, address);
 
-          tokenAcc.push({
-            capacity,
-            token: token.safeAddress,
-          });
-        }
+      const tokenConnection = connections.find(
+        ({ userAddress, canSendToAddress }) => {
+          return (
+            userAddress === token.safeAddress &&
+            canSendToAddress === receiverSafeAddress
+          );
+        },
+      );
+>>>>>>> Refactor syncFullGraph job to get limit from contracts
 
-        return tokenAcc;
-      },
-      [],
-    );
+      if (tokenConnection) {
+        tokenAcc.push({
+          tokenAddress: token.address,
+          tokenOwner: token.safeAddress,
+        });
+      }
+
+      return tokenAcc;
+    }, []);
 
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
+<<<<<<< HEAD
     trustedTokens.reduce((acc, trustedToken) => {
       // Ignore sending to ourselves
       if (senderSafeAddress === receiverSafeAddress) {
@@ -269,10 +294,14 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
       checkedEdges[key] = true;
 
       acc.push({
+=======
+    trustedTokens.forEach((trustedToken) => {
+      addEdge({
+>>>>>>> Refactor syncFullGraph job to get limit from contracts
         from: senderSafeAddress,
         to: receiverSafeAddress,
-        capacity: trustedToken.capacity,
-        token: trustedToken.token,
+        tokenAddress: trustedToken.tokenAddress,
+        tokenOwner: trustedToken.tokenOwner,
       });
 
       return acc;
@@ -284,7 +313,11 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
   // organization owns tokens it can still send them even though noone trusts
   // the organization)
   safes.forEach(({ address, tokens: ownedTokens }) => {
+<<<<<<< HEAD
     ownedTokens.forEach(({ address: tokenAddress, balance }) => {
+=======
+    ownedTokens.forEach(({ address: tokenAddress }) => {
+>>>>>>> Refactor syncFullGraph job to get limit from contracts
       const token = findToken(tokens, tokenAddress);
 
       connections.forEach((connection) => {
@@ -292,8 +325,13 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
           addEdge({
             from: address,
             to: connection.canSendToAddress,
+<<<<<<< HEAD
             capacity: balance,
             token: token.safeAddress,
+=======
+            tokenAddress,
+            tokenOwner: token.safeAddress,
+>>>>>>> Refactor syncFullGraph job to get limit from contracts
           });
         }
       });
@@ -303,105 +341,62 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
   return edges;
 }
 
-export async function storeEdges(edges) {
-  const previousEdges = await getStoredEdges();
+export async function upsert(edge) {
+  if (edge.capacity.toString() === '0') {
+    return Edge.destroy({
+      where: {
+        token: edge.token,
+        from: edge.from,
+        to: edge.to,
+      },
+    });
+  } else {
+    return Edge.upsert(edge, {
+      where: {
+        token: edge.token,
+        from: edge.from,
+        to: edge.to,
+      },
+    });
+  }
+}
 
-  const getKey = (edge) => {
-    return [edge.from, edge.to, edge.token].join('');
-  };
+export async function updateEdge(edge, tokenAddress) {
+  // Ignore self-trust
+  if (edge.from === edge.to) {
+    return;
+  }
 
-  // Group previous edges by unique key to make lookups a little faster
-  const groupedPreviousEdges = previousEdges.reduce((acc, previousEdge) => {
-    const key = getKey(previousEdge);
-    acc[key] = previousEdge;
-    return acc;
-  }, {});
+  try {
+    // Get send limit
+    const limit = await hubContract.methods
+      .checkSendLimit(edge.token, edge.from, edge.to)
+      .call();
 
-  const findPreviousEdge = (edge) => {
-    const key = getKey(edge);
-    return key in groupedPreviousEdges ? groupedPreviousEdges[key] : null;
-  };
+    // Get Token balance
+    const tokenContract = new web3.eth.Contract(
+      TokenContract.abi,
+      tokenAddress,
+    );
+    const balance = await tokenContract.methods.balanceOf(edge.from).call();
 
-  // Calculate the delta between the new edges and previousEdges
-  const toBeAdded = [];
-  const toBeUpdated = [];
-  const toBeRemoved = [];
-  const latestKeys = {};
+    // Update edge capacity
+    edge.capacity = minNumberString(limit, balance);
 
-  edges.forEach((edge) => {
-    // Mark all latest edges so we can find out which ones to remove later
-    const key = getKey(edge);
-    latestKeys[key] = edge;
+    await upsert(edge);
+  } catch (error) {
+    logger.error(
+      `Found error with checking sending limit for token of ${edge.token} from ${edge.from} to ${edge.to} [${error}]`,
+    );
 
-    const previousEdge = findPreviousEdge(edge);
-    if (!previousEdge) {
-      // This entry does not exist yet
-      toBeAdded.push(edge);
-    } else if (edge.capacity !== previousEdge.capacity) {
-      // This entry exists but has a new value
-      toBeUpdated.push({
-        ...previousEdge,
-        capacity: edge.capacity,
-      });
-    }
-  });
-
-  // Find all entries which are not needed anymore
-  Object.keys(groupedPreviousEdges).forEach((previousKey) => {
-    if (!(previousKey in latestKeys)) {
-      toBeRemoved.push(groupedPreviousEdges[previousKey]);
-    }
-  });
-
-  // Do the actual database transactions
-  await db.transaction(async (transaction) => {
-    const promises = [];
-
-    if (toBeAdded.length > 0) {
-      promises.push(Edge.bulkCreate(toBeAdded, { transaction }));
-    }
-
-    if (toBeUpdated.length > 0) {
-      promises.push(
-        Promise.all(
-          toBeUpdated.map((edge) => {
-            return Edge.update(
-              { capacity: edge.capacity },
-              {
-                where: {
-                  id: edge.id,
-                },
-                transaction,
-              },
-            );
-          }),
-        ),
-      );
-    }
-
-    if (toBeRemoved.length > 0) {
-      promises.push(
-        Edge.destroy({
-          where: {
-            id: {
-              [Op.in]: toBeRemoved.map((edge) => {
-                return edge.id;
-              }),
-            },
-          },
-        }),
-      );
-    }
-
-    return Promise.all(promises);
-  });
-
-  return {
-    added: toBeAdded.length,
-    removed: toBeRemoved.length,
-    updated: toBeUpdated.length,
-    total: edges.length,
-  };
+    await Edge.destroy({
+      where: {
+        token: edge.token,
+        from: edge.from,
+        to: edge.to,
+      },
+    });
+  }
 }
 
 export async function setTransferMetrics(metrics) {
@@ -451,12 +446,12 @@ export async function transferSteps({ from, to, value }) {
     {
       from,
       to,
-      value: web3.utils.toWei(value.toString(), 'ether'),
+      value,
     },
     {
       edgesFile: EDGES_FILE_PATH,
       pathfinderExecutable: PATHFINDER_FILE_PATH,
-      timeout: process.env.TRANSFER_STEPS_TIMEOUT || 0,
+      timeout: process.env.TRANSFER_STEPS_TIMEOUT || DEFAULT_PROCESS_TIMEOUT,
     },
   );
 
