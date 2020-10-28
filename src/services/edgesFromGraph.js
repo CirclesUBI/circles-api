@@ -18,7 +18,13 @@ import {
 } from '../constants';
 
 const METRICS_TRANSFERS = 'transfers';
+
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 10;
+
+const hubContract = new web3.eth.Contract(
+  HubContract.abi,
+  process.env.HUB_ADDRESS,
+);
 
 const stringify = fastJsonStringify({
   title: 'Circles Edges Schema',
@@ -39,11 +45,6 @@ const stringify = fastJsonStringify({
   },
 });
 
-const hubContract = new web3.eth.Contract(
-  HubContract.abi,
-  process.env.HUB_ADDRESS,
-);
-
 const findToken = (tokens, tokenAddress) => {
   return tokens.find((token) => token.address === tokenAddress);
 };
@@ -61,12 +62,12 @@ const findConnection = (connections, userAddress, canSendToAddress) => {
   });
 };
 
-const safeQuery = `{
+export const safeQuery = `{
   canSendToAddress
   userAddress
 }`;
 
-const safeFields = `
+export const safeFields = `
   id
   outgoing ${safeQuery}
   incoming ${safeQuery}
