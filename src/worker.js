@@ -1,5 +1,3 @@
-import fastJsonStringify from 'fast-json-stringify';
-import fs from 'fs';
 import { performance } from 'perf_hooks';
 
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
@@ -15,11 +13,10 @@ import web3, {
   subscribeEvent,
 } from './services/web3';
 import {
-  EDGES_FILE_PATH,
-  EDGES_TMP_FILE_PATH,
   getTrustNetworkEdges,
   setTransferMetrics,
   storeEdges,
+  writeToFile,
 } from './services/transfer';
 import { waitUntilGraphIsReady } from './services/graph';
 
@@ -53,25 +50,6 @@ let lastTrustChangeAt = 0;
 let lastUpdateAt = 0;
 let knownTokens = [];
 
-const stringify = fastJsonStringify({
-  title: 'Circles Edges Schema',
-  type: 'array',
-  properties: {
-    from: {
-      type: 'string',
-    },
-    to: {
-      type: 'string',
-    },
-    token: {
-      type: 'string',
-    },
-    capacity: {
-      type: 'integer',
-    },
-  },
-});
-
 async function rebuildTrustNetwork(blockNumber) {
   if (isUpdatePending) {
     return;
@@ -84,16 +62,7 @@ async function rebuildTrustNetwork(blockNumber) {
   try {
     const { edges, statistics } = await getTrustNetworkEdges();
 
-    // Store edges into .json file for pathfinder executable
-    fs.writeFile(EDGES_TMP_FILE_PATH, stringify(edges), (error) => {
-      if (error) {
-        throw new Error(
-          `Could not write to ${EDGES_TMP_FILE_PATH} file: ${error}`,
-        );
-      }
-
-      fs.renameSync(EDGES_TMP_FILE_PATH, EDGES_FILE_PATH);
-    });
+    await writeToFile(edges);
 
     // Store all known tokens to identify transfer events
     knownTokens = edges

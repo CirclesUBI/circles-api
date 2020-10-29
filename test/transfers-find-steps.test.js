@@ -1,7 +1,11 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
-import { getTrustNetworkEdges, storeEdges } from '~/services/transfer';
+import {
+  getTrustNetworkEdges,
+  storeEdges,
+  writeToFile,
+} from '~/services/transfer';
 import { mockGraphSafes } from './utils/mocks';
 import { randomChecksumAddress } from './utils/common';
 
@@ -13,6 +17,7 @@ describe('POST /transfers - Find transfer steps', () => {
 
     // Simulate worker task to establish database
     const { edges } = await getTrustNetworkEdges();
+    await writeToFile(edges);
     await storeEdges(edges);
   });
 
@@ -28,22 +33,10 @@ describe('POST /transfers - Find transfer steps', () => {
       .expect(httpStatus.BAD_REQUEST);
   });
 
-  it('should return an error when node was not found', async () => {
-    await request(app)
-      .post('/api/transfers')
-      .send({
-        from: randomChecksumAddress(),
-        to: randomChecksumAddress(),
-        value: 12,
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.UNPROCESSABLE_ENTITY);
-  });
-
   it('should return the transfer steps and maximumFlowValue', async () => {
     const from = '0xd0f9ec356953814Dd89f95BDf8dBAc8BC1e42316';
     const to = '0xF350BEc1376Ab9C38334A56EB2142f576f112891';
-    const value = 12;
+    const value = '12000000000000000000';
 
     await request(app)
       .post('/api/transfers')
@@ -59,7 +52,7 @@ describe('POST /transfers - Find transfer steps', () => {
 
         expect(data.from).toBe(from);
         expect(data.to).toBe(to);
-        expect(data.maxFlowValue).toBe(80);
+        expect(data.maxFlowValue).toBe('12000000000000000000');
         expect(data.transferValue).toBe(value);
         expect(data.transferSteps.length).toBe(4);
       });
