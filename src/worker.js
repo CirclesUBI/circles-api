@@ -26,7 +26,6 @@ import {
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
-const CRON_EVERY_HOUR = '*/60 * * * *';
 
 // Connect with postgres database
 db.authenticate()
@@ -225,13 +224,6 @@ waitUntilGraphIsReady()
     submitJob(tasks.uploadEdgesS3, 'uploadEdgesS3-nightly', null, {
       repeat: {
         cron: CRON_NIGHTLY,
-      },
-    });
-
-    // Export edges .json file every hour
-    submitJob(tasks.exportEdges, 'exportEdges', null, {
-      repeat: {
-        cron: CRON_EVERY_HOUR,
       },
     });
 

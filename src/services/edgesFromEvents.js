@@ -1,10 +1,10 @@
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 
+import EdgeUpdateManager from './edgesUpdate';
 import logger from '../helpers/logger';
 import web3 from './web3';
 import { ZERO_ADDRESS } from '../constants';
 import { fetchFromGraph } from './graph';
-import { updateEdge } from './edgesUpdate';
 
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
@@ -36,7 +36,10 @@ async function requestSafe(safe) {
   );
 }
 
-async function updateAllWhoTrustToken({ tokenOwner, tokenAddress, address }) {
+async function updateAllWhoTrustToken(
+  { tokenOwner, tokenAddress, address },
+  edgeUpdateManager,
+) {
   // Get more information from the graph about the current trust connections of
   // `tokenOwner`
   const [tokenOwnerData] = await requestSafe(tokenOwner);
@@ -57,20 +60,21 @@ async function updateAllWhoTrustToken({ tokenOwner, tokenAddress, address }) {
         trustObject.canSendToAddress,
       );
 
-      await updateEdge(
-        {
-          token: tokenOwner,
-          from: canSendToAddress,
-          to: address,
-        },
-        tokenAddress,
-      );
-
-      await updateEdge(
+      // address -> canSendToAddress
+      await edgeUpdateManager.updateEdge(
         {
           token: tokenOwner,
           from: address,
           to: canSendToAddress,
+        },
+        tokenAddress,
+      );
+      // canSendToAddress -> address
+      await edgeUpdateManager.updateEdge(
+        {
+          token: tokenOwner,
+          from: canSendToAddress,
+          to: address,
         },
         tokenAddress,
       );
@@ -79,6 +83,7 @@ async function updateAllWhoTrustToken({ tokenOwner, tokenAddress, address }) {
 }
 
 export async function processTransferEvent(data) {
+  const edgeUpdateManager = new EdgeUpdateManager();
   const [sender, recipient] = addressesFromTopics(data.topics);
 
   // Ignore gas fee payments to relayer
@@ -97,11 +102,14 @@ export async function processTransferEvent(data) {
 
   // Handle UBI payouts
   if (sender === ZERO_ADDRESS) {
-    await updateAllWhoTrustToken({
-      address: recipient,
-      tokenAddress,
-      tokenOwner,
-    });
+    await updateAllWhoTrustToken(
+      {
+        address: recipient,
+        tokenAddress,
+        tokenOwner,
+      },
+      edgeUpdateManager,
+    );
     return true;
   }
 
@@ -109,7 +117,7 @@ export async function processTransferEvent(data) {
   // The limit will decrease here as the `sender` will loose tokens the
   // `tokenOwner` accepts as its their own token. This update will be ignored
   // if the `tokenOwner` is also the `sender`.
-  await updateEdge(
+  await edgeUpdateManager.updateEdge(
     {
       token: tokenOwner,
       from: sender,
@@ -122,7 +130,7 @@ export async function processTransferEvent(data) {
   // The limit will increase here as the `receiver` will get more tokens the
   // `tokenOwner` accepts as its their own token. This update will be ignored
   // if the `tokenOwner` is also the `recipient`.
-  await updateEdge(
+  await edgeUpdateManager.updateEdge(
     {
       token: tokenOwner,
       from: recipient,
@@ -133,16 +141,20 @@ export async function processTransferEvent(data) {
 
   // c) Go through everyone who trusts this token, and update the limit from
   // the `sender` to them.
-  await updateAllWhoTrustToken({
-    address: sender,
-    tokenAddress,
-    tokenOwner,
-  });
+  await updateAllWhoTrustToken(
+    {
+      address: sender,
+      tokenAddress,
+      tokenOwner,
+    },
+    edgeUpdateManager,
+  );
 
   return true;
 }
 
 export async function processTrustEvent(data) {
+  const edgeUpdateManager = new EdgeUpdateManager();
   const [truster, tokenOwner] = addressesFromTopics(data.topics);
 
   logger.info(`Processing trust for ${truster}`);
@@ -155,7 +167,7 @@ export async function processTrustEvent(data) {
 
   // a) Update the edge between `tokenOwner` and the `truster`, as the latter
   // accepts their token now.
-  await updateEdge(
+  await edgeUpdateManager.updateEdge(
     {
       token: tokenOwner,
       from: tokenOwner,
@@ -167,11 +179,14 @@ export async function processTrustEvent(data) {
   // b) Go through everyone else who trusts this token, and update the limit
   // from the `truster` to them as well, as they can send this token to the
   // `truster`.
-  await updateAllWhoTrustToken({
-    address: truster,
-    tokenAddress,
-    tokenOwner,
-  });
+  await updateAllWhoTrustToken(
+    {
+      address: truster,
+      tokenAddress,
+      tokenOwner,
+    },
+    edgeUpdateManager,
+  );
 
   return true;
 }

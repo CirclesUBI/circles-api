@@ -1,6 +1,7 @@
 import Queue from 'bull';
 import { performance } from 'perf_hooks';
 
+import EdgeUpdateManager from '../services/edgesUpdate';
 import logger from '../helpers/logger';
 import processor from './processor';
 import submitJob from './submitJob';
@@ -8,13 +9,13 @@ import tasks from './';
 import { getBlockNumber } from '../services/graph';
 import { getTrustNetworkEdges } from '../services/edgesFromGraph';
 import { redisUrl, redisLongRunningOptions } from '../services/redis';
-import { updateEdge } from '../services/edgesUpdate';
 
 const syncFullGraph = new Queue('Sync full trust graph', redisUrl, {
   settings: redisLongRunningOptions,
 });
 
 async function rebuildTrustNetwork() {
+  const edgeUpdateManager = new EdgeUpdateManager();
   const blockNumber = await getBlockNumber();
 
   if (blockNumber === 0) {
@@ -29,10 +30,12 @@ async function rebuildTrustNetwork() {
 
   try {
     const { edges, statistics } = await getTrustNetworkEdges();
-    logger.info(`Finished getting trust network edges`);
+    logger.info(
+      `Finished getting trust network edges (${edges.length} entities). Start updating capacities.`,
+    );
 
     for await (const edge of edges) {
-      await updateEdge(
+      await edgeUpdateManager.updateEdge(
         {
           ...edge,
           token: edge.tokenOwner,
@@ -41,15 +44,12 @@ async function rebuildTrustNetwork() {
       );
     }
 
-    logger.info(`Finished storing edges edges`);
-
     const endTime = performance.now();
     const milliseconds = Math.round(endTime - startTime);
 
     logger.info(
       `Updated ${edges.length} edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (${milliseconds}ms)`,
     );
-    return true;
   } catch (error) {
     logger.error(`Worker failed [${error.message}]`);
     throw error;

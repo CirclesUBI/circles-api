@@ -11,34 +11,59 @@ const hubContract = new web3.eth.Contract(
   process.env.HUB_ADDRESS,
 );
 
-export async function updateEdge(edge, tokenAddress) {
-  // Ignore self-trust
-  if (edge.from === edge.to) {
-    return;
+const getKey = (from, to, token) => {
+  return [from, to, token].join('');
+};
+
+export default class EdgeUpdateManager {
+  constructor() {
+    this.checkedEdges = {};
   }
 
-  try {
-    // Get send limit
-    const limit = await hubContract.methods
-      .checkSendLimit(edge.token, edge.from, edge.to)
-      .call();
+  checkDuplicate(edge) {
+    const key = getKey(edge.from, edge.to, edge.token);
+    if (key in this.checkedEdges) {
+      return true;
+    }
+    this.checkedEdges[key] = true;
+    return false;
+  }
 
-    // Get Token balance
-    const tokenContract = new web3.eth.Contract(
-      TokenContract.abi,
-      tokenAddress,
-    );
-    const balance = await tokenContract.methods.balanceOf(edge.from).call();
+  async updateEdge(edge, tokenAddress) {
+    // Ignore self-referential edges
+    if (edge.from === edge.to) {
+      return;
+    }
+
+    // Ignore duplicates
+    if (this.checkDuplicate(edge)) {
+      return;
+    }
 
     // Update edge capacity
-    edge.capacity = minNumberString(limit, balance);
+    try {
+      // Get send limit
+      const limit = await hubContract.methods
+        .checkSendLimit(edge.token, edge.from, edge.to)
+        .call();
 
-    await upsertEdge(edge);
-  } catch (error) {
-    logger.error(
-      `Found error with checking sending limit for token of ${edge.token} from ${edge.from} to ${edge.to} [${error}]`,
-    );
+      // Get Token balance
+      const tokenContract = new web3.eth.Contract(
+        TokenContract.abi,
+        tokenAddress,
+      );
+      const balance = await tokenContract.methods.balanceOf(edge.from).call();
 
-    await destroyEdge(edge);
+      // Update edge capacity
+      edge.capacity = minNumberString(limit, balance);
+
+      await upsertEdge(edge);
+    } catch (error) {
+      logger.error(
+        `Found error with checking sending limit for token of ${edge.token} from ${edge.from} to ${edge.to} [${error}]`,
+      );
+
+      await destroyEdge(edge);
+    }
   }
 }
