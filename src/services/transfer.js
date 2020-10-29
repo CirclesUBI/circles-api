@@ -410,7 +410,7 @@ export async function transferSteps({ from, to, value }) {
   return {
     from,
     to,
-    maxFlowValue: result.maxFlowValue,
+    maxFlowValue: web3.utils.toWei(result.maxFlowValue.toString(), 'ether'),
     processDuration: Math.round(endTime - startTime),
     transferValue: value,
     transferSteps: result.transferSteps.map(({ token, ...step }) => {
@@ -442,6 +442,8 @@ const stringify = fastJsonStringify({
 });
 
 export async function writeToFile(edges) {
+  console.log(edges);
+
   // Store edges into .json file for pathfinder executable
   fs.writeFile(EDGES_TMP_FILE_PATH, stringify(edges), (error) => {
     if (error) {
