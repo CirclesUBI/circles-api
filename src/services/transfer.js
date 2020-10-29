@@ -1,5 +1,8 @@
 import findTransferSteps from '@circles/transfer';
+import fs from 'fs';
+import path from 'path';
 import { Op } from 'sequelize';
+import { performance } from 'perf_hooks';
 
 import Edge from '../models/edges';
 import db from '../database';
@@ -9,6 +12,20 @@ import { getMetrics, setMetrics } from './metrics';
 import { minNumberString } from '../helpers/compare';
 
 const METRICS_TRANSFERS = 'transfers';
+
+export const EDGES_FILE_PATH = path.join(__dirname, '..', '..', 'edges.json');
+export const EDGES_TMP_FILE_PATH = path.join(
+  __dirname,
+  '..',
+  '..',
+  'edges.json-tmp',
+);
+export const PATHFINDER_FILE_PATH = path.join(
+  __dirname,
+  '..',
+  '..',
+  'pathfinder',
+);
 
 const findToken = (tokens, tokenAddress) => {
   return tokens.find((token) => token.address === tokenAddress);
@@ -373,41 +390,38 @@ export async function getStoredEdges() {
 }
 
 export async function transferSteps({ from, to, value }) {
-  const edges = await getStoredEdges();
-
-  const nodes = edges.reduce((acc, edge) => {
-    if (!acc.includes(edge.from)) {
-      acc.push(edge.from);
-    }
-
-    if (!acc.includes(edge.to)) {
-      acc.push(edge.to);
-    }
-
-    if (!acc.includes(edge.token)) {
-      acc.push(edge.token);
-    }
-
-    return acc;
-  }, []);
-
-  if (nodes.length === 0) {
-    throw new Error('Trust network does not contain any nodes');
+  if (!fs.existsSync(EDGES_FILE_PATH)) {
+    throw new Error(`${EDGES_FILE_PATH} does not exist`);
   }
 
-  const result = findTransferSteps({
-    from,
-    to,
-    value,
-    nodes,
-    edges,
-  });
+  if (from === to) {
+    throw new Error('Can not send to yourself');
+  }
+
+  const startTime = performance.now();
+
+  const result = await findTransferSteps(
+    {
+      from,
+      to,
+      value: value.toString(),
+    },
+    {
+      edgesFile: EDGES_FILE_PATH,
+      pathfinderExecutable: PATHFINDER_FILE_PATH,
+      timeout: process.env.TRANSFER_STEPS_TIMEOUT || 0,
+    },
+  );
+
+  const endTime = performance.now();
 
   return {
-    ...result,
-    transferSteps: result.transferSteps.map(({ token, ...step }) => {
+    maxFlowValue: parseFloat(result.maxFlowValue),
+    processDuration: Math.round(endTime - startTime),
+    transferSteps: result.transferSteps.map(({ token, value, ...step }) => {
       return {
         ...step,
+        value: parseFloat(value),
         tokenOwnerAddress: token,
       };
     }),

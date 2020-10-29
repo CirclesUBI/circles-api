@@ -1,3 +1,5 @@
 .env
 build
 node_modules
+edges.json
+edges.json-tmp
