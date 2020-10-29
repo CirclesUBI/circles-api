@@ -13,6 +13,8 @@ import { minNumberString } from '../helpers/compare';
 
 const METRICS_TRANSFERS = 'transfers';
 
+const DEFAULT_PROCESS_TIMEOUT = 1000 * 10;
+
 export const EDGES_FILE_PATH = path.join(__dirname, '..', '..', 'edges.json');
 export const EDGES_TMP_FILE_PATH = path.join(
   __dirname,
@@ -404,24 +406,26 @@ export async function transferSteps({ from, to, value }) {
     {
       from,
       to,
-      value: value.toString(),
+      value,
     },
     {
       edgesFile: EDGES_FILE_PATH,
       pathfinderExecutable: PATHFINDER_FILE_PATH,
-      timeout: process.env.TRANSFER_STEPS_TIMEOUT || 0,
+      timeout: process.env.TRANSFER_STEPS_TIMEOUT || DEFAULT_PROCESS_TIMEOUT,
     },
   );
 
   const endTime = performance.now();
 
   return {
-    maxFlowValue: parseFloat(result.maxFlowValue),
+    from,
+    to,
+    maxFlowValue: result.maxFlowValue,
     processDuration: Math.round(endTime - startTime),
-    transferSteps: result.transferSteps.map(({ token, value, ...step }) => {
+    transferValue: value,
+    transferSteps: result.transferSteps.map(({ token, ...step }) => {
       return {
         ...step,
-        value: parseFloat(value),
         tokenOwnerAddress: token,
       };
     }),
