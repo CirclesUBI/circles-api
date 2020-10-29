@@ -1,5 +1,6 @@
 import web3 from './utils/web3';
-import { findEdgesInGraphData } from '~/services/transfer';
+
+import { findEdgesInGraphData } from '~/services/edgesGraph';
 
 const SAFE_A = '0xA';
 const SAFE_B = '0xB';

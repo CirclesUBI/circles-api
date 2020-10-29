@@ -1,15 +1,13 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
-import {
-  getTrustNetworkEdges,
-  storeEdges,
-  writeToFile,
-} from '~/services/transfer';
 import { mockGraphSafes } from './utils/mocks';
 import { randomChecksumAddress } from './utils/common';
 
 import app from '~';
+import { getTrustNetworkEdges } from '~/services/edgesGraph';
+import { storeEdges } from '~/services/edgesDatabase';
+import { writeToFile } from '~/services/edgesFile';
 
 describe('POST /transfers - Find transfer steps', () => {
   beforeAll(async () => {
