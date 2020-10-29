@@ -8,7 +8,6 @@ import { performance } from 'perf_hooks';
 
 import Edge from '../models/edges';
 import fetchAllFromGraph from './graph';
-import logger from '../helpers/logger';
 import web3 from './web3';
 import { getMetrics, setMetrics } from './metrics';
 import { minNumberString } from '../helpers/compare';
@@ -56,12 +55,12 @@ const findConnection = (connections, userAddress, canSendToAddress) => {
   });
 };
 
-export const safeQuery = `{
+const safeQuery = `{
   canSendToAddress
   userAddress
 }`;
 
-export const safeFields = `
+const safeFields = `
   id
   outgoing ${safeQuery}
   incoming ${safeQuery}
@@ -172,22 +171,14 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     return [from, to, token].join('');
   };
 
-<<<<<<< HEAD
-  const addEdge = ({ from, to, token, capacity }) => {
-=======
   const addEdge = ({ from, to, tokenAddress, tokenOwner }) => {
->>>>>>> Refactor syncFullGraph job to get limit from contracts
     // Ignore sending to ourselves
     if (from === to) {
       return;
     }
 
     // Ignore duplicates
-<<<<<<< HEAD
-    const key = getKey(from, to, token);
-=======
     const key = getKey(from, to, tokenOwner);
->>>>>>> Refactor syncFullGraph job to get limit from contracts
     if (checkedEdges[key]) {
       return;
     }
@@ -196,13 +187,8 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     edges.push({
       from,
       to,
-<<<<<<< HEAD
-      token,
-      capacity,
-=======
       tokenAddress,
       tokenOwner,
->>>>>>> Refactor syncFullGraph job to get limit from contracts
     });
   };
 
@@ -221,7 +207,6 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     const senderTokens = senderSafe.tokens;
 
     // Which of them are trusted by the receiving node?
-<<<<<<< HEAD
     const trustedTokens = senderTokens.reduce(
       (tokenAcc, { address, balance }) => {
         const token = findToken(tokens, address);
@@ -246,34 +231,17 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
         );
 
         if (tokenConnection) {
-          const capacity = minNumberString(tokenConnection.limit, balance);
-=======
-    const trustedTokens = senderTokens.reduce((tokenAcc, { address }) => {
-      const token = findToken(tokens, address);
-
-      const tokenConnection = connections.find(
-        ({ userAddress, canSendToAddress }) => {
-          return (
-            userAddress === token.safeAddress &&
-            canSendToAddress === receiverSafeAddress
-          );
-        },
-      );
->>>>>>> Refactor syncFullGraph job to get limit from contracts
-
-      if (tokenConnection) {
-        tokenAcc.push({
-          tokenAddress: token.address,
-          tokenOwner: token.safeAddress,
-        });
-      }
+          tokenAcc.push({
+            tokenAddress: token.address,
+            tokenOwner: token.safeAddress,
+          });
+        }
 
       return tokenAcc;
-    }, []);
+    });
 
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
-<<<<<<< HEAD
     trustedTokens.reduce((acc, trustedToken) => {
       // Ignore sending to ourselves
       if (senderSafeAddress === receiverSafeAddress) {
@@ -294,10 +262,6 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
       checkedEdges[key] = true;
 
       acc.push({
-=======
-    trustedTokens.forEach((trustedToken) => {
-      addEdge({
->>>>>>> Refactor syncFullGraph job to get limit from contracts
         from: senderSafeAddress,
         to: receiverSafeAddress,
         tokenAddress: trustedToken.tokenAddress,
@@ -313,11 +277,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
   // organization owns tokens it can still send them even though noone trusts
   // the organization)
   safes.forEach(({ address, tokens: ownedTokens }) => {
-<<<<<<< HEAD
     ownedTokens.forEach(({ address: tokenAddress, balance }) => {
-=======
-    ownedTokens.forEach(({ address: tokenAddress }) => {
->>>>>>> Refactor syncFullGraph job to get limit from contracts
       const token = findToken(tokens, tokenAddress);
 
       connections.forEach((connection) => {
@@ -325,13 +285,8 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
           addEdge({
             from: address,
             to: connection.canSendToAddress,
-<<<<<<< HEAD
-            capacity: balance,
-            token: token.safeAddress,
-=======
             tokenAddress,
             tokenOwner: token.safeAddress,
->>>>>>> Refactor syncFullGraph job to get limit from contracts
           });
         }
       });
@@ -470,36 +425,4 @@ export async function transferSteps({ from, to, value }) {
       };
     }),
   };
-}
-
-const stringify = fastJsonStringify({
-  title: 'Circles Edges Schema',
-  type: 'array',
-  properties: {
-    from: {
-      type: 'string',
-    },
-    to: {
-      type: 'string',
-    },
-    token: {
-      type: 'string',
-    },
-    capacity: {
-      type: 'string',
-    },
-  },
-});
-
-export async function writeToFile(edges) {
-  // Store edges into .json file for pathfinder executable
-  fs.writeFile(EDGES_TMP_FILE_PATH, stringify(edges), (error) => {
-    if (error) {
-      throw new Error(
-        `Could not write to ${EDGES_TMP_FILE_PATH} file: ${error}`,
-      );
-    }
-
-    fs.renameSync(EDGES_TMP_FILE_PATH, EDGES_FILE_PATH);
-  });
 }

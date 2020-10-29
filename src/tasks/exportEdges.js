@@ -3,8 +3,9 @@ import { performance } from 'perf_hooks';
 
 import logger from '../helpers/logger';
 import processor from './processor';
-import { getStoredEdges, writeToFile } from '../services/transfer';
+import { getStoredEdges } from '../services/edgesDatabase';
 import { redisUrl, redisOptions } from '../services/redis';
+import { writeToFile } from '../services/edgesFile';
 
 const exportEdges = new Queue('Export edges to json file', redisUrl, {
   settings: redisOptions,
@@ -15,7 +16,7 @@ processor(exportEdges).process(async () => {
   const startTime = performance.now();
 
   // Get edges from database and write them to the .json file
-  const edges = await getStoredEdges(true);
+  const edges = await getStoredEdges({ hasOnlyFileFields: true });
   await writeToFile(edges);
 
   // Show metrics

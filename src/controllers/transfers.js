@@ -3,13 +3,10 @@ import httpStatus from 'http-status';
 import APIError from '../helpers/errors';
 import Transfer from '../models/transfers';
 import core from '../services/core';
+import transferSteps from '../services/findTransferSteps';
+import { checkFileExists } from '../services/edgesFile';
 import { checkSignature } from '../helpers/signature';
 import { respondWithSuccess } from '../helpers/responses';
-import {
-  checkFileExists,
-  getTransferMetrics,
-  transferSteps,
-} from '../services/transfer';
 
 function prepareTransferResult(response) {
   return {
@@ -139,7 +136,7 @@ export default {
   },
 
   getMetrics: async (req, res) => {
-    const result = await getTransferMetrics();
-    respondWithSuccess(res, result);
+    // @TODO
+    respondWithSuccess(res);
   },
 };
