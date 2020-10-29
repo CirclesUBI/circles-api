@@ -13,6 +13,18 @@ const asInteger = (envVarName, fallbackValue = 0) => {
   return fallbackValue;
 };
 
+const sslConfiguration = process.env.POSTGRES_USE_SSL
+  ? {
+      ssl: true,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
+    }
+  : {};
+
 module.exports = {
   test: {
     url,
@@ -33,13 +45,7 @@ module.exports = {
     url,
     dialect,
     timezone,
-    ssl: true,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    },
+    ...sslConfiguration,
     pool: {
       // Maximum number of connection in pool
       max: asInteger('POOL_MAX', 2),
