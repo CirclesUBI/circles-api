@@ -237,14 +237,6 @@ export async function processTrustEvent(data) {
   // b) Go through everyone else who holds this token, and update the path
   // from the `truster` to them as well, as they can send this token to the
   // `truster`.
-  // await updateAllWhoTrustToken(
-  //   {
-  //     address: truster,
-  //     tokenAddress,
-  //     tokenOwner,
-  //   },
-  //   edgeUpdateManager,
-  // );
 
   return true;
 }

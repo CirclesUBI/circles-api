@@ -32,10 +32,12 @@ processor(syncAddress).process(async (job) => {
   }
 
   // Always write edges .json file afterwards
-  submitJob(
-    tasks.exportEdges,
-    `exportEdges-after-chain-event-${job.data.transactionHash}`,
-  );
+  if (isSuccessful) {
+    submitJob(
+      tasks.exportEdges,
+      `exportEdges-after-chain-event-${job.data.transactionHash}`,
+    );
+  }
 });
 
 export default syncAddress;
