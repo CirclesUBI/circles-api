@@ -1,6 +1,6 @@
+import fastJsonStringify from 'fast-json-stringify';
 import findTransferSteps from '@circles/transfer';
 import fs from 'fs';
-import path from 'path';
 import { Op } from 'sequelize';
 import { performance } from 'perf_hooks';
 
@@ -10,24 +10,14 @@ import fetchAllFromGraph from './graph';
 import web3 from './web3';
 import { getMetrics, setMetrics } from './metrics';
 import { minNumberString } from '../helpers/compare';
+import {
+  EDGES_FILE_PATH,
+  EDGES_TMP_FILE_PATH,
+  PATHFINDER_FILE_PATH,
+} from '../constants';
 
 const METRICS_TRANSFERS = 'transfers';
-
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 10;
-
-export const EDGES_FILE_PATH = path.join(__dirname, '..', '..', 'edges.json');
-export const EDGES_TMP_FILE_PATH = path.join(
-  __dirname,
-  '..',
-  '..',
-  'edges.json-tmp',
-);
-export const PATHFINDER_FILE_PATH = path.join(
-  __dirname,
-  '..',
-  '..',
-  'pathfinder',
-);
 
 const findToken = (tokens, tokenAddress) => {
   return tokens.find((token) => token.address === tokenAddress);
@@ -426,4 +416,36 @@ export async function transferSteps({ from, to, value }) {
       };
     }),
   };
+}
+
+const stringify = fastJsonStringify({
+  title: 'Circles Edges Schema',
+  type: 'array',
+  properties: {
+    from: {
+      type: 'string',
+    },
+    to: {
+      type: 'string',
+    },
+    token: {
+      type: 'string',
+    },
+    capacity: {
+      type: 'string',
+    },
+  },
+});
+
+export async function writeToFile(edges) {
+  // Store edges into .json file for pathfinder executable
+  fs.writeFile(EDGES_TMP_FILE_PATH, stringify(edges), (error) => {
+    if (error) {
+      throw new Error(
+        `Could not write to ${EDGES_TMP_FILE_PATH} file: ${error}`,
+      );
+    }
+
+    fs.renameSync(EDGES_TMP_FILE_PATH, EDGES_FILE_PATH);
+  });
 }

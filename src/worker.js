@@ -1,5 +1,3 @@
-import fastJsonStringify from 'fast-json-stringify';
-import fs from 'fs';
 import { performance } from 'perf_hooks';
 
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
@@ -56,25 +54,6 @@ let isUpdatePending = false;
 let lastTrustChangeAt = 0;
 let lastUpdateAt = 0;
 let knownTokens = [];
-
-const stringify = fastJsonStringify({
-  title: 'Circles Edges Schema',
-  type: 'array',
-  properties: {
-    from: {
-      type: 'string',
-    },
-    to: {
-      type: 'string',
-    },
-    token: {
-      type: 'string',
-    },
-    capacity: {
-      type: 'integer',
-    },
-  },
-});
 
 async function rebuildTrustNetwork(blockNumber) {
   if (isUpdatePending) {
