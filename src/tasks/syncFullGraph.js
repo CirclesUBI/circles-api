@@ -9,6 +9,7 @@ import tasks from './';
 import { getBlockNumber } from '../services/graph';
 import { getTrustNetworkEdges } from '../services/edgesFromGraph';
 import { redisUrl, redisLongRunningOptions } from '../services/redis';
+import { updateEdge } from '../services/edgesUpdate';
 
 const syncFullGraph = new Queue('Sync full trust graph', redisUrl, {
   settings: redisLongRunningOptions,

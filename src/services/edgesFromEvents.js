@@ -211,6 +211,7 @@ export async function processTransferEvent(data) {
 
 export async function processTrustEvent(data) {
   const edgeUpdateManager = new EdgeUpdateManager();
+
   const [truster, tokenOwner] = addressesFromTopics(data.topics);
 
   logger.info(`Processing trust for ${truster}`);

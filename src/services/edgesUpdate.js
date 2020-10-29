@@ -3,6 +3,7 @@ import TokenContract from 'circles-contracts/build/contracts/Token.json';
 
 import logger from '../helpers/logger';
 import web3 from './web3';
+
 import { minNumberString } from '../helpers/compare';
 import { upsertEdge, destroyEdge } from './edgesDatabase';
 
