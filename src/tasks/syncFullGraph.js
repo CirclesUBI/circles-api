@@ -9,7 +9,6 @@ import tasks from './';
 import { getBlockNumber } from '../services/graph';
 import { getTrustNetworkEdges } from '../services/edgesFromGraph';
 import { redisUrl, redisLongRunningOptions } from '../services/redis';
-import { updateEdge } from '../services/edgesUpdate';
 
 const syncFullGraph = new Queue('Sync full trust graph', redisUrl, {
   settings: redisLongRunningOptions,
@@ -46,15 +45,12 @@ async function rebuildTrustNetwork() {
       );
     }
 
-    logger.info(`Finished storing edges edges`);
-
     const endTime = performance.now();
     const milliseconds = Math.round(endTime - startTime);
 
     logger.info(
       `Updated ${edges.length} edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (${milliseconds}ms)`,
     );
-    return true;
   } catch (error) {
     logger.error(`Worker failed [${error.message}]`);
     throw error;
