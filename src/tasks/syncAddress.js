@@ -14,18 +14,22 @@ const syncAddress = new Queue('Sync trust graph for address', redisUrl, {
 });
 
 processor(syncAddress).process(async (job) => {
+  let isSuccessful = false;
+
   // This job is either triggered by a trust event or a transfer event.
   if (job.data.type === 'Transfer') {
-    await processTransferEvent(job.data);
+    isSuccessful = await processTransferEvent(job.data);
   } else {
-    await processTrustEvent(job.data);
+    isSuccessful = await processTrustEvent(job.data);
   }
 
   // Always write edges .json file afterwards
-  submitJob(
-    tasks.exportEdges,
-    `exportEdges-after-chain-event-${job.data.transactionHash}`,
-  );
+  if (isSuccessful) {
+    submitJob(
+      tasks.exportEdges,
+      `exportEdges-after-chain-event-${job.data.transactionHash}`,
+    );
+  }
 });
 
 export default syncAddress;

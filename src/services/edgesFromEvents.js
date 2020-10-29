@@ -83,7 +83,7 @@ export async function processTransferEvent(data) {
 
   // Ignore gas fee payments to relayer
   if (recipient === process.env.TX_SENDER_ADDRESS) {
-    return;
+    return false;
   }
 
   const tokenAddress = web3.utils.toChecksumAddress(data.tokenAddress);
@@ -92,7 +92,7 @@ export async function processTransferEvent(data) {
   const tokenOwner = await hubContract.methods.tokenToUser(tokenAddress).call();
   if (tokenOwner === ZERO_ADDRESS) {
     logger.info(`${tokenAddress} is not a Circles token`);
-    return;
+    return false;
   }
 
   // Handle UBI payouts
@@ -102,7 +102,7 @@ export async function processTransferEvent(data) {
       tokenAddress,
       tokenOwner,
     });
-    return;
+    return true;
   }
 
   // a) Update the edge between the `sender` safe and the `tokenOwner` safe.
@@ -138,6 +138,8 @@ export async function processTransferEvent(data) {
     tokenAddress,
     tokenOwner,
   });
+
+  return true;
 }
 
 export async function processTrustEvent(data) {
@@ -148,7 +150,7 @@ export async function processTrustEvent(data) {
   const tokenAddress = await hubContract.methods.userToToken(tokenOwner).call();
   if (tokenAddress === ZERO_ADDRESS) {
     logger.info(`${tokenOwner} is not a Circles user`);
-    return;
+    return false;
   }
 
   // a) Update the edge between `tokenOwner` and the `truster`, as the latter
@@ -170,4 +172,6 @@ export async function processTrustEvent(data) {
     tokenAddress,
     tokenOwner,
   });
+
+  return true;
 }
