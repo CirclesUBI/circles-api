@@ -67,7 +67,6 @@
     "express": "^4.17.1",
     "fast-json-stringify": "^2.2.9",
     "helmet": "^4.1.1",
-    "http": "0.0.1-security",
     "http-status": "^1.4.2",
     "isomorphic-fetch": "^3.0.0",
     "method-override": "^3.0.0",
