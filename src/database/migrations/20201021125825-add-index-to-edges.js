@@ -1,6 +1,7 @@
 module.exports = {
   up: async (queryInterface) => {
     await queryInterface.addIndex('edges', ['from', 'to', 'token'], {
+      name: 'edges_unique',
       unique: true,
     });
   },
