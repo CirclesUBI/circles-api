@@ -245,7 +245,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
   // organization owns tokens it can still send them even though noone trusts
   // the organization)
   safes.forEach(({ address, tokens: ownedTokens }) => {
-    ownedTokens.forEach(({ address: tokenAddress }) => {
+    ownedTokens.forEach(({ address: tokenAddress, balance }) => {
       const token = findToken(tokens, tokenAddress);
 
       connections.forEach((connection) => {
@@ -253,7 +253,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
           addEdge({
             from: address,
             to: connection.canSendToAddress,
-            capacity: token.balance,
+            capacity: balance,
             token: token.safeAddress,
           });
         }

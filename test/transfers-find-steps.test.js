@@ -52,9 +52,9 @@ describe('POST /transfers - Find transfer steps', () => {
 
         expect(data.from).toBe(from);
         expect(data.to).toBe(to);
-        expect(data.maxFlowValue).toBe('66000000000000000000');
+        expect(data.maxFlowValue).toBe('12000000000000000000');
         expect(data.transferValue).toBe(value);
-        expect(data.transferSteps.length).toBe(12);
+        expect(data.transferSteps.length).toBe(7);
       });
   });
 });

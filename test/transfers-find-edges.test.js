@@ -96,7 +96,7 @@ describe('findEdgesInGraphData', () => {
     expectEdge(edges, {
       from: SAFE_A,
       to: SAFE_B,
-      capacity: 50,
+      capacity: toWei(50),
       token: SAFE_A,
     });
 
@@ -104,7 +104,7 @@ describe('findEdgesInGraphData', () => {
     expectEdge(edges, {
       from: SAFE_B,
       to: SAFE_A,
-      capacity: 75,
+      capacity: toWei(75),
       token: SAFE_B,
     });
 
@@ -112,7 +112,7 @@ describe('findEdgesInGraphData', () => {
     expectEdge(edges, {
       from: SAFE_B,
       to: SAFE_A,
-      capacity: 50,
+      capacity: toWei(50),
       token: SAFE_A,
     });
 
@@ -196,7 +196,7 @@ describe('findEdgesInGraphData', () => {
     expectEdge(edges, {
       from: SAFE_C,
       to: SAFE_A,
-      capacity: 10,
+      capacity: toWei(10),
       token: SAFE_A,
     });
 
@@ -255,7 +255,7 @@ describe('findEdgesInGraphData', () => {
     expectEdge(edges, {
       from: SAFE_A,
       to: SAFE_C,
-      capacity: 98,
+      capacity: toWei(98),
       token: SAFE_A,
     });
 
@@ -263,7 +263,7 @@ describe('findEdgesInGraphData', () => {
     expectEdge(edges, {
       from: SAFE_C,
       to: SAFE_A,
-      capacity: 2,
+      capacity: toWei(2),
       token: SAFE_A,
     });
 
