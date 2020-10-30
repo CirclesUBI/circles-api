@@ -145,25 +145,7 @@ export async function getTrustNetworkEdges() {
 }
 
 export function findEdgesInGraphData({ connections, safes, tokens }) {
-  // Add connections between token owners and the original safe of the token as
-  // they might not be represented by trust connections (for example when an
-  // organization owns tokens it can still send them even though noone trusts
-  // the organization)
-  const extendedConnections = safes.reduce(
-    (acc, { address, tokens: ownedTokens }) => {
-      ownedTokens.forEach(({ address: tokenAddress }) => {
-        const token = findToken(tokens, tokenAddress);
-        acc.push({
-          canSendToAddress: token.safeAddress,
-          userAddress: address,
-          limit: token.balance,
-        });
-      });
-
-      return acc;
-    },
-    connections,
-  );
+  const edges = [];
 
   // Find tokens for each connection we can actually use for transitive
   // transactions
@@ -173,7 +155,28 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     return [from, to, token].join('');
   };
 
-  const edges = extendedConnections.reduce((acc, connection) => {
+  const addEdge = ({ from, to, token, capacity }) => {
+    // Ignore sending to ourselves
+    if (from === to) {
+      return;
+    }
+
+    // Ignore duplicates
+    const key = getKey(from, to, token);
+    if (checkedEdges[key]) {
+      return;
+    }
+    checkedEdges[key] = true;
+
+    edges.push({
+      from,
+      to,
+      token,
+      capacity,
+    });
+  };
+
+  connections.forEach((connection) => {
     const senderSafeAddress = connection.userAddress;
     const receiverSafeAddress = connection.canSendToAddress;
 
@@ -181,7 +184,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     const senderSafe = findSafe(safes, senderSafeAddress);
 
     if (!senderSafe) {
-      return acc;
+      return;
     }
 
     // Get tokens the sender owns
@@ -192,7 +195,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
       (tokenAcc, { address, balance }) => {
         const token = findToken(tokens, address);
 
-        const tokenConnection = extendedConnections.find(
+        const tokenConnection = connections.find(
           ({ limit, userAddress, canSendToAddress }) => {
             if (!limit) {
               return false;
@@ -228,34 +231,35 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
     trustedTokens.forEach((trustedToken) => {
-      // Ignore sending to ourselves
-      if (senderSafeAddress === receiverSafeAddress) {
-        return;
-      }
-
-      // Ignore duplicates
-      const key = getKey(
-        senderSafeAddress,
-        receiverSafeAddress,
-        trustedToken.token,
-      );
-
-      if (checkedEdges[key]) {
-        return;
-      }
-
-      checkedEdges[key] = true;
-
-      acc.push({
+      addEdge({
         from: senderSafeAddress,
         to: receiverSafeAddress,
         capacity: trustedToken.capacity,
         token: trustedToken.token,
       });
     });
+  });
 
-    return acc;
-  }, []);
+  // Add connections between token owners and the original safe of the token as
+  // they might not be represented by trust connections (for example when an
+  // organization owns tokens it can still send them even though noone trusts
+  // the organization)
+  safes.forEach(({ address, tokens: ownedTokens }) => {
+    ownedTokens.forEach(({ address: tokenAddress }) => {
+      const token = findToken(tokens, tokenAddress);
+
+      connections.forEach((connection) => {
+        if (connection.userAddress === token.safeAddress) {
+          addEdge({
+            from: address,
+            to: connection.canSendToAddress,
+            capacity: token.balance,
+            token: token.safeAddress,
+          });
+        }
+      });
+    });
+  });
 
   return edges;
 }
