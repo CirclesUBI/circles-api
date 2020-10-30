@@ -25,38 +25,46 @@ const sslConfiguration = process.env.POSTGRES_USE_SSL
     }
   : {};
 
+const pool = {
+  // Maximum number of connection in pool
+  max: asInteger('POOL_MAX', 5),
+  // Minimum number of connection in pool
+  min: asInteger('POOL_MIN', 0),
+  // The maximum time, in milliseconds, that pool will try to get
+  // connection before throwing error
+  acquire: asInteger('POOL_AQUIRE', 1000 * 60),
+  // The maximum time, in milliseconds, that a connection can be idle
+  // before being released
+  idle: asInteger('POOL_IDLE', 1000 * 10),
+};
+
 module.exports = {
   test: {
     url,
     dialect,
     timezone,
+    ...sslConfiguration,
+    pool,
   },
   development: {
     url,
     dialect,
     timezone,
+    ...sslConfiguration,
+    pool,
   },
   staging: {
     url,
     dialect,
     timezone,
+    ...sslConfiguration,
+    pool,
   },
   production: {
     url,
     dialect,
     timezone,
     ...sslConfiguration,
-    pool: {
-      // Maximum number of connection in pool
-      max: asInteger('POOL_MAX', 2),
-      // Minimum number of connection in pool
-      min: asInteger('POOL_MIN', 0),
-      // The maximum time, in milliseconds, that pool will try to get
-      // connection before throwing error
-      acquire: asInteger('POOL_AQUIRE', 1000 * 30),
-      // The maximum time, in milliseconds, that a connection can be idle
-      // before being released
-      idle: asInteger('POOL_IDLE', 1000 * 10),
-    },
+    pool,
   },
 };
