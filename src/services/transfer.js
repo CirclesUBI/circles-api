@@ -228,11 +228,6 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
     trustedTokens.forEach((trustedToken) => {
-      // Simplify the numbers to not break Maximum flow algorithm
-      const capacity = Math.floor(
-        parseFloat(web3.utils.fromWei(trustedToken.capacity, 'ether')),
-      );
-
       // Ignore sending to ourselves
       if (senderSafeAddress === receiverSafeAddress) {
         return;
@@ -254,7 +249,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
       acc.push({
         from: senderSafeAddress,
         to: receiverSafeAddress,
-        capacity,
+        capacity: trustedToken.capacity,
         token: trustedToken.token,
       });
     });
@@ -410,13 +405,12 @@ export async function transferSteps({ from, to, value }) {
   return {
     from,
     to,
-    maxFlowValue: web3.utils.toWei(result.maxFlowValue.toString(), 'ether'),
+    maxFlowValue: result.maxFlowValue,
     processDuration: Math.round(endTime - startTime),
     transferValue: value,
     transferSteps: result.transferSteps.map(({ token, ...step }) => {
       return {
         ...step,
-        value: web3.utils.toWei(step.value.toString(), 'ether'),
         tokenOwnerAddress: token,
       };
     }),
