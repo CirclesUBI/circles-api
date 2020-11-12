@@ -50,8 +50,11 @@ module.exports = {
           transaction,
         },
       );
-    } catch {
+
+      await transaction.commit();
+    } catch (error) {
       transaction.rollback();
+      throw error;
     }
   },
   down: async (queryInterface) => {
@@ -106,8 +109,11 @@ module.exports = {
           transaction,
         },
       );
-    } catch {
+
+      await transaction.commit();
+    } catch (error) {
       transaction.rollback();
+      throw error;
     }
   },
 };
