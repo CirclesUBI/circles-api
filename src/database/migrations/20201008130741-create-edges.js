@@ -28,7 +28,7 @@ module.exports = {
         unique: 'edges_unique',
       },
       capacity: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
       },
     });
