@@ -1,3 +1,3 @@
 #!/bin/sh
 
-node ./build/worker.js
+node --max-old-space-size=2048 ./build/worker.js
