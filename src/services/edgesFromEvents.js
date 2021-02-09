@@ -4,7 +4,7 @@ import EdgeUpdateManager from './edgesUpdate';
 import logger from '../helpers/logger';
 import web3 from './web3';
 import { ZERO_ADDRESS } from '../constants';
-import { fetchFromGraph } from './graph';
+import core from './core';
 
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
@@ -18,42 +18,39 @@ function addressesFromTopics(topics) {
   ];
 }
 
-async function requestSafe(safe) {
-  const safeQuery = `{
-    canSendToAddress
-    userAddress
-  }`;
+async function requestSafe(safeAddress) {
+  const query = `{
+      safe(id: "${safeAddress.toLowerCase()}") {
+        outgoing {
+          canSendToAddress
+          userAddress
+        }
+        incoming {
+          canSendToAddress
+          userAddress
+        }
+      }
+    }`;
 
-  const safeFields = `
-    outgoing ${safeQuery}
-    incoming ${safeQuery}
-  `;
+  const data = await core.utils.requestGraph({
+    query,
+  });
 
-  return await fetchFromGraph(
-    'safes',
-    safeFields,
-    `where: { id: "${safe.toLowerCase()}" }`,
-  );
+  if (!data || !('safe' in data)) {
+    throw new Error(`Could not fetch graph data for Safe ${safeAddress}`);
+  }
+
+  return data.safe;
 }
 
 async function updateAllWhoTrustToken(
-  { tokenOwner, tokenAddress, address },
+  { tokenOwner, tokenAddress, address, tokenOwnerData },
   edgeUpdateManager,
 ) {
-  // Get more information from the graph about the current trust connections of
-  // `tokenOwner`
-  const [tokenOwnerData] = await requestSafe(tokenOwner);
-  if (!tokenOwnerData) {
-    logger.error(`Safe ${tokenOwner} for job is not registered in graph`);
-    return;
-  }
-
   logger.info(
     `Found ${tokenOwnerData.outgoing.length} outgoing addresses while processing job for Safe ${tokenOwner}`,
   );
 
-  // c) Go through everyone who trusts this token, and update the limit from
-  // the `sender` to them.
   await Promise.all(
     tokenOwnerData.outgoing.map(async (trustObject) => {
       const canSendToAddress = web3.utils.toChecksumAddress(
@@ -70,14 +67,14 @@ async function updateAllWhoTrustToken(
         tokenAddress,
       );
       // canSendToAddress -> address
-      await edgeUpdateManager.updateEdge(
-        {
-          token: tokenOwner,
-          from: canSendToAddress,
-          to: address,
-        },
-        tokenAddress,
-      );
+      // await edgeUpdateManager.updateEdge(
+      //   {
+      //     token: tokenOwner,
+      //     from: canSendToAddress,
+      //     to: address,
+      //   },
+      //   tokenAddress,
+      // );
     }),
   );
 }
@@ -85,11 +82,6 @@ async function updateAllWhoTrustToken(
 export async function processTransferEvent(data) {
   const edgeUpdateManager = new EdgeUpdateManager();
   const [sender, recipient] = addressesFromTopics(data.topics);
-
-  // Ignore gas fee payments to relayer
-  if (recipient === process.env.TX_SENDER_ADDRESS) {
-    return false;
-  }
 
   const tokenAddress = web3.utils.toChecksumAddress(data.tokenAddress);
   logger.info(`Processing transfer for ${tokenAddress}`);
@@ -100,55 +92,119 @@ export async function processTransferEvent(data) {
     return false;
   }
 
-  // Handle UBI payouts
-  if (sender === ZERO_ADDRESS) {
-    await updateAllWhoTrustToken(
+  // We don't store edges going to the relayer, but we still can't skip processing the rest of
+  // the possible paths, because if the user paid with their own token, other trust limits have updated
+  if (recipient !== process.env.TX_SENDER_ADDRESS) {
+    // b) Update the edge between the `recipient` safe and the `tokenOwner` safe.
+    // The limit will increase here as the `receiver` will get more tokens the
+    // `tokenOwner` accepts as its their own token. This update will be ignored
+    // if the `tokenOwner` is also the `recipient`.
+    await edgeUpdateManager.updateEdge(
       {
-        address: recipient,
-        tokenAddress,
-        tokenOwner,
+        token: tokenOwner,
+        from: recipient,
+        to: tokenOwner,
       },
-      edgeUpdateManager,
+      tokenAddress,
     );
-    return true;
   }
 
-  // a) Update the edge between the `sender` safe and the `tokenOwner` safe.
-  // The limit will decrease here as the `sender` will loose tokens the
-  // `tokenOwner` accepts as its their own token. This update will be ignored
-  // if the `tokenOwner` is also the `sender`.
-  await edgeUpdateManager.updateEdge(
-    {
-      token: tokenOwner,
-      from: sender,
-      to: tokenOwner,
-    },
-    tokenAddress,
-  );
+  // We don't store edges going from the zero address
+  if (sender !== ZERO_ADDRESS) {
+    // a) Update the edge between the `sender` safe and the `tokenOwner` safe.
+    // The limit will decrease here as the `sender` will loose tokens the
+    // `tokenOwner` accepts as its their own token. This update will be ignored
+    // if the `tokenOwner` is also the `sender`.
+    await edgeUpdateManager.updateEdge(
+      {
+        token: tokenOwner,
+        from: sender,
+        to: tokenOwner,
+      },
+      tokenAddress,
+    );
+  }
 
-  // b) Update the edge between the `recipient` safe and the `tokenOwner` safe.
-  // The limit will increase here as the `receiver` will get more tokens the
-  // `tokenOwner` accepts as its their own token. This update will be ignored
-  // if the `tokenOwner` is also the `recipient`.
-  await edgeUpdateManager.updateEdge(
-    {
-      token: tokenOwner,
-      from: recipient,
-      to: tokenOwner,
-    },
-    tokenAddress,
-  );
+  // Get more information from the graph about the current trust connections of
+  // `tokenOwner`
+  let tokenOwnerData;
+  try {
+    tokenOwnerData = await requestSafe(tokenOwner);
+  } catch (err) {
+    logger.error(`Safe ${tokenOwner} for job is not registered in graph`);
+    logger.error(err);
+    return;
+  }
 
   // c) Go through everyone who trusts this token, and update the limit from
+  // the `recipient` to them.
+  await updateAllWhoTrustToken(
+    {
+      address: recipient,
+      tokenAddress,
+      tokenOwner,
+      tokenOwnerData,
+    },
+    edgeUpdateManager,
+  );
+
+  // d) Go through everyone who trusts this token, and update the limit from
   // the `sender` to them.
   await updateAllWhoTrustToken(
     {
       address: sender,
       tokenAddress,
       tokenOwner,
+      tokenOwnerData,
     },
     edgeUpdateManager,
   );
+
+  // e) If someone is sending or receiving their own token, the balance of their own
+  // token has changed, and therefor the trust limits for all the tokens they accept
+  // must be updated
+  if (sender === tokenOwner || recipient === tokenOwner) {
+    await Promise.all(
+      tokenOwnerData.incoming.map(async (trustObject) => {
+        const userTokenAddress = await hubContract.methods
+          .userToToken(trustObject.userAddress)
+          .call();
+        if (tokenAddress === ZERO_ADDRESS) {
+          logger.info(`${sender} is not a Circles user`);
+          return;
+        }
+
+        const user = web3.utils.toChecksumAddress(trustObject.userAddress);
+        return edgeUpdateManager.updateEdge(
+          {
+            token: user,
+            from: user,
+            to: tokenOwner,
+          },
+          userTokenAddress,
+        );
+      }),
+    );
+
+    // NOTE: run all tests without this clause
+    await Promise.all(
+      tokenOwnerData.outgoing.map(async (trustObject) => {
+        console.log(trustObject)
+        const canSendToAddress = web3.utils.toChecksumAddress(
+          trustObject.canSendToAddress,
+        );
+        console.log(`checking how much ${tokenOwner} token user ${canSendToAddress} can send to ${tokenOwner}`);
+        return edgeUpdateManager.updateEdge(
+          {
+            token: tokenOwner,
+            from: canSendToAddress,
+            to: tokenOwner,
+          },
+          tokenAddress,
+        );
+      }),
+    );
+  }
 
   return true;
 }
@@ -176,17 +232,18 @@ export async function processTrustEvent(data) {
     tokenAddress,
   );
 
-  // b) Go through everyone else who trusts this token, and update the limit
+  // NOTE: need to implement this
+  // b) Go through everyone else who holds this token, and update the path
   // from the `truster` to them as well, as they can send this token to the
   // `truster`.
-  await updateAllWhoTrustToken(
-    {
-      address: truster,
-      tokenAddress,
-      tokenOwner,
-    },
-    edgeUpdateManager,
-  );
+  // await updateAllWhoTrustToken(
+  //   {
+  //     address: truster,
+  //     tokenAddress,
+  //     tokenOwner,
+  //   },
+  //   edgeUpdateManager,
+  // );
 
   return true;
 }
