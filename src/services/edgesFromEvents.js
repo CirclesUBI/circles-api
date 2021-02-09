@@ -5,6 +5,7 @@ import logger from '../helpers/logger';
 import web3 from './web3';
 import { ZERO_ADDRESS } from '../constants';
 import core from './core';
+import { queryEdges } from './edgesDatabase';
 
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
@@ -233,7 +234,6 @@ export async function processTrustEvent(data) {
     tokenAddress,
   );
 
-  // NOTE: need to implement this
   // b) Go through everyone else who holds this token, and update the path
   // from the `truster` to them as well, as they can send this token to the
   // `truster`.

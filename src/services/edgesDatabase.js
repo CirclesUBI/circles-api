@@ -24,6 +24,14 @@ export async function destroyEdge(edge) {
   });
 }
 
+export async function queryEdges(where) {
+  return await Edge.findAll({
+    where,
+    order: [['from', 'ASC']],
+    raw: true,
+  });
+}
+
 export async function getStoredEdges({ hasOnlyFileFields = false } = {}) {
   return await Edge.findAll({
     attributes: hasOnlyFileFields ? ['from', 'to', 'token', 'capacity'] : null,
