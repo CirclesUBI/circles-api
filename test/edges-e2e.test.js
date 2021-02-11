@@ -2,8 +2,7 @@ import Hub from 'circles-contracts/build/contracts/Hub.json';
 
 import web3, { provider } from './utils/web3';
 import { convertToBaseUnit } from './utils/math';
-
-// import app from '~';
+import { createSafes } from './utils/safes';
 
 describe('Edges', () => {
   let hub;
@@ -34,6 +33,22 @@ describe('Edges', () => {
         from: accounts[0],
         gas: 10000000,
       });
+
+    // We have the ganache accounts, but we need to create also Safe accounts that will be owned by the ganache accounts.
+    const [safeInstances, safeAddresses] = await createSafes(accounts);
+
+    for (let i = 0; i < safeInstances.length; i++) {
+      console.log(
+        '**** ',
+        i,
+        "- safe instance's owner: ",
+        await safeInstances[i].methods.getOwners().call(),
+      );
+    }
+
+    for (let i = 0; i < safeAddresses.length; i++) {
+      console.log('**** ', i, '- safe address: ', safeAddresses[i]);
+    }
   });
 
   it('works', async () => {
