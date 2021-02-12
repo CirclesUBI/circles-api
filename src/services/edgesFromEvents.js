@@ -206,6 +206,19 @@ export async function processTrustEvent(data) {
   // b) Go through everyone else who holds this token, and update the path
   // from the `truster` to them as well, as they can send this token to the
   // `truster`.
+  const tokenholders = await queryEdges({ to: tokenOwner, token: tokenOwner });
+  await Promise.all(
+    tokenholders.map(async (edge) => {
+      await edgeUpdateManager.updateEdge(
+        {
+          token: tokenOwner,
+          from: edge.from,
+          to: truster,
+        },
+        tokenAddress,
+      );
+    }),
+  );
 
   return true;
 }
