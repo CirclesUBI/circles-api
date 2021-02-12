@@ -6,9 +6,8 @@ import web3 from './web3';
 import { ZERO_ADDRESS } from '~/constants';
 
 // Helper function used in tests to create Safe instances associated to the
-// given ganache accounts. The account 0 is used as the admin account
-// and it doesn't have a Safe.
-export async function createSafes(accounts) {
+// given ganache accounts. The adminAccount doesn't have a Safe.
+export async function createSafes(adminAccount, accounts) {
   const safeContract = new web3.eth.Contract(Safe.abi);
   const proxyFactoryContract = new web3.eth.Contract(ProxyFactory.abi);
 
@@ -18,7 +17,7 @@ export async function createSafes(accounts) {
       data: ProxyFactory.bytecode,
     })
     .send({
-      from: accounts[0],
+      from: adminAccount,
       gas: 10000000,
     });
 
@@ -28,23 +27,23 @@ export async function createSafes(accounts) {
       data: Safe.bytecode,
     })
     .send({
-      from: accounts[0],
+      from: adminAccount,
       gas: 10000000,
     });
 
   let safeInstances = [];
   let safeAddresses = [];
 
-  for (let i = 0; i < accounts.length - 1; i++) {
+  for (let i = 0; i < accounts.length; i++) {
     // Create Gnosis Safe Data
     let gnosisSafeData = await safeMaster.methods
-      .setup([accounts[i + 1]], 1, ZERO_ADDRESS, '0x', ZERO_ADDRESS, 0, ZERO_ADDRESS)
+      .setup([accounts[i]], 1, ZERO_ADDRESS, '0x', ZERO_ADDRESS, 0, ZERO_ADDRESS)
       .encodeABI();
 
     let proxyCreated = await proxyFactory.methods
       .createProxy(safeMaster.options.address, gnosisSafeData)
       .send({
-        from: accounts[0],
+        from: adminAccount,
         gas: 10000000,
       });
 

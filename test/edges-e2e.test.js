@@ -35,7 +35,7 @@ describe('Edges', () => {
       });
 
     // We have the ganache accounts, but we need to create also Safe accounts that will be owned by the ganache accounts.
-    const [safeInstances, safeAddresses] = await createSafes(accounts);
+    const [safeInstances, safeAddresses] = await createSafes(accounts[0], accounts.slice(1));
 
     for (let i = 0; i < safeInstances.length; i++) {
       console.log(
