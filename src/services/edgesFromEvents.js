@@ -95,7 +95,7 @@ export async function processTransferEvent(data) {
 
   // We don't store edges going to the relayer, but we still can't skip processing the rest of
   // the possible paths, because if the user paid with their own token, other trust limits have updated
-  if (recipient !== process.env.TX_SENDER_ADDRESS) {
+  //if (recipient !== process.env.TX_SENDER_ADDRESS) {
     // b) Update the edge between the `recipient` safe and the `tokenOwner` safe.
     // The limit will increase here as the `receiver` will get more tokens the
     // `tokenOwner` accepts as its their own token. This update will be ignored
@@ -108,10 +108,10 @@ export async function processTransferEvent(data) {
       },
       tokenAddress,
     );
-  }
+  //}
 
   // We don't store edges going from the zero address
-  if (sender !== ZERO_ADDRESS) {
+  //if (sender !== ZERO_ADDRESS) {
     // a) Update the edge between the `sender` safe and the `tokenOwner` safe.
     // The limit will decrease here as the `sender` will loose tokens the
     // `tokenOwner` accepts as its their own token. This update will be ignored
@@ -124,7 +124,7 @@ export async function processTransferEvent(data) {
       },
       tokenAddress,
     );
-  }
+  //}
 
   // Get more information from the graph about the current trust connections of
   // `tokenOwner`
