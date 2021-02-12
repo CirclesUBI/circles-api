@@ -149,7 +149,7 @@ export async function processTransferEvent(data) {
   );
 
   // e) If someone is sending or receiving their own token, the balance of their own
-  // token has changed, and therefor the trust limits for all the tokens they accept
+  // token has changed, and therefore the trust limits for all the tokens they accept
   // must be updated
   if (sender === tokenOwner || recipient === tokenOwner) {
     await Promise.all(
@@ -157,6 +157,7 @@ export async function processTransferEvent(data) {
         const userTokenAddress = await hubContract.methods
           .userToToken(trustObject.userAddress)
           .call();
+
         if (tokenAddress === ZERO_ADDRESS) {
           logger.info(`${sender} is not a Circles user`);
           return;
@@ -170,25 +171,6 @@ export async function processTransferEvent(data) {
             to: tokenOwner,
           },
           userTokenAddress,
-        );
-      }),
-    );
-
-    // NOTE: run all tests without this clause
-    await Promise.all(
-      tokenOwnerData.outgoing.map(async (trustObject) => {
-        console.log(trustObject)
-        const canSendToAddress = web3.utils.toChecksumAddress(
-          trustObject.canSendToAddress,
-        );
-        console.log(`checking how much ${tokenOwner} token user ${canSendToAddress} can send to ${tokenOwner}`);
-        return edgeUpdateManager.updateEdge(
-          {
-            token: tokenOwner,
-            from: canSendToAddress,
-            to: tokenOwner,
-          },
-          tokenAddress,
         );
       }),
     );
