@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
-      DATABASE_URL: postgres://postgres@localhost:5432/circles_test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/circles_test
       DATABASE_DIALECT: postgres
       HUB_ADDRESS: '0xCfEB869F69431e42cdB54A4F4f105C19C080A601'
       SAFE_ADDRESS: '0xC89Ce4735882C9F0f0FE26686c53074E09B0D550'
@@ -19,6 +19,7 @@ jobs:
       postgres:
         image: postgres
         env:
+          POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
           POSTGRES_DB: circles_test
         ports:
