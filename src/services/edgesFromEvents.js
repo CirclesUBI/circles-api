@@ -67,15 +67,6 @@ async function updateAllWhoTrustToken(
         },
         tokenAddress,
       );
-      // canSendToAddress -> address
-      // await edgeUpdateManager.updateEdge(
-      //   {
-      //     token: tokenOwner,
-      //     from: canSendToAddress,
-      //     to: address,
-      //   },
-      //   tokenAddress,
-      // );
     }),
   );
 }
@@ -93,38 +84,32 @@ export async function processTransferEvent(data) {
     return false;
   }
 
-  // We don't store edges going to the relayer, but we still can't skip processing the rest of
-  // the possible paths, because if the user paid with their own token, other trust limits have updated
-  //if (recipient !== process.env.TX_SENDER_ADDRESS) {
-    // b) Update the edge between the `recipient` safe and the `tokenOwner` safe.
-    // The limit will increase here as the `receiver` will get more tokens the
-    // `tokenOwner` accepts as its their own token. This update will be ignored
-    // if the `tokenOwner` is also the `recipient`.
-    await edgeUpdateManager.updateEdge(
-      {
-        token: tokenOwner,
-        from: recipient,
-        to: tokenOwner,
-      },
-      tokenAddress,
-    );
-  //}
+  // a) Update the edge between the `recipient` safe and the `tokenOwner` safe.
+  // The limit will increase here as the `receiver` will get more tokens the
+  // `tokenOwner` accepts as its their own token. This update will be ignored
+  // if the `tokenOwner` is also the `recipient`, if the recipient is the relayer,
+  // or if the recipient is the zero address
+  await edgeUpdateManager.updateEdge(
+    {
+      token: tokenOwner,
+      from: recipient,
+      to: tokenOwner,
+    },
+    tokenAddress,
+  );
 
-  // We don't store edges going from the zero address
-  //if (sender !== ZERO_ADDRESS) {
-    // a) Update the edge between the `sender` safe and the `tokenOwner` safe.
-    // The limit will decrease here as the `sender` will loose tokens the
-    // `tokenOwner` accepts as its their own token. This update will be ignored
-    // if the `tokenOwner` is also the `sender`.
-    await edgeUpdateManager.updateEdge(
-      {
-        token: tokenOwner,
-        from: sender,
-        to: tokenOwner,
-      },
-      tokenAddress,
-    );
-  //}
+  // b) Update the edge between the `sender` safe and the `tokenOwner` safe.
+  // The limit will decrease here as the `sender` will lose tokens the
+  // `tokenOwner` accepts as its their own token. This update will be ignored
+  // if the `tokenOwner` is also the `sender`, or if the sender is the zero address
+  await edgeUpdateManager.updateEdge(
+    {
+      token: tokenOwner,
+      from: sender,
+      to: tokenOwner,
+    },
+    tokenAddress,
+  );
 
   // Get more information from the graph about the current trust connections of
   // `tokenOwner`
@@ -138,7 +123,8 @@ export async function processTransferEvent(data) {
   }
 
   // c) Go through everyone who trusts this token, and update the limit from
-  // the `recipient` to them.
+  // the `recipient` to them. The recipient can send more of this token to everyone who
+  // trusts it
   await updateAllWhoTrustToken(
     {
       address: recipient,
@@ -150,7 +136,8 @@ export async function processTransferEvent(data) {
   );
 
   // d) Go through everyone who trusts this token, and update the limit from
-  // the `sender` to them.
+  // the `sender` to them. The sender can send less of this token to everyone who
+  // trusts it
   await updateAllWhoTrustToken(
     {
       address: sender,
