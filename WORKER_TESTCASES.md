@@ -10,7 +10,7 @@ While waiting for better automated tests of the worker that syncs the trust grap
 * Deployed circles contracts
 * Redis
 
-The easiest way to assemble these services is most likely the [docker-compose development project](), but it's also possible to run them other ways
+The easiest way to assemble these services is most likely the [docker-compose development project](), but it's also possible to run them other ways. Gas fees in CRC are not accounted for in the below send limits, so if transactions are running through the relayer, those must be taken into account
 
 Examples use the start up parameters of the circles contracts deployed on xdai, which are:
 
@@ -40,6 +40,8 @@ account C signs up
 
 There should be no edges in the database.
 
+This is testing that edges to and from the same address are not created.
+
 ### Step 2
 
 Transaction contents:
@@ -64,6 +66,10 @@ Database contents:
   capacity: 25000000000000000000
 }]
 ```
+
+
+This is testing the most basic creation of trust events.
+
 
 ### Step 3
 
@@ -99,6 +105,8 @@ Database contents:
 }]
 ```
 
+This is testing the most basic creation of transfer events.
+
 ### Step 4
 
 Transaction contents:
@@ -132,6 +140,9 @@ Database contents:
   capacity: 12000000000000000000
 }]
 ```
+
+This is testing a transfer event where a user is sending someone else's token.
+
 
 ### Step 5
 
@@ -175,8 +186,10 @@ Database contents:
   to: D
   token: B
   capacity: 25000000000000000000
-}
+}]
 ```
+
+This is testing new trust events, involving tokens which are held by multiple users.
 
 
 ### Step 6
@@ -208,6 +221,9 @@ Database contents:
 }]
 ```
 
+This tests that edges are properly removed when they become 0.
+
+
 ### Step 6
 
 Transaction contents:
@@ -237,6 +253,7 @@ Database contents:
 }]
 ```
 
+This tests that tokens which change their balance of their own token update how much they will accept from those they trust, and also that edges to the zero address are not stored.
 
 
 ### Step 7
@@ -267,3 +284,5 @@ Database contents:
   capacity: 20
 }]
 ```
+
+This tests that when existing token balances are lower than send limits, the edge stores the balance, and also that edges from the relayer address are not stored.
