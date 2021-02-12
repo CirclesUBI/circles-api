@@ -62,8 +62,8 @@ async function updateAllWhoTrustToken(
       await edgeUpdateManager.updateEdge(
         {
           token: tokenOwner,
-          from: canSendToAddress,
-          to: address,
+          from: address,
+          to: canSendToAddress,
         },
         tokenAddress,
       );
