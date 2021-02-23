@@ -1,7 +1,9 @@
 import Safe from '@circles/safe-contracts/build/contracts/GnosisSafe.json';
 import ProxyFactory from '@circles/safe-contracts/build/contracts/ProxyFactory.json';
-import { formatTypedData, signTypedData } from './typedData';
+import Token from 'circles-contracts/build/contracts/Token.json';
+import Hub from 'circles-contracts/build/contracts/Hub.json';
 
+import { formatTypedData, signTypedData } from './typedData';
 import web3 from './web3';
 
 import { ZERO_ADDRESS } from '~/constants';
@@ -65,7 +67,30 @@ export async function createSafes(adminAccountAddress, accountAddresses) {
   return [safeInstances, safeAddresses];
 }
 
-export async function execTransaction(
+export async function createTokens(
+  accounts,
+  safeInstances,
+  hub,
+  adminAccountAddress,
+) {
+  let tokenInstances = [];
+  let tokenAddresses = [];
+
+  for (let i = 0; i < accounts.length; i++) {
+    await execTransaction(accounts[i], safeInstances[i], {
+      to: hub.options.address,
+      from: adminAccountAddress,
+      txData: hub.methods.signup().encodeABI(),
+    });
+    tokenAddresses[i] = await hub.methods
+      .userToToken(safeInstances[i].options.address)
+      .call();
+    tokenInstances[i] = new web3.eth.Contract(Token.abi, tokenAddresses[i]);
+  }
+  return [tokenInstances, tokenAddresses];
+}
+
+async function execTransaction(
   account,
   safeInstance,
   { to, from, value = 0, txData },

@@ -1,9 +1,8 @@
 import Hub from 'circles-contracts/build/contracts/Hub.json';
-import Token from 'circles-contracts/build/contracts/Token.json';
 
 import web3, { provider, getWeb3Account } from './utils/web3';
 import { convertToBaseUnit } from './utils/math';
-import { createSafes, execTransaction } from './utils/safes';
+import { createSafes, createTokens } from './utils/safes';
 
 const NUM_ACCOUNTS = 4;
 
@@ -53,40 +52,22 @@ describe('Edges', () => {
       accounts.map(({ address }) => address),
     );
 
-    for (let i = 0; i < safeInstances.length; i++) {
-      console.log(
-        '**** ',
-        i,
-        "- safe instance's owner: ",
-        await safeInstances[i].methods.getOwners().call(),
-      );
-    }
-
-    for (let i = 0; i < safeAddresses.length; i++) {
-      console.log('**** ', i, '- safe address: ', safeAddresses[i]);
-    }
-
-    const { events, ...receipt } = await execTransaction(
-      accounts[0],
-      safeInstances[0],
-      {
-        to: hub.options.address,
-        from: adminAccount.address,
-        txData: hub.methods.signup().encodeABI(),
-      },
+    // One Token is created per Safe account
+    const [tokenInstances, tokenAddresses] = await createTokens(
+      accounts,
+      safeInstances,
+      hub,
+      adminAccount.address,
     );
-    console.log({ receipt, events });
-
-    const tokenAddress = await hub.methods.userToToken(safeAddresses[0]).call();
-    const tokenContract = new web3.eth.Contract(Token.abi, tokenAddress);
-    const balance = await tokenContract.methods
+    const balance = await tokenInstances[0].methods
       .balanceOf(safeAddresses[0])
       .call();
-    console.log({ tokenAddress, balance });
+    console.log({ tokenAddresses, balance, tokenInstances });
 
+    // Simulate UBI issuance through the update() method.
     await new Promise((resolve) => setTimeout(resolve, 10000));
-    await tokenContract.methods.update().call();
-    const balanceAfterUpdate = await tokenContract.methods
+    await tokenInstances[0].methods.update().call();
+    const balanceAfterUpdate = await tokenInstances[0].methods
       .balanceOf(safeAddresses[0])
       .call();
     console.log({ balanceAfterUpdate });
