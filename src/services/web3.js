@@ -1,8 +1,11 @@
 import Web3 from 'web3';
 
-const web3 = new Web3(
-  new Web3.providers.WebsocketProvider(process.env.ETHEREUM_NODE_WS),
-);
+const provider =
+  // For test purposes another ganache provider is used
+  process.env.NODE_ENV === 'test'
+    ? require('./../../test/utils/web3').provider
+    : new Web3.providers.WebsocketProvider(process.env.ETHEREUM_NODE_WS);
+const web3 = new Web3(provider);
 
 export async function checkConnection() {
   return (await web3.eth.getBlock('latest')).number;

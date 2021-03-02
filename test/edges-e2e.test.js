@@ -1,15 +1,46 @@
 import Hub from 'circles-contracts/build/contracts/Hub.json';
+import fs from 'fs';
 
 import web3, { provider, getWeb3Account } from './utils/web3';
 import { convertToBaseUnit } from './utils/math';
 import { createSafes, createTokens } from './utils/safes';
 
+import { EDGES_FILE_PATH } from '~/constants';
+import { rebuildTrustNetwork } from '~/worker';
+import { checkConnection } from '~/services/web3';
+
+//import db from '~/database';
+
 const NUM_ACCOUNTS = 4;
+
+async function deleteEdgesFile() {
+  return new Promise((resolve, reject) => {
+    fs.stat(EDGES_FILE_PATH, (err, stats) => {
+      if (!stats) {
+        resolve();
+        return;
+      }
+      fs.unlink(EDGES_FILE_PATH, (unlinkError) => {
+        if (unlinkError) {
+          reject(unlinkError);
+        } else {
+          resolve();
+        }
+      });
+    });
+  });
+}
 
 describe('Edges', () => {
   let hub;
 
   beforeAll(async () => {
+    try {
+      await deleteEdgesFile();
+    } catch (err) {
+      console.log(err);
+    }
+
     const accountAddresses = await web3.eth.getAccounts();
 
     const accounts = accountAddresses
@@ -47,13 +78,13 @@ describe('Edges', () => {
       });
 
     // We have the ganache accounts, but we need to create also Safe accounts that will be owned by the ganache accounts.
-    const [safeInstances, safeAddresses] = await createSafes(
+    const { safeInstances, safeAddresses } = await createSafes(
       adminAccount.address,
       accounts.map(({ address }) => address),
     );
 
     // One Token is created per Safe account
-    const [tokenInstances, tokenAddresses] = await createTokens(
+    const { tokenInstances, tokenAddresses } = await createTokens(
       accounts,
       safeInstances,
       hub,
@@ -73,8 +104,26 @@ describe('Edges', () => {
     console.log({ balanceAfterUpdate });
   });
 
-  it('works', async () => {
+  it('indexes edges according to transactions made', async () => {
+    // tmp Connect with postgres database
+    console.log('start to authenticate to db');
+    /*await db.authenticate()
+      .then(() => {
+        console.log('Database connection has been established successfully');
+      })
+      .catch(() => {
+        console.log('Unable to connect to database');
+        process.exit(1);
+      });*/
+
+    // hub knows about the users
     expect(true).toBe(true);
+    // empty edges-test.json file
+    const check = await checkConnection();
+    console.log({ check });
+    await rebuildTrustNetwork();
+    //const edgesContent =
+    //expect().
     const result = await hub.methods.signupBonus().call();
     console.log('RESULT: ' + result);
   });

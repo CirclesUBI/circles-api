@@ -64,7 +64,7 @@ export async function createSafes(adminAccountAddress, accountAddresses) {
     safeInstances[i] = new web3.eth.Contract(Safe.abi, safeAddresses[i]);
   }
 
-  return [safeInstances, safeAddresses];
+  return { safeInstances, safeAddresses };
 }
 
 export async function createTokens(
@@ -87,7 +87,7 @@ export async function createTokens(
       .call();
     tokenInstances[i] = new web3.eth.Contract(Token.abi, tokenAddresses[i]);
   }
-  return [tokenInstances, tokenAddresses];
+  return { tokenInstances, tokenAddresses };
 }
 
 async function execTransaction(
