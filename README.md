@@ -59,9 +59,9 @@ An offchain API service to safely store and resolve [`Circles`] user data from p
 
 ## Features
 
-- Create and search off-chain data like transfer descriptions and user profiles.
-- Indexes and stores Circles trust network.
-- Calculate transitive transfer steps to send Circles.
+- Create and search off-chain data like transfer descriptions and user profiles
+- Indexes and stores Circles trust network
+- Calculate transitive transfer steps to send Circles
 
 ## Requirements
 
