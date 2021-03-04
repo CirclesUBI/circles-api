@@ -33,7 +33,7 @@
 
 <div align="center">
   <h3>
-    <a href="https://circlesubi.github.io/circles-api/">
+    <a href="API.md">
       API Docs
     </a>
     <span> | </span>
@@ -59,39 +59,41 @@ An offchain API service to safely store and resolve [`Circles`] user data from p
 
 ## Requirements
 
-- NodeJS environment (works well with v12 and v14)
+- NodeJS environment (tested with v12 and v14)
 - PostgreSQL database
 
 ## Development
 
-```
-// Install dependencies
+```bash
+# Install dependencies
 npm install
 
-// Copy .env file for local development
+# Copy .env file for local development
 cp .env.example .env
 
-// Seed and migrate database
+# Seed and migrate database
 npm run db:migrate
 npm run db:seed
 
-// Run tests
+# Run tests
 npm run test
 npm run test:watch
 
-// Check code formatting
+# Check code formatting
 npm run lint
 
-// Start local server and watch changes
+# Start local server and watch changes
 npm run serve
 
-// Build for production
+# Build for production
 npm run build
 
-// Run production server
+# Run production server
 npm start
 ```
 
 ## License
 
-GNU Affero General Public License v3.0 `AGPL-3.0`
+GNU Affero General Public License v3.0 [`AGPL-3.0`]
+
+[`AGPL-3.0`]: LICENSE
