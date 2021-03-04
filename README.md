@@ -57,10 +57,22 @@ An offchain API service to safely store and resolve [`Circles`] user data from p
 
 [`circles`]: https://joincircles.net
 
+## Features
+
+- Create and search off-chain data like transfer descriptions and user profiles.
+- Indexes and stores Circles trust network.
+- Calculate transitive transfer steps to send Circles.
+
 ## Requirements
 
 - NodeJS environment (tested with v12 and v14)
 - PostgreSQL database
+
+## Usage
+
+Check out the [`Dockerfile`] for running the `circles-api` on your server.
+
+[`Dockerfile`]: Dockerfile
 
 ## Development
 
