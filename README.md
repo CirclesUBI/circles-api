@@ -16,8 +16,8 @@ An offchain API service to safely store and resolve [Circles](https://joincircle
 
 ## Requirements
 
-* NodeJS environment
-* PostgreSQL database
+- NodeJS environment (works well with v12 and v14)
+- PostgreSQL database
 
 ## API
 
@@ -61,8 +61,8 @@ Returns steps to transfer transitively through trust graph from one node to anot
 
 **Errors:**
 
-* `400` Parameters missing or malformed
-* `422` Invalid transfer
+- `400` Parameters missing or malformed
+- `422` Invalid transfer
 
 ### Store transfer meta data
 
@@ -96,9 +96,9 @@ Stores meta data like payment note connected to a made transfer. This data is on
 
 **Errors:**
 
-* `400` Parameters missing or malformed
-* `403` Verification failed
-* `409` Entry already exists
+- `400` Parameters missing or malformed
+- `403` Verification failed
+- `409` Entry already exists
 
 ### Read transfer meta data
 
@@ -122,9 +122,9 @@ Returns stored transfer meta data including the payment note. This data is only 
 
 **Errors:**
 
-* `400` Parameters missing or malformed
-* `403` Verification failed or not allowed to read data
-* `404` Transaction hash not found
+- `400` Parameters missing or malformed
+- `403` Verification failed or not allowed to read data
+- `404` Transaction hash not found
 
 ### Get entry by username
 
@@ -150,7 +150,7 @@ Get the users entry including its `safeAddress`.
 
 **Errors:**
 
-* `404` Not found
+- `404` Not found
 
 ### Search database by usernames
 
@@ -238,8 +238,8 @@ Do a dry-run to check if `email` and `username` fields are valid before creating
 
 **Errors:**
 
-* `400` Parameters missing or malformed
-* `409` Entry already exists
+- `400` Parameters missing or malformed
+- `409` Entry already exists
 
 ### Create new entry
 
@@ -281,9 +281,9 @@ Create a new entry in the database, connecting a `username` with a `safeAddress`
 
 **Errors:**
 
-* `400` Parameters missing or malformed
-* `403` Verification failed
-* `409` Entry already exists
+- `400` Parameters missing or malformed
+- `403` Verification failed
+- `409` Entry already exists
 
 ## Development
 
