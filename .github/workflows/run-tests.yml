@@ -1,0 +1,58 @@
+name: run-tests
+on: [push]
+jobs:
+  run-api-tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/circles_test
+      DATABASE_DIALECT: postgres
+      HUB_ADDRESS: '0xCfEB869F69431e42cdB54A4F4f105C19C080A601'
+      SAFE_ADDRESS: '0xC89Ce4735882C9F0f0FE26686c53074E09B0D550'
+      RELAY_SERVICE_ENDPOINT: http://relay.circles.local
+      PROXY_FACTORY_ADDRESS: '0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb'
+      API_SERVICE_ENDPOINT: http://api.circles.local
+      GRAPH_NODE_ENDPOINT: http://graph.circles.local
+      SUBGRAPH_NAME: CirclesUBI/circles-subgraph
+      ETHEREUM_NODE_WS: ws://localhost:8545
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: circles_test
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Read node version from .nvmrc
+        id: nvmrc
+        run: echo ::set-output name=NODE_VERSION::$(cat .nvmrc)
+
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '${{ steps.nvmrc.outputs.NODE_VERSION }}'
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+
+      - name: Install dependencies
+        run: npm install
+
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - run: npm test
