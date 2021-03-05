@@ -32,12 +32,12 @@ export default class EdgeUpdateManager {
   }
 
   async updateEdge(edge, tokenAddress) {
-    // don't store edges from relayer
+    // Don't store edges from relayer
     if (edge.from === process.env.TX_SENDER_ADDRESS) {
       return;
     }
 
-    // don't store edges to or from zero address
+    // Don't store edges to or from zero address
     if (edge.to === ZERO_ADDRESS || edge.from === ZERO_ADDRESS) {
       return;
     }

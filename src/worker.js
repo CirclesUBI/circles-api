@@ -105,7 +105,7 @@ waitUntilGraphIsReady()
       },
     });
 
-    // Always write edges .json file on start to make sure it exists
+    // Always write edges.json file on start to make sure it exists
     submitJob(tasks.exportEdges, 'exportEdges-initial');
   })
   .catch(() => {

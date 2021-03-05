@@ -83,10 +83,10 @@ export async function processTransferEvent(data) {
   }
 
   // a) Update the edge between the `recipient` safe and the `tokenOwner` safe.
-  // The limit will increase here as the `receiver` will get more tokens the
-  // `tokenOwner` accepts as its their own token. This update will be ignored
-  // if the `tokenOwner` is also the `recipient`, if the recipient is the relayer,
-  // or if the recipient is the zero address
+  // The limit will increase here as the `recipient` will get tokens the
+  // `tokenOwner` accepts. This update will be ignored if the `tokenOwner` is
+  // also the `recipient`, if the recipient is the relayer, or if the recipient
+  // is the zero address
   await edgeUpdateManager.updateEdge(
     {
       token: tokenOwner,
@@ -98,8 +98,8 @@ export async function processTransferEvent(data) {
 
   // b) Update the edge between the `sender` safe and the `tokenOwner` safe.
   // The limit will decrease here as the `sender` will lose tokens the
-  // `tokenOwner` accepts as its their own token. This update will be ignored
-  // if the `tokenOwner` is also the `sender`, or if the sender is the zero address
+  // `tokenOwner` accepts. This update will be ignored if the `tokenOwner` is
+  // also the `sender`, or if the sender is the zero address
   await edgeUpdateManager.updateEdge(
     {
       token: tokenOwner,
@@ -121,8 +121,8 @@ export async function processTransferEvent(data) {
   }
 
   // c) Go through everyone who trusts this token, and update the limit from
-  // the `recipient` to them. The recipient can send more of this token to everyone who
-  // trusts it
+  // the `recipient` to them. The recipient's capacity increases for this token
+  // to everyone who trusts the tokenOwner
   await updateAllWhoTrustToken(
     {
       address: recipient,
@@ -134,8 +134,8 @@ export async function processTransferEvent(data) {
   );
 
   // d) Go through everyone who trusts this token, and update the limit from
-  // the `sender` to them. The sender can send less of this token to everyone who
-  // trusts it
+  // the `sender` to them. The sender's capacity decreases for this token to
+  // everyone who trusts the tokenOwner
   await updateAllWhoTrustToken(
     {
       address: sender,
@@ -179,7 +179,6 @@ export async function processTransferEvent(data) {
 
 export async function processTrustEvent(data) {
   const edgeUpdateManager = new EdgeUpdateManager();
-
   const [truster, tokenOwner] = addressesFromTopics(data.topics);
 
   logger.info(`Processing trust for ${truster}`);
@@ -191,7 +190,7 @@ export async function processTrustEvent(data) {
   }
 
   // a) Update the edge between `tokenOwner` and the `truster`, as the latter
-  // accepts their token now.
+  // accepts their token now
   await edgeUpdateManager.updateEdge(
     {
       token: tokenOwner,
@@ -203,7 +202,7 @@ export async function processTrustEvent(data) {
 
   // b) Go through everyone else who holds this token, and update the path
   // from the `truster` to them as well, as they can send this token to the
-  // `truster`.
+  // `truster`
   const tokenholders = await queryEdges({ to: tokenOwner, token: tokenOwner });
   await Promise.all(
     tokenholders.map(async (edge) => {

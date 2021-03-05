@@ -16,7 +16,7 @@ const syncAddress = new Queue('Sync trust graph for address', redisUrl, {
 processor(syncAddress).process(async (job) => {
   let isSuccessful = false;
 
-  // This job is either triggered by a trust event or a transfer event.
+  // This job is either triggered by a transfer event or a trust event.
   if (job.data.type === 'Transfer') {
     isSuccessful = await processTransferEvent(job.data);
   } else {
