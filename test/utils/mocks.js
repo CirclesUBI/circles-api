@@ -6,7 +6,7 @@ import graphSafesMockData from '../data/graph-safes.json';
 
 export function mockGraphSafes() {
   const mockedQuery =
-    'id outgoing { limit canSendToAddress userAddress } incoming { limit canSendToAddress userAddress } balances { amount token { id owner { id } } }';
+    'id outgoing { canSendToAddress userAddress } incoming { canSendToAddress userAddress } balances { token { id owner { id } } }';
 
   // Mock paginated safes query
   nock(process.env.GRAPH_NODE_ENDPOINT)

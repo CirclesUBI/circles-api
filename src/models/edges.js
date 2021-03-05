@@ -13,14 +13,17 @@ const Edge = db.define(
     from: {
       type: Sequelize.STRING(42),
       allowNull: false,
+      unique: 'edges_unique',
     },
     to: {
       type: Sequelize.STRING(42),
       allowNull: false,
+      unique: 'edges_unique',
     },
     token: {
       type: Sequelize.STRING(42),
       allowNull: false,
+      unique: 'edges_unique',
     },
     capacity: {
       type: Sequelize.STRING,

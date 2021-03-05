@@ -2,10 +2,11 @@ import httpStatus from 'http-status';
 
 import APIError from '../helpers/errors';
 import Transfer from '../models/transfers';
-import core from '../services/core';
+import transferSteps from '../services/findTransferSteps';
+import { checkFileExists } from '../services/edgesFile';
 import { checkSignature } from '../helpers/signature';
+import { requestGraph } from '../services/graph';
 import { respondWithSuccess } from '../helpers/responses';
-import { transferSteps, getTransferMetrics } from '../services/transfer';
 
 function prepareTransferResult(response) {
   return {
@@ -79,7 +80,7 @@ export default {
         }
       }`;
 
-      const data = await core.utils.requestGraph({ query });
+      const data = await requestGraph(query);
 
       if (!data || !data.user) {
         throw new APIError(httpStatus.FORBIDDEN, 'Not allowed');
@@ -114,6 +115,15 @@ export default {
   },
 
   findTransferSteps: async (req, res, next) => {
+    if (!checkFileExists()) {
+      next(
+        new APIError(
+          httpStatus.SERVICE_UNAVAILABLE,
+          'Trust network file does not exist',
+        ),
+      );
+    }
+
     try {
       const result = await transferSteps({
         ...req.body,
@@ -126,7 +136,7 @@ export default {
   },
 
   getMetrics: async (req, res) => {
-    const result = await getTransferMetrics();
-    respondWithSuccess(res, result);
+    // @DEPRECATED
+    respondWithSuccess(res);
   },
 };

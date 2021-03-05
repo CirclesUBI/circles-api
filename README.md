@@ -67,6 +67,7 @@ An offchain API service to safely store and resolve [`Circles`] user data from p
 
 - NodeJS environment (tested with v12 and v14)
 - PostgreSQL database
+* Redis
 
 ## Usage
 
@@ -95,13 +96,14 @@ npm run test:watch
 npm run lint
 
 # Start local server and watch changes
-npm run serve
+npm run watch:all
 
 # Build for production
 npm run build
 
 # Run production server
 npm start
+npm worker:start
 ```
 
 ## License
