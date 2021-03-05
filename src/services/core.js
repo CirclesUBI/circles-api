@@ -12,7 +12,4 @@ const core = new CirclesCore(web3, {
   subgraphName: process.env.SUBGRAPH_NAME,
 });
 
-console.log('GRAPH IS ', process.env.GRAPH_NODE_ENDPOINT);
-console.log('SUBGRAPH IS', process.env.SUBGRAPH_NAME);
-
 export default core;
