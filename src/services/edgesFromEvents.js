@@ -4,8 +4,8 @@ import EdgeUpdateManager from './edgesUpdate';
 import logger from '../helpers/logger';
 import web3 from './web3';
 import { ZERO_ADDRESS } from '../constants';
-import core from './core';
 import { queryEdges } from './edgesDatabase';
+import { requestGraph } from './graph';
 
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
@@ -33,9 +33,7 @@ async function requestSafe(safeAddress) {
       }
     }`;
 
-  const data = await core.utils.requestGraph({
-    query,
-  });
+  const data = await requestGraph(query);
 
   if (!data || !('safe' in data)) {
     throw new Error(`Could not fetch graph data for Safe ${safeAddress}`);

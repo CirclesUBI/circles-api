@@ -31,6 +31,13 @@ async function fetchFromGraphStatus(query) {
     });
 }
 
+export async function requestGraph(query) {
+  // Strip newlines in query before doing request
+  return await core.utils.requestGraph({
+    query: query.replace(/(\r\n|\n|\r)/gm, ' '),
+  });
+}
+
 export async function fetchFromGraph(
   name,
   fields,
@@ -44,7 +51,7 @@ export async function fetchFromGraph(
     }
   }`;
 
-  const data = await core.utils.requestGraph({ query });
+  const data = await requestGraph(query);
   return data[name];
 }
 
