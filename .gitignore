@@ -1,5 +1,4 @@
 .env
 build
+edges-data
 node_modules
-pathfinder/edges.json
-pathfinder/edges.json-tmp
