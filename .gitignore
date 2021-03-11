@@ -3,3 +3,4 @@ build
 node_modules
 pathfinder/edges.json
 pathfinder/edges.json-tmp
+pathfinder/edges-test.json
