@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 import web3 from './web3';
-import { EDGES_FILE_PATH, EDGES_DIRECTORY_NAME } from '../constants';
+import { EDGES_FILE_PATH, EDGES_DIRECTORY_PATH } from '../constants';
 
 const stringify = fastJsonStringify({
   title: 'Circles Edges Schema',
@@ -35,14 +35,13 @@ export async function writeToFile(
 ) {
   return new Promise((resolve, reject) => {
     // Check if `edges-data` folder exists and create it otherwise
-    const edgesDataPath = path.join('..', EDGES_DIRECTORY_NAME);
-    if (!fs.existsSync(edgesDataPath)) {
-      fs.mkdirSync(edgesDataPath);
+    if (!fs.existsSync(EDGES_DIRECTORY_PATH)) {
+      fs.mkdirSync(EDGES_DIRECTORY_PATH);
     }
 
     // Write to temporary file first
     const tmpFilePath = path.join(
-      edgesDataPath,
+      EDGES_DIRECTORY_PATH,
       `edges.json-tmp-${tmpFileKey}`,
     );
 
