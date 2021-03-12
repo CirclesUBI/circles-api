@@ -40,11 +40,9 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v2
-        env:
-          IMAGE_VERSION: ${{ steps.parse_ref.outputs.tag }}
         with:
           context: .
           push: true
           tags:
-            registry.digitalocean.com/circles-registry/api:${{ IMAGE_VERSION }}
-            hub.docker.com/joincircles/circles-api:${{ IMAGE_VERSION }}
+            registry.digitalocean.com/circles-registry/circles-api:${{ steps.parse_ref.outputs.tag }}
+            hub.docker.com/joincircles/circles-api:${{ steps.parse_ref.outputs.tag }}
