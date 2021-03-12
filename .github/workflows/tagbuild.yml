@@ -43,6 +43,6 @@ jobs:
         with:
           context: .
           push: true
-          tags:
+          tags: |
             registry.digitalocean.com/circles-registry/circles-api:${{ steps.parse_ref.outputs.tag }}
             hub.docker.com/joincircles/circles-api:${{ steps.parse_ref.outputs.tag }}
