@@ -10,7 +10,7 @@ RUN apt-get update \
 # Use changes to package.json to force Docker not to use the cache when we
 # change our application's NodeJS dependencies:
 COPY package.json /tmp/package.json
-RUN cd /tmp && npm install --only=production
+RUN cd /tmp && npm install
 RUN mkdir -p /usr/src/app && cp -a /tmp/node_modules /usr/src/app
 
 # From here we load our application's code in, therefore the previous docker
