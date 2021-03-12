@@ -45,6 +45,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            registry.digitalocean.com/circles-registry/api:${IMAGE_VERSION}
-            hub.docker.com/joincircles/circles-api:${IMAGE_VERSION}
+          tags:
+            registry.digitalocean.com/circles-registry/api:${{ IMAGE_VERSION }}
+            hub.docker.com/joincircles/circles-api:${{ IMAGE_VERSION }}
