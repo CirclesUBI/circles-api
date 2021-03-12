@@ -67,7 +67,7 @@ An offchain API service to safely store and resolve [`Circles`] user data from p
 
 - NodeJS environment (tested with v12 and v14)
 - PostgreSQL database
-* Redis
+- Redis
 
 ## Usage
 
