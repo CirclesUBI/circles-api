@@ -6,8 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2021-03-12
+
+### Changed
+
+- Worker: Changed paths of `edges.json` file and `pathfinder` executable. [#58](https://github.com/CirclesUBI/circles-api/pull/58)
+
 ## [1.3.0] - 2021-03-11
 
 ### Added
 
-- Worker: Introduce new indexing task using new bull scheduler. [#24](https://github.com/CirclesUBI/circles-api/pull/24) 
+- Worker: Introduce new indexing task using `bull` scheduler. [#24](https://github.com/CirclesUBI/circles-api/pull/24)
