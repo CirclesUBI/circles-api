@@ -1,5 +1,7 @@
 import Web3 from 'web3';
 
+import logger from '../helpers/logger';
+
 const web3 = new Web3(
   new Web3.providers.WebsocketProvider(process.env.ETHEREUM_NODE_WS),
 );
@@ -16,18 +18,23 @@ export function getEventSignature(contract, eventName) {
 }
 
 export function subscribeEvent(contract, address, eventName, callbackFn) {
-  web3.eth.subscribe(
+  const handleCallback = (error, result) => {
+    if (error) {
+      logger.error(`Web3 subscription error: ${error}`);
+      // Subscribe again with same parameters when disconnected
+      subscription.subscribe(handleCallback);
+    } else {
+      callbackFn(result);
+    }
+  };
+
+  const subscription = web3.eth.subscribe(
     'logs',
     {
       address,
       topics: [getEventSignature(contract, eventName)],
     },
-    (error, result) => {
-      if (error) {
-        throw new Error(error);
-      }
-      callbackFn(result);
-    },
+    handleCallback,
   );
 }
 
