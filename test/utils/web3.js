@@ -16,4 +16,27 @@ export function getWeb3Account(accountAddress) {
   return web3.eth.accounts.privateKeyToAccount(privateKey);
 }
 
+export function getEventSignature(contract, eventName) {
+  const { signature } = contract._jsonInterface.find((item) => {
+    return item.name === eventName && item.type === 'event';
+  });
+  return signature;
+}
+
+export function subscribeEvent(contract, address, eventName, callbackFn) {
+  web3.eth.subscribe(
+    'logs',
+    {
+      address,
+      topics: [getEventSignature(contract, eventName)],
+    },
+    (error, result) => {
+      if (error) {
+        throw new Error(error);
+      }
+      callbackFn(result);
+    },
+  );
+}
+
 export default web3;
