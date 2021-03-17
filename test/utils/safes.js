@@ -1,7 +1,6 @@
 import Safe from '@circles/safe-contracts/build/contracts/GnosisSafe.json';
 import ProxyFactory from '@circles/safe-contracts/build/contracts/ProxyFactory.json';
 import Token from 'circles-contracts/build/contracts/Token.json';
-import Hub from 'circles-contracts/build/contracts/Hub.json';
 
 import { formatTypedData, signTypedData } from './typedData';
 import web3 from './web3';
