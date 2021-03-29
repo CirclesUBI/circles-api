@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.4] - 2021-03-29
+
+### Fixed
+
+- Docker: Remove multi-step build as it breaks sharp [99db714](https://github.com/CirclesUBI/circles-api/commit/99db7148924c2e536ba429b9815a9196d72078af)
+
 ## [1.3.3] - 2021-03-29
 
 ### Fixed
