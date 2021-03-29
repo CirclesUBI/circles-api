@@ -1,16 +1,12 @@
 FROM node:12-alpine AS BUILD_IMAGE
 
-# Create man folders which are required by postgres
-RUN seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{}
-
 # Install dependencies
-RUN apk update \
-          && apk add git python make g++ postgresql-client \
-          && rm -rf /var/cache/apk/*
+RUN apk update
+RUN apk add --no-cache git python make g++
 
 # Use changes to package.json to force Docker not to use the cache when we
 # change our application's NodeJS dependencies:
-COPY package.json /tmp/package.json
+COPY package*.json /tmp/
 RUN cd /tmp && npm install
 RUN mkdir -p /usr/src/app && cp -a /tmp/node_modules /usr/src/app
 
@@ -30,14 +26,11 @@ FROM node:12-alpine
 WORKDIR /usr/src/app
 
 # Copy from build image
-COPY --from=BUILD_IMAGE /usr/src/app/build ./build
-COPY --from=BUILD_IMAGE /usr/src/app/node_modules ./node_modules
+COPY --from=BUILD_IMAGE /usr/src/app ./
 
 # Copy runtime scripts into root
-COPY --from=BUILD_IMAGE /usr/src/app/scripts/run.sh .
-COPY --from=BUILD_IMAGE /usr/src/app/scripts/run-worker.sh .
-COPY --from=BUILD_IMAGE /usr/src/app/scripts/wait-for-db.sh .
+COPY --from=BUILD_IMAGE /usr/src/app/scripts/*.sh ./
 
 EXPOSE 3000
 
-ENTRYPOINT ["./wait-for-db.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
