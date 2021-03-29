@@ -1,8 +1,10 @@
-FROM node:12-alpine AS BUILD_IMAGE
+FROM node:12-slim
+
+WORKDIR /usr/src/app
 
 # Install dependencies
-RUN apk update
-RUN apk add --no-cache git python make g++
+RUN apt-get update \
+      && apt-get install -y git python build-essential
 
 # Use changes to package.json to force Docker not to use the cache when we
 # change our application's NodeJS dependencies:
@@ -21,15 +23,11 @@ RUN npm run build
 # Delete development dependencies required to build app
 RUN npm prune --production
 
-FROM node:12-alpine
-
-WORKDIR /usr/src/app
-
-# Copy from build image
-COPY --from=BUILD_IMAGE /usr/src/app ./
+# Remove unneeded dependencies
+RUN apt-get purge -y --auto-remove build-essential
 
 # Copy runtime scripts into root
-COPY --from=BUILD_IMAGE /usr/src/app/scripts/*.sh ./
+COPY scripts/*.sh ./
 
 EXPOSE 3000
 
