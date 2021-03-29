@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3] - 2021-03-29
+
+### Fixed
+
+- Docker: Start worker process when graph node is available [#63](https://github.com/CirclesUBI/circles-api/pull/63)
+
 ## [1.3.2] - 2021-03-12
 
 ### Added
