@@ -4,6 +4,26 @@ import nock from 'nock';
 import web3 from './web3';
 import graphSafesMockData from '../data/graph-safes.json';
 
+export function mockGraphBlockNumber() {
+  nock(process.env.GRAPH_NODE_ENDPOINT)
+    .post(`/subgraphs`, {
+      query: `{ subgraphs { currentVersion { deployment { latestEthereumBlockNumber } } } }`,
+    })
+    .reply(httpStatus.OK, {
+      data: {
+        subgraphs: [
+          {
+            currentVersion: {
+              deployment: {
+                latestEthereumBlockNumber: 7,
+              },
+            },
+          },
+        ],
+      },
+    });
+}
+
 export function mockGraphSafes() {
   const mockedQuery =
     'id outgoing { canSendToAddress userAddress } incoming { canSendToAddress userAddress } balances { token { id owner { id } } }';

@@ -2,12 +2,12 @@ import Hub from 'circles-contracts/build/contracts/Hub.json';
 import fs from 'fs';
 
 import web3, { provider, getWeb3Account } from './utils/web3';
-
 import { convertToBaseUnit } from './utils/math';
 import { createSafes, createTokens } from './utils/safes';
-import { startWorker } from './utils/worker';
 
+import { runWorker } from '~/services/runWorker';
 import { EDGES_FILE_PATH } from '~/constants';
+import { mockGraphBlockNumber } from './utils/mocks';
 
 const NUM_ACCOUNTS = 4;
 
@@ -29,11 +29,9 @@ async function deleteEdgesFile() {
   });
 }
 
-async function createEdgesFile() {
-  // Always create edges .json file on start to make sure it exists
-  fs.open(EDGES_FILE_PATH, 'w', function (err, file) {
-    if (err) throw err;
-    console.log('File is opened in write mode.');
+async function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
   });
 }
 
@@ -100,45 +98,29 @@ describe('Edges', () => {
     const balance = await tokenInstances[0].methods
       .balanceOf(safeAddresses[0])
       .call();
-    //console.log({ tokenAddresses, balance, tokenInstances });
+    console.log({ tokenAddresses, balance, tokenInstances });
 
     // Simulate UBI issuance through the update() method.
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-    await tokenInstances[0].methods.update().call();
-    const balanceAfterUpdate = await tokenInstances[0].methods
-      .balanceOf(safeAddresses[0])
-      .call();
-    //console.log({ balanceAfterUpdate });
+    // await new Promise((resolve) => setTimeout(resolve, 10000));
+    // await tokenInstances[0].methods.update().call();
+    // const balanceAfterUpdate = await tokenInstances[0].methods
+    //   .balanceOf(safeAddresses[0])
+    //   .call();
+    // console.log({ balanceAfterUpdate });
 
-    // Launch tasks manually or let worker listen to events
-    startWorker(hubContract);
+    // Mock graph responses according to test cases
+    mockGraphBlockNumber();
 
-    try {
-      await createEdgesFile();
-    } catch (err) {
-      console.log(err);
-    }
-
+    await runWorker();
+    //wait some seconds for the tasks to run
+    await wait(1000);
   });
 
   it('indexes edges according to transactions made', async () => {
-
     // Read edges.json file
     const edgesRawData = fs.readFileSync(EDGES_FILE_PATH);
-    expect(edgesRawData.length).toBe(0);
-
-    // Mock graph responses according to test cases
-
-    // const check = await checkConnection();
-    // console.log({ check });
-    //await rebuildTrustNetwork();
-
-    // const edges = JSON.parse(edgesRawData);
-    //expect().
-
-    //expect(true).toBe(true);
-    const result = await hub.methods.signupBonus().call();
-    console.log('RESULT: ' + result);
+    const edges = JSON.parse(edgesRawData);
+    expect(edges.length).toBe(0);
   });
 
   afterAll(async () => {
