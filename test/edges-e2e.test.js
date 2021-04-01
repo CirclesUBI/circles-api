@@ -126,6 +126,5 @@ describe('Edges', () => {
   afterAll(async () => {
     // clean up provider
     provider.stop();
-    deleteEdgesFile();
   });
 });
