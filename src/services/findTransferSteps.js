@@ -3,7 +3,7 @@ import { performance } from 'perf_hooks';
 
 import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
-const DEFAULT_PROCESS_TIMEOUT = 1000 * 10;
+const DEFAULT_PROCESS_TIMEOUT = 1000 * 60;
 
 export default async function transferSteps({ from, to, value }) {
   if (from === to) {
@@ -11,6 +11,10 @@ export default async function transferSteps({ from, to, value }) {
   }
 
   const startTime = performance.now();
+
+  const timeout = process.env.TRANSFER_STEPS_TIMEOUT
+    ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)
+    : DEFAULT_PROCESS_TIMEOUT;
 
   const result = await findTransferSteps(
     {
@@ -21,7 +25,7 @@ export default async function transferSteps({ from, to, value }) {
     {
       edgesFile: EDGES_FILE_PATH,
       pathfinderExecutable: PATHFINDER_FILE_PATH,
-      timeout: process.env.TRANSFER_STEPS_TIMEOUT || DEFAULT_PROCESS_TIMEOUT,
+      timeout,
     },
   );
 
