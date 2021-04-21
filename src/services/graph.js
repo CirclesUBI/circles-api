@@ -84,7 +84,22 @@ export default async function fetchAllFromGraph(name, fields, extra = '') {
 }
 
 export async function waitUntilGraphIsReady() {
-  return await waitForBlockNumber(0);
+  const query = isOfficialNode()
+    ? `{ indexingStatusForCurrentVersion(subgraphName: "${process.env.SUBGRAPH_NAME}") { chains } }`
+    : '{ subgraphs { id } }';
+
+  return await loop(
+    async () => {
+      try {
+        return await fetchFromGraphStatus(query);
+      } catch {
+        return false;
+      }
+    },
+    (isOnline) => {
+      return isOnline;
+    },
+  );
 }
 
 export async function waitForBlockNumber(blockNumber) {
