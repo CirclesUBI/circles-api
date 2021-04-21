@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.7] - 2021-04-21
+
+### Fixed
+
+- Docker: Do not wait for graph in entrypoint but in program [#71](https://github.com/CirclesUBI/circles-api/pull/71)
+
+## [1.3.6] - 2021-04-21
+
+### Changed
+
+- Increase transfer step process timeout [cda7a01](https://github.com/CirclesUBI/circles-api/commit/cda7a0101271cf9f8f351fdf69e66dc2f552f96c)
+
+## [1.3.5] - 2021-04-21
+
+### Changed
+
+- Docker: Use bash version of wait-for-it script [745cf5b](https://github.com/CirclesUBI/circles-api/commit/745cf5ba2e404f2a2d5b2b5432ddc09b9cbc1e80)
+
 ## [1.3.4] - 2021-03-29
 
 ### Fixed
