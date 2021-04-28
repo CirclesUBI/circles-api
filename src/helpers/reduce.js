@@ -9,7 +9,8 @@ export default function reduceCapacities(
       return edge.capacity.length >= bufferDecimals + 1;
     })
     .map((edge) => {
-      return reduceCapacity(edge.capacity, bufferDecimals);
+      edge.capacity = reduceCapacity(edge.capacity, bufferDecimals);
+      return edge;
     });
 }
 
