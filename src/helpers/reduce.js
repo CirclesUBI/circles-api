@@ -6,12 +6,15 @@ export default function reduceCapacities(
 ) {
   return edges
     .filter((edge) => {
-      return edge.capacity.length >= bufferDecimals + 1;
+      return edge.capacity.length > bufferDecimals + 1;
     })
-    .map((edge) => {
-      edge.capacity = reduceCapacity(edge.capacity, bufferDecimals);
-      return edge;
-    });
+    .reduce((acc, edge) => {
+      acc.push({
+        ...edge,
+        capacity: reduceCapacity(edge.capacity, bufferDecimals),
+      });
+      return acc;
+    }, []);
 }
 
 export function reduceCapacity(
