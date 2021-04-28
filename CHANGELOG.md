@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.8] - 2021-04-28
+
+### Fixed
+
+- Add negative buffer to trust edges [#74](https://github.com/CirclesUBI/circles-api/pull/74)
+
 ## [1.3.7] - 2021-04-21
 
 ### Fixed
