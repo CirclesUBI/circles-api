@@ -29,7 +29,9 @@ processor(exportEdges).process(async () => {
   const endTime = performance.now();
   const milliseconds = Math.round(endTime - startTime);
 
-  logger.info(`Written ${edges.length} edges to file in ${milliseconds}ms`);
+  logger.info(
+    `Written ${filteredEdges.length} of ${edges.length} edges to file in ${milliseconds}ms`,
+  );
 
   return Promise.resolve();
 });
