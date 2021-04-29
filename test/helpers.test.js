@@ -43,37 +43,28 @@ describe('Helpers', () => {
       ]);
     });
 
-    it('should filter out the right number of edges with too small capacity', () => {
-      const edges = [
-        {
-          // Omit these fields here as the method does not check for them ..
-          // from: '0x0',
-          // to: '0x1',
-          // token: '0x0',
-          capacity: '2000000000000000',
-        },
-        {
-          capacity: '10000000000000',
-        },
-        {
-          capacity: '91000000000000000',
-        },
-        {
-          capacity: '4500000000000222',
-        },
+    it('should filter out the edges with too small capacity', () => {
+      const edgesRegular = [
+        // Omit these other fields here as the method does not use them
+        // from: '0x0',
+        // to: '0x1',
+        // token: '0x0',
+        { capacity: '2000000000000000' },
+        { capacity: '10000000000000' },
+        { capacity: '91000000000000000' },
+        { capacity: '4500000000000222' },
       ];
 
-      // Use default value
-      expect(reduceCapacities(edges).length).toBe(3);
-      expect(reduceCapacities(edges)).toEqual([
+      // default value
+      expect(reduceCapacities(edgesRegular)).toEqual([
         { capacity: '1900000000000000' },
         { capacity: '90900000000000000' },
         { capacity: '4400000000000222' },
       ]);
 
-      // .. and custom values
-      expect(reduceCapacities(edges, 17).length).toBe(0);
-      expect(reduceCapacities(edges, 2).length).toBe(4);
+      // custom values
+      expect(reduceCapacities(edgesRegular, 17).length).toBe(0);
+      expect(reduceCapacities(edgesRegular, 2).length).toBe(4);
 
       const edgesSmall = [
         { capacity: '9' },
@@ -87,17 +78,14 @@ describe('Helpers', () => {
         { capacity: '999' },
         { capacity: '9999' },
       ]);
-
       expect(reduceCapacities(edgesSmall, 2)).toEqual([
         { capacity: '990' },
         { capacity: '9990' },
       ]);
-
       expect(reduceCapacities(edgesSmall, 3)).toEqual([
         { capacity: '900' },
         { capacity: '9900' },
       ]);
-
       expect(reduceCapacities(edgesSmall, 4)).toEqual([{ capacity: '9000' }]);
       expect(reduceCapacities(edgesSmall, 5)).toEqual([]);
     });
@@ -108,7 +96,6 @@ describe('Helpers', () => {
       // Alias for better readability
       const r = reduceCapacity;
 
-      // Reduce the capacity correctly
       expect(r('10000', 1)).toBe('9999');
       expect(r('10000', 2)).toBe('9990');
       expect(r('10000', 3)).toBe('9900');
@@ -158,14 +145,16 @@ describe('Helpers', () => {
       // Using default value
       expect(r('17000000000000000')).toBe('16900000000000000');
       expect(r('91000000000000000')).toBe('90900000000000000');
-      expect(r('9900000000000000000')).toBe('9899900000000000000');
+      expect(r('9999999999999999999')).toBe('9899999999999999999');
+    });
 
-      // Do not do anything when value as large as the buffer
+    it('should not reduce capacity when the value is the same order of magnitude as the the buffer', () => {
       expect(r('10000', 5)).toBe('10000');
       expect(r('12345', 5)).toBe('12345');
-      expect(r('17000000000000000', 17)).toBe('17000000000000000');
+      expect(r('11000000000000000', 17)).toBe('11000000000000000');
+    });
 
-      // Do not do anything when value too short ..
+    it('should not reduce capacity when the value is smaller than the buffer', () => {
       expect(r('1000', 15)).toBe('1000');
       expect(r('123', 4)).toBe('123');
     });
