@@ -8,10 +8,13 @@ export default function reduceCapacities(
     .filter((edge) => {
       return edge.capacity.length >= bufferDecimals + 1;
     })
-    .map((edge) => {
-      edge.capacity = reduceCapacity(edge.capacity, bufferDecimals);
-      return edge;
-    });
+    .reduce((acc, edge) => {
+      acc.push({
+        ...edge,
+        capacity: reduceCapacity(edge.capacity, bufferDecimals),
+      });
+      return acc;
+    }, []);
 }
 
 export function reduceCapacity(
@@ -19,7 +22,7 @@ export function reduceCapacity(
   bufferDecimals = DEFAULT_BUFFER_DECIMALS,
 ) {
   // Ignore too small values
-  if (value.length <= bufferDecimals + 1) {
+  if (value.length < bufferDecimals + 1) {
     return value;
   }
 
@@ -29,8 +32,8 @@ export function reduceCapacity(
   const figureToChange = parseInt(value[index], 10);
 
   if (figureToChange === 0) {
-    const reducedFrontNumber = parseInt(frontNumber, 10) - 1;
-    return `${reducedFrontNumber}0${endOfNumber}`;
+    const reduced = parseInt(frontNumber, 10) - 1;
+    return `${reduced === 0 ? '' : reduced}9${endOfNumber}`;
   } else {
     return `${frontNumber}${figureToChange - 1}${endOfNumber}`;
   }
