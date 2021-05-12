@@ -149,16 +149,18 @@ describe('Helpers', () => {
     });
 
     it('should not reduce capacity when the value is the same order of magnitude as the the buffer', () => {
-      expect(reduceCapacities('10000', 5)).toBe('10000');
-      expect(reduceCapacities('12345', 5)).toBe('12345');
-      expect(reduceCapacities('11000000000000000', 17)).toBe(
+      const r = reduceCapacity;
+      expect(r('10000', 5)).toBe('10000');
+      expect(r('12345', 5)).toBe('12345');
+      expect(r('11000000000000000', 17)).toBe(
         '11000000000000000',
       );
     });
 
     it('should not reduce capacity when the value is smaller than the buffer', () => {
-      expect(reduceCapacities('1000', 15)).toBe('1000');
-      expect(reduceCapacities('123', 4)).toBe('123');
+      const r = reduceCapacity;
+      expect(r('1000', 15)).toBe('1000');
+      expect(r('123', 4)).toBe('123');
     });
   });
 });
