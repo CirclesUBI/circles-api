@@ -1,13 +1,13 @@
 import Hub from 'circles-contracts/build/contracts/Hub.json';
 import fs from 'fs';
+import { spawn } from 'child_process';
 
 import web3, { provider, getWeb3Account } from './utils/web3';
 import { convertToBaseUnit } from './utils/math';
 import { createSafes, createTokens } from './utils/safes';
 
-import { runWorker } from '~/services/runWorker';
 import { EDGES_FILE_PATH } from '~/constants';
-import { mockGraphBlockNumber } from './utils/mocks';
+//import { mockGraphBlockNumber } from './utils/mocks';
 
 const NUM_ACCOUNTS = 4;
 
@@ -37,6 +37,7 @@ async function wait(ms) {
 
 describe('Edges', () => {
   let hub;
+  let worker;
 
   beforeAll(async () => {
     try {
@@ -98,7 +99,7 @@ describe('Edges', () => {
     const balance = await tokenInstances[0].methods
       .balanceOf(safeAddresses[0])
       .call();
-    console.log({ tokenAddresses, balance, tokenInstances });
+    //console.log({ tokenAddresses, balance, tokenInstances });
 
     // Simulate UBI issuance through the update() method.
     // await new Promise((resolve) => setTimeout(resolve, 10000));
@@ -109,22 +110,49 @@ describe('Edges', () => {
     // console.log({ balanceAfterUpdate });
 
     // Mock graph responses according to test cases
-    mockGraphBlockNumber();
+    // mockGraphBlockNumber(); // TODO: make the mock work with the child process
+    // console.log(process.env.GRAPH_NODE_ENDPOINT);
 
-    await runWorker();
-    //wait some seconds for the tasks to run
-    await wait(1000);
+    worker = spawn('npm', ['run', 'worker-test:serve'], {stdio: ['ignore', 'pipe', 'pipe']});
+    worker.on('error', (err) => {
+      console.error('Failed to start subprocess. Error: ', err);
+    });
+    worker.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+    });
+    worker.on('close', (code, signal) => {
+      console.log(`child process close all stdio with code ${code}`);
+      if (signal)
+        console.log(`child process terminated due to receipt of signal ${signal}`);
+    });
+
+    // Wait some seconds for the tasks to run
+    await wait(30000);
   });
 
   it('indexes edges according to transactions made', async () => {
+
+    // STEP 1
     // Read edges.json file
     const edgesRawData = fs.readFileSync(EDGES_FILE_PATH);
     const edges = JSON.parse(edgesRawData);
     expect(edges.length).toBe(0);
+
+    // STEP 2
+    // account A trusts account B -> safe[0] trusts safe[1]
+    // account C trusts account B -> safe[2] trusts safe[1]
+    await trust(
+      new Array(accounts[0], accounts[1]),
+      new Array(safeInstances[0], safeInstances[1]),
+      hub,
+      hubContract,
+      adminAccount.address,
+    );
   });
 
   afterAll(async () => {
     // clean up provider
     provider.stop();
+    controller.kill('SIGHUP');
   });
 });
