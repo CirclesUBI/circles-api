@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.11] - 2021-05-03
+
+### Fixed
+
+- Negative buffer fix [#76](https://github.com/CirclesUBI/circles-api/pull/76)
+
 ## [1.3.8] - 2021-04-28
 
 ### Fixed
