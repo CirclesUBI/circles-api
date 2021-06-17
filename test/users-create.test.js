@@ -8,43 +8,42 @@ import { randomChecksumAddress } from './utils/common';
 import User from '~/models/users';
 import app from '~';
 
-describe('PUT /users - Creating a new user', () => {
-  let nonce;
-  let safeAddress;
-  let username;
-  let email;
-  let avatarUrl;
+function prepareUser({ username = 'donkey' } = {}) {
+  const safeAddress = randomChecksumAddress();
+  const nonce = new Date().getTime();
+  const email = 'dk@kong.com';
+  const avatarUrl = 'https://storage.com/image.jpg';
 
+  const payload = createUserPayload({
+    nonce,
+    safeAddress,
+    username,
+    email,
+    avatarUrl,
+  });
+
+  mockRelayerSafe({
+    address: payload.address,
+    nonce,
+    safeAddress,
+    isCreated: true,
+    isDeployed: false,
+  });
+
+  return payload;
+}
+
+describe('PUT /users - Creating a new user', () => {
   let payload;
 
   beforeEach(() => {
-    safeAddress = randomChecksumAddress();
-    nonce = new Date().getTime();
-    username = 'donkey';
-    email = 'dk@kong.com';
-    avatarUrl = 'https://storage.com/image.jpg';
-
-    payload = createUserPayload({
-      nonce,
-      safeAddress,
-      username,
-      email,
-      avatarUrl,
-    });
-
-    mockRelayerSafe({
-      address: payload.address,
-      nonce,
-      safeAddress,
-      isCreated: true,
-      isDeployed: false,
-    });
+    payload = prepareUser();
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     return await User.destroy({
       where: {
-        username,
+        username: payload.data.username,
       },
     });
   });
@@ -61,5 +60,43 @@ describe('PUT /users - Creating a new user', () => {
       .send(payload)
       .set('Accept', 'application/json')
       .expect(httpStatus.CONFLICT);
+  });
+});
+
+describe('PUT /users - Fail when username is too similar', () => {
+  let correctPayload;
+  const duplicatePayloads = [];
+
+  beforeEach(() => {
+    correctPayload = prepareUser({ username: 'myUsername' });
+    duplicatePayloads[0] = prepareUser({ username: 'myusername' });
+    duplicatePayloads[1] = prepareUser({ username: 'MYUSERNAME' });
+    duplicatePayloads[2] = prepareUser({ username: 'MyUsername' });
+    duplicatePayloads[3] = prepareUser({ username: 'myUserName' });
+  });
+
+  afterEach(async () => {
+    return await User.destroy({
+      where: {
+        username: correctPayload.data.username,
+      },
+    });
+  });
+
+  it('should reject same username with different letter case', async () => {
+    await request(app)
+      .put('/api/users')
+      .send(correctPayload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CREATED);
+
+    // Same username already exists
+    for (const payload of duplicatePayloads) {
+      await request(app)
+        .put('/api/users')
+        .send(payload)
+        .set('Accept', 'application/json')
+        .expect(httpStatus.CONFLICT);
+    }
   });
 });
