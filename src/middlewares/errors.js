@@ -1,22 +1,20 @@
 import httpStatus from 'http-status';
+import { isCelebrateError as isValidationError } from 'celebrate';
 
 import APIError from '../helpers/errors';
 import logger from '../helpers/logger';
-import { isCelebrate as isValidationError } from 'celebrate';
 import { respondWithError } from '../helpers/responses';
 
 // eslint-disable-next-line no-unused-vars
 export default function errorsMiddleware(err, req, res, next) {
   // Check if error is public facing and known to us
   if (isValidationError(err)) {
-    const { joi } = err;
-
     // Show validation errors to user
     err = new APIError(httpStatus.BAD_REQUEST);
 
-    if (joi.details) {
+    if (err.details) {
       err.data = {
-        fields: joi.details.map((detail) => {
+        fields: err.details.map((detail) => {
           return {
             path: detail.path,
             message: detail.message,

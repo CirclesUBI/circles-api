@@ -39,11 +39,24 @@ app.use(helmet());
 
 // Log HTTP requests and route them to winston
 app.use(
-  morgan('dev', {
-    stream: {
-      write: (message) => logger.verbose(message.replace('\n', '')),
+  morgan(
+    (tokens, req, res) => {
+      return [
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        tokens.res(req, res, 'content-length'),
+        '-',
+        tokens['response-time'](req, res),
+        'ms',
+      ].join(' ');
     },
-  }),
+    {
+      stream: {
+        write: (message) => logger.info(message.replace('\n', '')),
+      },
+    },
+  ),
 );
 
 // Mount all API routes

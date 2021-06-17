@@ -2,9 +2,12 @@ import httpStatus from 'http-status';
 import request from 'supertest';
 
 import web3 from './utils/web3';
+import { createUserPayload } from './utils/users';
+import { mockRelayerSafe } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
 
 import app from '~';
+import User from '~/models/users';
 
 async function expectErrorStatus(body, status = httpStatus.BAD_REQUEST) {
   return await request(app)
@@ -33,7 +36,10 @@ describe('PUT /users - validation', () => {
     username = 'donkey';
     email = 'dk@kong.com';
 
-    signature = getSignature(address, nonce, safeAddress, username, privateKey);
+    signature = getSignature(
+      [address, nonce, safeAddress, username],
+      privateKey,
+    );
   });
 
   describe('when using invalid parameters', () => {
@@ -86,6 +92,12 @@ describe('PUT /users - validation', () => {
           ...correctBody.data,
           username: 'ab',
         },
+      });
+
+      // Invalid avatarUrl
+      await expectErrorStatus({
+        ...correctBody,
+        avatarUrl: 'www.wrong.pizza',
       });
     });
   });
@@ -161,5 +173,76 @@ describe('GET /users - validation', () => {
     await request(app)
       .get('/api/users?username[]=__22as0-&username[]=panda')
       .expect(httpStatus.BAD_REQUEST);
+  });
+});
+
+describe('POST /users - dry run create user validation', () => {
+  afterAll(async () => {
+    return await User.destroy({
+      where: {
+        username: 'zebra',
+      },
+    });
+  });
+
+  it('should fail when username already exists', async () => {
+    const payload = createUserPayload({
+      nonce: 123456,
+      safeAddress: randomChecksumAddress(),
+      username: 'zebra',
+      email: 'zebra@zoo.org',
+      avatarUrl: 'https://test.de/lala.jpg',
+    });
+
+    mockRelayerSafe({
+      address: payload.address,
+      nonce: payload.nonce,
+      safeAddress: payload.data.safeAddress,
+      isCreated: true,
+      isDeployed: false,
+    });
+
+    await request(app)
+      .put('/api/users')
+      .send(payload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CREATED);
+
+    await request(app)
+      .post('/api/users')
+      .send({
+        username: 'zebra',
+      })
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CONFLICT);
+  });
+
+  it('should fail when values are invalid', async () => {
+    await request(app)
+      .post('/api/users')
+      .send({
+        username: 'lala lala lala',
+      })
+      .set('Accept', 'application/json')
+      .expect(httpStatus.BAD_REQUEST);
+
+    await request(app)
+      .post('/api/users')
+      .send({
+        email: 'test@',
+      })
+      .set('Accept', 'application/json')
+      .expect(httpStatus.BAD_REQUEST);
+  });
+
+  it('should return OK when values are alright', async () => {
+    await request(app)
+      .post('/api/users')
+      .send({
+        username: 'lalazebra',
+        email: 'lalazebra@zoo.io',
+      })
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK);
   });
 });

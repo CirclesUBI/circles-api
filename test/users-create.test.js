@@ -1,49 +1,39 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
-import web3 from './utils/web3';
+import { createUserPayload } from './utils/users';
 import { mockRelayerSafe } from './utils/mocks';
-import { randomChecksumAddress, getSignature } from './utils/common';
+import { randomChecksumAddress } from './utils/common';
 
 import User from '~/models/users';
 import app from '~';
 
 describe('PUT /users - Creating a new user', () => {
-  let address;
   let nonce;
-  let privateKey;
   let safeAddress;
-  let signature;
   let username;
   let email;
+  let avatarUrl;
 
   let payload;
 
   beforeEach(() => {
-    const account = web3.eth.accounts.create();
-    address = account.address;
-    privateKey = account.privateKey;
-
     safeAddress = randomChecksumAddress();
     nonce = new Date().getTime();
     username = 'donkey';
     email = 'dk@kong.com';
+    avatarUrl = 'https://storage.com/image.jpg';
 
-    signature = getSignature(address, nonce, safeAddress, username, privateKey);
-
-    payload = {
-      address,
+    payload = createUserPayload({
       nonce,
-      signature,
-      data: {
-        safeAddress,
-        username,
-        email,
-      },
-    };
+      safeAddress,
+      username,
+      email,
+      avatarUrl,
+    });
 
     mockRelayerSafe({
-      address,
+      address: payload.address,
       nonce,
       safeAddress,
       isCreated: true,
@@ -59,15 +49,13 @@ describe('PUT /users - Creating a new user', () => {
     });
   });
 
-  it('should successfully respond', async () => {
+  it('should successfully respond and fail when we try again', async () => {
     await request(app)
       .put('/api/users')
       .send(payload)
       .set('Accept', 'application/json')
       .expect(httpStatus.CREATED);
-  });
 
-  it('should fail if we use the same username again', async () => {
     await request(app)
       .put('/api/users')
       .send(payload)
