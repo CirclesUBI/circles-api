@@ -120,7 +120,7 @@ async function findByUsername(req, res, next) {
   User.findAll({
     where: {
       username: {
-        [Op.iLike]: `%${query}%`,
+        [Op.iLike]: `${query}%`,
       },
     },
     order: [['username', 'ASC']],
