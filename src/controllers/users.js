@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import sequelize, { Op } from 'sequelize';
+import Sequelize, { Op } from 'sequelize';
 
 import APIError from '../helpers/errors';
 import User from '../models/users';
@@ -65,9 +65,9 @@ async function checkSaltNonce(saltNonce, address, safeAddress) {
 }
 
 async function checkIfExists(username, safeAddress) {
-  const caseInsensitiveUsername = sequelize.where(
-    sequelize.fn('lower', sequelize.col('username')),
-    sequelize.fn('lower', username),
+  const caseInsensitiveUsername = Sequelize.where(
+    Sequelize.fn('lower', Sequelize.col('username')),
+    Sequelize.fn('lower', username),
   );
 
   const response = await User.findOne({
