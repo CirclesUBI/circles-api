@@ -65,7 +65,7 @@ async function checkSaltNonce(saltNonce, address, safeAddress) {
 }
 
 async function checkIfExists(username, safeAddress) {
-  const caseInsensitiveUsername = Sequelize.where(
+  const equalUsernameCondition = Sequelize.where(
     Sequelize.fn('lower', Sequelize.col('username')),
     Sequelize.fn('lower', username),
   );
@@ -74,13 +74,13 @@ async function checkIfExists(username, safeAddress) {
     where: safeAddress
       ? {
           [Op.or]: [
-            caseInsensitiveUsername,
+            equalUsernameCondition,
             {
               safeAddress,
             },
           ],
         }
-      : caseInsensitiveUsername,
+      : equalUsernameCondition,
   });
 
   if (response) {
