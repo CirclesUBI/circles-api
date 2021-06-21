@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import { Op } from 'sequelize';
+import Sequelize, { Op } from 'sequelize';
 
 import APIError from '../helpers/errors';
 import User from '../models/users';
@@ -65,21 +65,22 @@ async function checkSaltNonce(saltNonce, address, safeAddress) {
 }
 
 async function checkIfExists(username, safeAddress) {
+  const equalUsernameCondition = Sequelize.where(
+    Sequelize.fn('lower', Sequelize.col('username')),
+    Sequelize.fn('lower', username),
+  );
+
   const response = await User.findOne({
     where: safeAddress
       ? {
           [Op.or]: [
-            {
-              username,
-            },
+            equalUsernameCondition,
             {
               safeAddress,
             },
           ],
         }
-      : {
-          username,
-        },
+      : equalUsernameCondition,
   });
 
   if (response) {
