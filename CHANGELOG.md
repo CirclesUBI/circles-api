@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.12] - 2021-06-22
+
+### Changed
+
+- Improve search for usernames [#86](https://github.com/CirclesUBI/circles-api/pull/86)
+- Introduce case insensitivity for usernames [#85](https://github.com/CirclesUBI/circles-api/pull/85)
+
 ## [1.3.11] - 2021-05-03
 
 ### Fixed
