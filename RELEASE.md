@@ -16,7 +16,7 @@ Use this checklist to create a new release of `circles-api` and distribute the D
 10. `git push origin main` to push the automatic `package.json` change after creating the tag.
 11. [Create](https://github.com/CirclesUBI/circles-api/releases/new) a new release on GitHub, select the tag you've just pushed under *"Tag version"* and use the same for the *"Release title"*. For *"Describe this release"* copy the same information you've entered in `CHANGELOG.md` for this release. See examples [here](https://github.com/CirclesUBI/circles-api/releases).
 
-## Building and uploading Docker image to registries
+## Building and uploading Docker image to registry
 
 All tagged GitHub commits should be uploaded to our private DigitalOcean registry and the public DockerHub registry automatically by the [tagbuild.yaml](https://github.com/CirclesUBI/circles-api/blob/main/.github/workflows/tagbuild.yml) GitHub Action.
 
