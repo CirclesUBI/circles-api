@@ -15,6 +15,7 @@ import web3, {
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
+const CRON_WEEKLY = '0 0 0 * * 0';
 
 // Connect with postgres database
 db.authenticate()
@@ -74,14 +75,6 @@ waitUntilGraphIsReady()
     logger.info('Graph node connection has been established successfully');
   })
   .then(() => {
-    if (process.env.INITIAL_SYNC) {
-      // Run full sync on start. Note that this is a task which is manually
-      // executed by setting the env var, as we don't want to run this
-      // expensive process every time the worker restarts.
-      submitJob(tasks.syncFullGraph, 'syncFullGraph-initial');
-      return;
-    }
-
     // Subscribe to events to handle trust graph updates for single addresses
     subscribeEvent(
       hubContract,
@@ -103,6 +96,13 @@ waitUntilGraphIsReady()
       repeat: {
         cron: CRON_NIGHTLY,
       },
+    });
+
+    // Run full sync every week
+    submitJob(tasks.syncFullGraph, 'syncFullGraph-weekly', null, {
+      // repeat: {
+      //   cron: CRON_WEEKLY,
+      // },
     });
 
     // Always write edges.json file on start to make sure it exists
