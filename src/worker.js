@@ -100,9 +100,9 @@ waitUntilGraphIsReady()
 
     // Run full sync every week
     submitJob(tasks.syncFullGraph, 'syncFullGraph-weekly', null, {
-      // repeat: {
-      //   cron: CRON_WEEKLY,
-      // },
+      repeat: {
+        cron: CRON_WEEKLY,
+      },
     });
 
     // Always write edges.json file on start to make sure it exists
