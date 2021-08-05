@@ -5,7 +5,7 @@ import multer, { MulterError } from 'multer';
 import APIError from '../helpers/errors';
 import web3 from '../services/web3';
 
-const DEFAULT_FILE_MAX_SIZE = 5 * 1000 * 1000;
+const DEFAULT_FILE_MAX_SIZE = 1 * 1000 * 1000;
 const DEFAULT_FILE_TYPES = ['jpeg', 'jpg', 'png'];
 
 function generateFileName(ext) {
