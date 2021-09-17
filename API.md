@@ -20,7 +20,7 @@ Returns steps to transfer transitively through trust graph from one node to anot
 
 - `from`: Sender address
 - `to`: Receiver address
-- `value`: Amount of Circles to send between sender and receiver
+- `value`: Amount of Circles to send between sender and receiver (in Wei)
 
 **Response:**
 
