@@ -20,7 +20,7 @@ Returns steps to transfer transitively through trust graph from one node to anot
 
 - `from`: Sender address
 - `to`: Receiver address
-- `value`: Amount of Circles to send between sender and receiver (in Wei)
+- `value`: Amount of Freckles to send between sender and receiver (the fractional monetary unit of Circles is named Freckles. One Circle = 1,000,000,000,000,000,000 Freckles (10<sup>18</sup>))
 
 **Response:**
 
