@@ -48,8 +48,9 @@ async function rebuildTrustNetwork() {
     const endTime = performance.now();
     const milliseconds = Math.round(endTime - startTime);
 
+    const checkedEdges = Object.keys(edgeUpdateManager.checkedEdges).length;
     logger.info(
-      `Updated ${edges.length} edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (${milliseconds}ms)`,
+      `Updated ${checkedEdges} edges with ${statistics.safes} safes, ${statistics.connections} connections and ${statistics.tokens} tokens (${milliseconds}ms)`,
     );
   } catch (error) {
     logger.error(`Worker failed [${error.message}]`);
