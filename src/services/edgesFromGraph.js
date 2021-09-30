@@ -228,7 +228,6 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
             // special string comparison method as using BN instances affects
             // performance significantly
             const capacity = minNumberString(limit, balance);
-
             return (
               userAddress === token.safeAddress &&
               canSendToAddress === receiverSafeAddress &&
@@ -243,11 +242,10 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
             tokenOwner: token.safeAddress,
           });
         }
-
         return tokenAcc;
       },
+      []
     );
-
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
     trustedTokens.reduce((acc, trustedToken) => {
@@ -277,7 +275,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
       });
 
       return acc;
-    });
+    }, []);
   });
 
   // Add connections between token owners and the original safe of the token as
