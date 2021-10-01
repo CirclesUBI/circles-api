@@ -16,7 +16,7 @@ import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
 // CRON_WEEKLY: "At 12:00 on Friday".
-const CRON_WEEKLY = '0 0 12 * * 5';
+const CRON_WEEKLY = '0 0 13 * * 5';
 
 // Connect with postgres database
 db.authenticate()
