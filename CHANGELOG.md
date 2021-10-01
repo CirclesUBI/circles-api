@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.14] - 2021-10-01
+
+### Changed
+
+- Migrate ubuntu-16.04 workflows to ubuntu-18.04 [#93](https://github.com/CirclesUBI/circles-api/pull/93)
+
 ## [1.3.13] - 2021-10-01
 
 ### Added
