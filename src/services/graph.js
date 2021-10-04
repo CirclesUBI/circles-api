@@ -1,5 +1,6 @@
 import fetch from 'isomorphic-fetch';
 
+import logger from '../helpers/logger';
 import loop from '../helpers/loop';
 import core from './core';
 
@@ -51,6 +52,10 @@ export async function fetchFromGraph(
     }
   }`;
   const data = await requestGraph(query);
+  if (!data) {
+    logger.error(`Error requesting graph with query: ${query}`)
+    return false;
+  }
   return data[name];
 }
 
