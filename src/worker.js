@@ -15,8 +15,8 @@ import web3, {
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
-// CRON_WEEKLY: "At 12:00 on Friday".
-const CRON_WEEKLY = '0 0 13 * * 5';
+// CRON_WEEKLY: "At 17:00 on Monday".
+const CRON_WEEKLY = '0 0 17 * * 1';
 
 // Connect with postgres database
 db.authenticate()
