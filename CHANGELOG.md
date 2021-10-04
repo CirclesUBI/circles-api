@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.15] - 2021-10-04
+
+### Fixed
+
+- Use last id instead of skip for pagination in graph queries with more than 5000 items in result [#94](https://github.com/CirclesUBI/circles-api/pull/94)
+
 ## [1.3.14] - 2021-10-01
 
 ### Changed
