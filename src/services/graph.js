@@ -42,27 +42,29 @@ export async function fetchFromGraph(
   name,
   fields,
   extra = '',
-  skip = 0,
+  lastID = '',
   first = PAGINATION_SIZE,
 ) {
   const query = `{
-    ${name}(${extra} first: ${first}, skip: ${skip}) {
+    ${name}(${extra} first: ${first}, orderBy: id, where: { id_gt: "${lastID}"}) {
       ${fields}
     }
   }`;
-
   const data = await requestGraph(query);
   return data[name];
 }
 
 async function* fetchGraphGenerator(name, fields, extra = '') {
-  let skip = 0;
+  // The `skip` argument must be between 0 and 5000 (current limitations by TheGraph).
+  // Therefore, we sort the elements by id and reference the last element id for the next query
   let hasData = true;
+  let lastID = '';
 
   while (hasData) {
-    const data = await fetchFromGraph(name, fields, extra, skip);
+    //console.log({lastID});
+    const data = await fetchFromGraph(name, fields, extra, lastID);
     hasData = data.length > 0;
-    skip += PAGINATION_SIZE;
+    if (hasData) lastID = data[data.length - 1].id;
     yield data;
   }
 }

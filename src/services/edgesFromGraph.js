@@ -244,7 +244,7 @@ export function findEdgesInGraphData({ connections, safes, tokens }) {
         }
         return tokenAcc;
       },
-      []
+      [],
     );
     // Merge all known data to get a list in the end containing what Token can
     // be sent to whom with what maximum value.
