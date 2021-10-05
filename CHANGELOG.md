@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.16] - 2021-10-05
+
+### Added
+
+- Debug graph errors [#95](https://github.com/CirclesUBI/circles-api/pull/95)
+
 ## [1.3.15] - 2021-10-04
 
 ### Fixed
