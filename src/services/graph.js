@@ -32,6 +32,12 @@ async function fetchFromGraphStatus(query) {
     });
 }
 
+async function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export async function requestGraph(query) {
   // Strip newlines in query before doing request
   return await core.utils.requestGraph({
@@ -68,6 +74,7 @@ async function* fetchGraphGenerator(name, fields, extra = '') {
   while (hasData) {
     //console.log({lastID});
     const data = await fetchFromGraph(name, fields, extra, lastID);
+    await wait(500);
     hasData = data.length > 0;
     if (hasData) lastID = data[data.length - 1].id;
     yield data;
