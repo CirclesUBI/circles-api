@@ -15,8 +15,6 @@ import web3, {
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
-// CRON_WEEKLY: "At 17:00 on Monday".
-const CRON_WEEKLY = '0 10 1 * * 2';
 
 // Connect with postgres database
 db.authenticate()
@@ -96,13 +94,6 @@ waitUntilGraphIsReady()
     submitJob(tasks.uploadEdgesS3, 'uploadEdgesS3-nightly', null, {
       repeat: {
         cron: CRON_NIGHTLY,
-      },
-    });
-
-    // Run full sync every week
-    submitJob(tasks.syncFullGraph, 'syncFullGraph-weekly', null, {
-      repeat: {
-        cron: CRON_WEEKLY,
       },
     });
 
