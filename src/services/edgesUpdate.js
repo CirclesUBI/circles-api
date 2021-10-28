@@ -74,8 +74,6 @@ export default class EdgeUpdateManager {
       logger.error(
         `Found error with checking sending limit for token of ${edge.token} from ${edge.from} to ${edge.to} [${error}]`,
       );
-
-      await destroyEdge(edge);
     }
   }
 }
