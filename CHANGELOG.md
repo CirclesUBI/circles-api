@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.20] - 2021-10-28
+
+### Removed
+
+- Do not run syncFullGraph task
+- Do not destroy the edge in the db when there is an error updating the edge
+- Delete unused file: edgesGraph.js
+
 ## [1.3.16] - 2021-10-05
 
 ### Added
