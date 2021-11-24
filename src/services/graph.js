@@ -13,8 +13,8 @@ function isOfficialNode() {
 async function fetchFromGraphStatus(query) {
   const endpoint = isOfficialNode()
     ? `${process.env.GRAPH_NODE_ENDPOINT}/index-node/graphql`
-    : `${process.env.GRAPH_NODE_ENDPOINT}/subgraphs`;
-
+    : `${process.env.GRAPH_NODE_ENDPOINT}/subgraphs/name/${process.env.SUBGRAPH_NAME}`;
+  console.log({endpoint});
   return await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -100,7 +100,8 @@ export default async function fetchAllFromGraph(name, fields, extra = '') {
 export async function waitUntilGraphIsReady() {
   const query = isOfficialNode()
     ? `{ indexingStatusForCurrentVersion(subgraphName: "${process.env.SUBGRAPH_NAME}") { chains } }`
-    : '{ subgraphs { id } }';
+    : '{ _meta { block { number } } }';
+    console.log({query});
 
   return await loop(
     async () => {
@@ -143,11 +144,9 @@ export async function waitForBlockNumber(blockNumber) {
     );
   } else {
     const query = `{
-      subgraphs {
-        currentVersion {
-          deployment {
-            latestEthereumBlockNumber
-          }
+      _meta {
+        block {
+          number
         }
       }
     }`;
