@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.21] - 2021-12-16
+
+### Fixed
+
+- Update queries and endpoints for graph-node v0.25.0 [#96](https://github.com/CirclesUBI/circles-api/pull/96)
+
 ## [1.3.20] - 2021-10-28
 
 ### Removed
