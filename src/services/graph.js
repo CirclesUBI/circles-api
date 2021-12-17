@@ -31,6 +31,27 @@ async function fetchFromGraphStatus(query) {
     });
 }
 
+// This function aims to replace `fetchFromGraphStatus()` when `index-node`
+// requests don't work for thegraph.com/hosted-service
+async function fetchFromSubgraphStatus(query) {
+  const endpoint = `${process.env.GRAPH_NODE_ENDPOINT}/subgraphs/name/${process.env.SUBGRAPH_NAME}`
+  return await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: query.replace(/\s\s+/g, ' '),
+    }),
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((response) => {
+      return response.data;
+    });
+}
+
 async function wait(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -97,18 +118,17 @@ export default async function fetchAllFromGraph(name, fields, extra = '') {
 }
 
 export async function waitUntilGraphIsReady() {
-  const query = `{ indexingStatusForCurrentVersion(subgraphName: "${process.env.SUBGRAPH_NAME}") { health } }`;
+  const query = `{ _meta { block { number } } }`;
   return await loop(
     async () => {
       try {
-        let data = await fetchFromGraphStatus(query);
-        return data.indexingStatusForCurrentVersion.health;
+        return await fetchFromSubgraphStatus(query);
       } catch {
         return false;
       }
     },
     (isHealthy) => {
-      return isHealthy === 'healthy';
+      return isHealthy
     },
   );
 }
