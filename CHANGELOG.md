@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.22] - 2021-12-17
+
+### Changed
+
+- Change graph health query [#101](https://github.com/CirclesUBI/circles-api/pull/101)
+
 ## [1.3.21] - 2021-12-16
 
 ### Fixed
