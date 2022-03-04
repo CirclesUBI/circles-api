@@ -4,9 +4,6 @@ import findTransferSteps from '@circles/transfer';
 import { performance } from 'perf_hooks';
 
 import web3 from './web3';
-import tasks from '../tasks';
-import submitJob from '../tasks/submitJob';
-import waitAndRetryOnFail from '../helpers/loop';
 import EdgeUpdateManager from './edgesUpdate';
 
 import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
@@ -34,27 +31,56 @@ async function isStepValid(tokenAddress, tokenOwner, sender, receiver, plannedLi
   return isValid = web3.utils.toBN(plannedLimit).lte(web3.utils.toBN(capacity));
 }
 
-// Returns true if the transfer steps are valid
-// Returns false and updates the steps if they are invalid
-async function checkTransferSteps(transferSteps){
+// Checks that all the transfer steps are valid. Invalid steps are updated
+async function transformValidTransferSteps(transferSteps){
   const edgeUpdateManager = new EdgeUpdateManager();
-  let allStepsValid = true;
-  for (let step of transferSteps) {
-    const tokenAddress = await hubContract.methods.userToToken(step.tokenOwnerAddress).call();
-    const isValid = await isStepValid(tokenAddress, step.tokenOwnerAddress, step.from, step.to, step.value);
-    if (!isValid) {
-      allStepsValid = false;
-      // Update the edge
-      await edgeUpdateManager.updateEdge(
-        {
-          token: step.tokenOwnerAddress,
-          from: step.from,
-          to: step.to,
-        },
-        tokenAddress,
-      );
-    }
-  }
+
+  let validSteps = true;
+
+console.log({transferSteps});
+
+  await Promise.all(
+    transferSteps.map(async (step) => {
+      console.log("Checking the edge: (", step.token, ", ", step.from, ", ", step.to, ")");
+      const tokenAddress = await hubContract.methods.userToToken(step.token).call();
+      const isValid = await isStepValid(tokenAddress, step.token, step.from, step.to, step.value);
+      if (!isValid) {
+        validSteps = false;
+        // Update the edge
+        console.log("Updating the edge: (", step.token, ", ", step.from, ", ", step.to, ")");
+        await edgeUpdateManager.updateEdge(
+          {
+            token: step.token,
+            from: step.from,
+            to: step.to,
+          },
+          tokenAddress,
+        );
+      }
+    }),
+  );
+
+  // let validSteps = [];
+  
+  // for (let step of transferSteps) {
+  //   const tokenAddress = await hubContract.methods.userToToken(step.tokenOwnerAddress).call();
+  //   const isValid = await isStepValid(tokenAddress, step.tokenOwnerAddress, step.from, step.to, step.value);
+  //   if (isValid) {
+  //     validSteps.push(step)
+  //   } else {
+  //     // Update the edge
+  //     await edgeUpdateManager.updateEdge(
+  //       {
+  //         token: step.tokenOwnerAddress,
+  //         from: step.from,
+  //         to: step.to,
+  //       },
+  //       tokenAddress,
+  //     );
+  //   }
+  // }
+  console.log("return valid steps: ", validSteps)
+  return validSteps;
 }
 
 export default async function transferSteps({ from, to, value }) {
@@ -68,40 +94,23 @@ export default async function transferSteps({ from, to, value }) {
     ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)
     : DEFAULT_PROCESS_TIMEOUT;
 
-  await waitAndRetryOnFail(
-    async () => {
-      return await await findTransferSteps(
-        {
-          from,
-          to,
-          value,
-        },
-        {
-          edgesFile: EDGES_FILE_PATH,
-          pathfinderExecutable: PATHFINDER_FILE_PATH,
-          timeout,
-        },
-      );
-    },
-    async (result) => {
-      // Checks that transfer steps are valid
-      const validTransferSteps = await checkTransferSteps(result.transferSteps)
-      if( !validTransferSteps ){
-        // export edges.json
-        submitJob(tasks.exportEdges, 'exportEdges-before-transfer');
-        // findTransferSteps again
-        console.log("*************** Return false");
-        return false;
-      }
-      console.log("*************** Return true");
-      return true;
-    },
-    {
-      maxAttemptsOnFail: 2,
-      waitAfterFail: 4000,
-    }
-  );
-
+  const result = await findTransferSteps(
+      {
+        from,
+        to,
+        value,
+      },
+      {
+        edgesFile: EDGES_FILE_PATH,
+        pathfinderExecutable: PATHFINDER_FILE_PATH,
+        timeout,
+      },
+    );
+  // Filter out the transfer steps that are not valid
+  const validTransferSteps = await transformValidTransferSteps(result.transferSteps);
+  if (!validTransferSteps) {
+    throw new Error('Valid path not found, try again');
+  }
 
   const endTime = performance.now();
 
@@ -111,7 +120,7 @@ export default async function transferSteps({ from, to, value }) {
     maxFlowValue: result.maxFlowValue,
     processDuration: Math.round(endTime - startTime),
     transferValue: value,
-    transferSteps: result.transferSteps.map(({ token, ...step }) => {
+    transferSteps: validTransferSteps.map(({ token, ...step }) => {
       return {
         ...step,
         tokenOwnerAddress: token,

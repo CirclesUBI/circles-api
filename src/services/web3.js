@@ -20,7 +20,7 @@ export function getEventSignature(contract, eventName) {
 export function subscribeEvent(contract, address, eventName, callbackFn) {
   const handleCallback = (error, result) => {
     if (error) {
-      logger.error(`Web3 subscription error: ${error}`);
+      logger.error(`...Web3 subscription error: ${error}`);
       // Subscribe again with same parameters when disconnected
       subscription.subscribe(handleCallback);
     } else {
