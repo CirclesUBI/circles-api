@@ -5,7 +5,7 @@ import logger from '../helpers/logger';
 import web3 from './web3';
 
 import { minNumberString } from '../helpers/compare';
-import { upsertEdge, destroyEdge } from './edgesDatabase';
+import { upsertEdge } from './edgesDatabase';
 import { ZERO_ADDRESS } from '../constants';
 
 const hubContract = new web3.eth.Contract(
