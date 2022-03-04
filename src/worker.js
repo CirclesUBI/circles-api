@@ -69,6 +69,8 @@ function handleTrustChange({ address, topics, transactionHash }) {
   }
 }
 
+web3.eth.clearSubscriptions();
+
 waitUntilGraphIsReady()
   .then(() => {
     logger.info('Graph node connection has been established successfully');
