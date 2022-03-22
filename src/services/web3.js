@@ -46,10 +46,10 @@ async function wait(ms) {
 }
 
 export function subscribeEvent(contract, address, eventName, callbackFn) {
-  const handleCallback = (error, result) => {
+  const handleCallback = async (error, result) => {
     if (error) {
       logger.error(`Web3 subscription error: ${error}`);
-      await wait(1000);
+      //await wait(1000);
       // Subscribe again with same parameters when disconnected
       subscription.subscribe(handleCallback);
     } else {
