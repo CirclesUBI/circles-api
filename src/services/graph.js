@@ -35,8 +35,6 @@ async function fetchFromGraphStatus(query) {
 // requests don't work for thegraph.com/hosted-service
 async function fetchFromSubgraphStatus(query) {
   const endpoint = `${process.env.GRAPH_NODE_ENDPOINT}/subgraphs/name/${process.env.SUBGRAPH_NAME}`;
-  logger.log({endpoint});
-  logger.log({query});
   return await fetch(endpoint, {
     method: 'POST',
     headers: {

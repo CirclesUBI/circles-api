@@ -88,10 +88,6 @@ waitUntilGraphIsReady()
       handleTrustChange,
     );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
-
-    //await wait(7000);
-    logger.log(`Number of active subscriptions: ${web3.eth._requestManager.subscriptions.size}`)
-
     // Clean up worker queues every night
     submitJob(tasks.cleanup, 'cleanUp-nightly', null, {
       repeat: {

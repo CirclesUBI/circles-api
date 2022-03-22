@@ -24,7 +24,6 @@ var options = {
 };
 
 const web3 = new Web3(
-  // new Web3.providers.WebsocketProvider(process.env.ETHEREUM_NODE_WS),
   new Web3WsProvider(process.env.ETHEREUM_NODE_WS, options),
 );
 
@@ -49,7 +48,6 @@ export function subscribeEvent(contract, address, eventName, callbackFn) {
   const handleCallback = async (error, result) => {
     if (error) {
       logger.error(`Web3 subscription error: ${error}`);
-      //await wait(1000);
       // Subscribe again with same parameters when disconnected
       subscription.subscribe(handleCallback);
     } else {
