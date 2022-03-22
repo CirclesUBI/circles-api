@@ -69,7 +69,11 @@ function handleTrustChange({ address, topics, transactionHash }) {
   }
 }
 
-web3.eth.clearSubscriptions();
+async function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 waitUntilGraphIsReady()
   .then(() => {
@@ -84,6 +88,9 @@ waitUntilGraphIsReady()
       handleTrustChange,
     );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
+
+    await wait(7000);
+    logger.log(`Number of active subscriptions: ${web3.eth._requestManager.subscriptions.size}`)
 
     // Clean up worker queues every night
     submitJob(tasks.cleanup, 'cleanUp-nightly', null, {
