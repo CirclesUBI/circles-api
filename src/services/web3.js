@@ -3,24 +3,22 @@ import Web3WsProvider from 'web3-providers-ws';
 
 import logger from '../helpers/logger';
 
-
 var options = {
   timeout: 30000, // ms
 
   clientConfig: {
-
     // Useful to keep a connection alive
     keepalive: true,
-    keepaliveInterval: 60000 // ms
+    keepaliveInterval: 60000, // ms
   },
 
   // Enable auto reconnection
   reconnect: {
-      auto: true,
-      delay: 5000, // ms
-      maxAttempts: 5,
-      onTimeout: false
-  }
+    auto: true,
+    delay: 5000, // ms
+    maxAttempts: 5,
+    onTimeout: false,
+  },
 };
 
 const web3 = new Web3(

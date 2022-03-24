@@ -82,7 +82,7 @@ waitUntilGraphIsReady()
       handleTrustChange,
     );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
-    
+
     // Clean up worker queues every night
     submitJob(tasks.cleanup, 'cleanUp-nightly', null, {
       repeat: {
