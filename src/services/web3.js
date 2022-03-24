@@ -38,14 +38,8 @@ export function getEventSignature(contract, eventName) {
   return signature;
 }
 
-async function wait(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 export function subscribeEvent(contract, address, eventName, callbackFn) {
-  const handleCallback = async (error, result) => {
+  const handleCallback = (error, result) => {
     if (error) {
       logger.error(`Web3 subscription error: ${error}`);
       // Subscribe again with same parameters when disconnected

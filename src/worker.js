@@ -69,12 +69,6 @@ function handleTrustChange({ address, topics, transactionHash }) {
   }
 }
 
-async function wait(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 waitUntilGraphIsReady()
   .then(() => {
     logger.info('Graph node connection has been established successfully');
@@ -88,6 +82,7 @@ waitUntilGraphIsReady()
       handleTrustChange,
     );
     subscribeEvent(tokenContract, null, 'Transfer', handleTrustChange);
+    
     // Clean up worker queues every night
     submitJob(tasks.cleanup, 'cleanUp-nightly', null, {
       repeat: {
