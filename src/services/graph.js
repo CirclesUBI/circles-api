@@ -34,7 +34,8 @@ async function fetchFromGraphStatus(query) {
 // This function aims to replace `fetchFromGraphStatus()` when `index-node`
 // requests don't work for thegraph.com/hosted-service
 async function fetchFromSubgraphStatus(query) {
-  const endpoint = `${process.env.GRAPH_NODE_ENDPOINT}/subgraphs/name/${process.env.SUBGRAPH_NAME}`;
+  const endpoint = `${process.env.GRAPH_NODE_ENDPOINT}/subgraphs/name/${process.env.SUBGRAPH_NAME}`
+  logger.info(`Graph endpoint: ${endpoint}`);
   return await fetch(endpoint, {
     method: 'POST',
     headers: {
