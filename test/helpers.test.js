@@ -152,9 +152,7 @@ describe('Helpers', () => {
       const r = reduceCapacity;
       expect(r('10000', 5)).toBe('10000');
       expect(r('12345', 5)).toBe('12345');
-      expect(r('11000000000000000', 17)).toBe(
-        '11000000000000000',
-      );
+      expect(r('11000000000000000', 17)).toBe('11000000000000000');
     });
 
     it('should not reduce capacity when the value is smaller than the buffer', () => {

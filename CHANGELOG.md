@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2022-03-29
+
+### Added
+
+- Update web3 method to subscribe to eth events [#113](https://github.com/CirclesUBI/circles-api/pull/113)
+- Add log with graph endpoint [#114](https://github.com/CirclesUBI/circles-api/pull/114)
+
 ## [1.3.22] - 2021-12-17
 
 ### Changed

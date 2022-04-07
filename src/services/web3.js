@@ -1,9 +1,28 @@
 import Web3 from 'web3';
+import Web3WsProvider from 'web3-providers-ws';
 
 import logger from '../helpers/logger';
 
+var options = {
+  timeout: 30000, // ms
+
+  clientConfig: {
+    // Useful to keep a connection alive
+    keepalive: true,
+    keepaliveInterval: 60000, // ms
+  },
+
+  // Enable auto reconnection
+  reconnect: {
+    auto: true,
+    delay: 5000, // ms
+    maxAttempts: 5,
+    onTimeout: false,
+  },
+};
+
 const web3 = new Web3(
-  new Web3.providers.WebsocketProvider(process.env.ETHEREUM_NODE_WS),
+  new Web3WsProvider(process.env.ETHEREUM_NODE_WS, options),
 );
 
 export async function checkConnection() {
