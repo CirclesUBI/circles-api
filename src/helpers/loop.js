@@ -7,6 +7,11 @@ const WAIT_AFTER_FAIL_DEFAULT = 5000;
 // Error message used to indicate failed condition check
 const TRIED_TOO_MANY_TIMES = 'Tried too many times waiting for condition.';
 
+// Helper method to wait for a few milliseconds before we move on
+export async function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export default async function loop(request, condition) {
   return new Promise((resolve, reject) => {
     let attempt = 0;
@@ -55,7 +60,8 @@ export async function waitAndRetryOnFail(
       const response = await requestFn();
 
       // Wait for a few seconds until our condition arrives
-      await loopFn();
+      // NOTE: Here we need to apply the condition on the result of the requestFn
+      await loopFn(response);
 
       // Finish when request was successful and condition arrived!
       return response;
