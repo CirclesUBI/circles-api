@@ -21,7 +21,7 @@ export default async function loop(request, condition) {
         const response = await request();
         attempt += 1;
 
-        if (condition(response)) {
+        if (await condition(response)) {
           clearInterval(interval);
           resolve(response);
         } else if (attempt > MAX_ATTEMPTS) {
@@ -33,53 +33,4 @@ export default async function loop(request, condition) {
       }
     }, LOOP_INTERVAL);
   });
-}
-
-// This helper method repeats calling a request when it fails or when a
-// condition was not reached after some attempts.
-//
-// Use this method if you want to make a crucial request for creating or
-// updating data somewhere. When this request fails, for example because of
-// networking issues or server outage, this helper method will try to repeat
-// the request for you until it succeeded.
-export async function waitAndRetryOnFail(
-  requestFn,
-  loopFn,
-  {
-    maxAttemptsOnFail = RETRIES_ON_FAIL_DEFAULT,
-    waitAfterFail = WAIT_AFTER_FAIL_DEFAULT,
-  } = {},
-) {
-  // Count all attempts to retry when something failed
-  let attempt = 1;
-
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    try {
-      // Make request and wait for response
-      const response = await requestFn();
-
-      // Wait for a few seconds until our condition arrives
-      // NOTE: Here we need to apply the condition on the result of the requestFn
-      await loopFn(response);
-
-      // Finish when request was successful and condition arrived!
-      return response;
-    } catch (error) {
-      // Something went wrong, either the condition did not arrive or the
-      // request failed
-      if (attempt >= maxAttemptsOnFail) {
-        // We tried too often, propagate error and stop here
-        throw error;
-      }
-
-      // Wait when request failed to prevent calling the request too fast again
-      if (error.message !== TRIED_TOO_MANY_TIMES) {
-        await wait(waitAfterFail);
-      }
-
-      // Lets try again ..
-      attempt += 1;
-    }
-  }
 }
