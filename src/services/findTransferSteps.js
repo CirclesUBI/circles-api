@@ -18,14 +18,19 @@ const hubContract = new web3.eth.Contract(
   process.env.HUB_ADDRESS,
 );
 
-async function isStepValid(tokenAddress, tokenOwner, sender, receiver, plannedLimit) {
+async function isStepValid(
+  tokenAddress,
+  tokenOwner,
+  sender,
+  receiver,
+  plannedLimit,
+) {
   // Get send limit
-  const limit = await hubContract.methods.checkSendLimit(tokenOwner, sender, receiver).call();
+  const limit = await hubContract.methods
+    .checkSendLimit(tokenOwner, sender, receiver)
+    .call();
   // Get Token balance
-  const tokenContract = new web3.eth.Contract(
-    TokenContract.abi,
-    tokenAddress,
-  );
+  const tokenContract = new web3.eth.Contract(TokenContract.abi, tokenAddress);
   const balance = await tokenContract.methods.balanceOf(sender).call();
   // The capacity is the minimum between the sendLimit and the balance
   const capacity = minNumberString(limit, balance);
@@ -33,14 +38,22 @@ async function isStepValid(tokenAddress, tokenOwner, sender, receiver, plannedLi
 }
 
 // Checks that all the transfer steps are valid. Invalid steps are updated
-async function checkValidTransferSteps(result){
+async function checkValidTransferSteps(result) {
   const edgeUpdateManager = new EdgeUpdateManager();
 
   const values = await Promise.allSettled(
     result.transferSteps.map(async (step) => {
-      const tokenAddress = await hubContract.methods.userToToken(step.token).call();
-      const stepValid = await isStepValid(tokenAddress, step.token, step.from, step.to, step.value)
-      if (!stepValid){
+      const tokenAddress = await hubContract.methods
+        .userToToken(step.token)
+        .call();
+      const stepValid = await isStepValid(
+        tokenAddress,
+        step.token,
+        step.from,
+        step.to,
+        step.value,
+      );
+      if (!stepValid) {
         // Update the edge
         await edgeUpdateManager.updateEdge(
           {
@@ -52,12 +65,14 @@ async function checkValidTransferSteps(result){
         );
       }
       return stepValid;
-    })
+    }),
   );
 
-  const areStepsValid = values.every( step => step.status === 'fulfilled' && step.value == true);
+  const areStepsValid = values.every(
+    (step) => step.status === 'fulfilled' && step.value == true,
+  );
 
-  if (!areStepsValid){
+  if (!areStepsValid) {
     // Write edges.json file to update edges
     submitJob(tasks.exportEdges, 'exportEdges-findTransferSteps');
   }
