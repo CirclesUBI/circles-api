@@ -10,7 +10,7 @@ export default async function loop(request, condition) {
         const response = await request();
         attempt += 1;
 
-        if (condition(response)) {
+        if (await condition(response)) {
           clearInterval(interval);
           resolve(response);
         } else if (attempt > MAX_ATTEMPTS) {
