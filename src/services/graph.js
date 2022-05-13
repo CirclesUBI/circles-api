@@ -11,7 +11,7 @@ const CONFIG_PATH = './config.json';
 const LIMIT_SWITCH_TO_BACKUP = -5;
 const LIMIT_SWITCH_TO_MAIN = 2;
 
-// Get current graphnode endpoint from config file
+// Get current graphnode endpoint from config file  
 export function getCurrentEndpoint() {
   let rawData = fs.readFileSync(CONFIG_PATH);
   let config = JSON.parse(rawData);
