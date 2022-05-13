@@ -12,10 +12,10 @@ import web3, {
   getEventSignature,
   subscribeEvent,
 } from './services/web3';
-import { waitUntilGraphIsReady } from './services/graph';
+import { waitUntilGraphIsReady, getCurrentEndpoint } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
-
+const currentEndpoint = getCurrentEndpoint();
 // Connect with postgres database
 db.authenticate()
   .then(() => {
@@ -69,7 +69,7 @@ function handleTrustChange({ address, topics, transactionHash }) {
   }
 }
 
-waitUntilGraphIsReady()
+waitUntilGraphIsReady(currentEndpoint)
   .then(() => {
     logger.info('Graph node connection has been established successfully');
   })
