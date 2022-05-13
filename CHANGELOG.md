@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2022-05-13
+
+### Added
+
+- Check transfer steps before returning them [#103](https://github.com/CirclesUBI/circles-api/pull/103)
+
 ## [1.4.0] - 2022-03-29
 
 ### Added
