@@ -30,7 +30,7 @@ export async function setCurrentEndpoint(endpoint) {
   const endpointJSON = JSON.stringify(content, null, 2);
   fs.writeFile(CONFIG_PATH, endpointJSON, (err) => {
     if (err) throw err;
-    console.info(endpoint, 'written in configuration file.');
+    logger.info(endpoint, 'written in configuration file.');
   });
 }
 // Checks whether is a production node or not
@@ -251,17 +251,17 @@ async function getSubgraphStatus(graphEndpoint) {
     const status = data.indexingStatusForCurrentVersion;
     if (status.synced !== true) {
       subgraphFailing = true;
-      console.error(
+      logger.debug(
         'The subgraph  deployed in' + graphEndpoint + 'is not synchronised.',
       );
     } else if (status.health !== 'healthy') {
       subgraphFailing = true;
-      console.error(
+      logger.debug(
         'The subgraph  deployed in' + graphEndpoint + 'is not healthy.',
       );
     } else if (status.fatalError !== null) {
       subgraphFailing = true;
-      console.error(
+      logger.debug(
         'The subgraph  deployed in' +
           graphEndpoint +
           'has a fatal error' +
@@ -272,7 +272,7 @@ async function getSubgraphStatus(graphEndpoint) {
     }
     return subgraphFailing;
   } catch (error) {
-    console.error('Could not get subgraph status.', error);
+    logger.debug('Could not get subgraph status.', error);
     return null;
   }
 }
