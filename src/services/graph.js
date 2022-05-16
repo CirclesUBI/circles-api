@@ -1,17 +1,18 @@
+import fs from 'fs';
 import fetch from 'isomorphic-fetch';
+import { CONFIG_PATH } from '../constants';
 import logger from '../helpers/logger';
 import loop from '../helpers/loop';
 import core from './core';
-import fs from 'fs';
 
 const PAGINATION_SIZE = 500;
 const MAIN_ENDPOINT = process.env.GRAPH_NODE_ENDPOINT_MAIN;
 const BACKUP_ENDPOINT = process.env.GRAPH_NODE_ENDPOINT_BACKUP;
-const CONFIG_PATH = './config.json';
+
 const LIMIT_SWITCH_TO_BACKUP = -5;
 const LIMIT_SWITCH_TO_MAIN = 2;
 
-// Get current graphnode endpoint from config file  
+// Get current graphnode endpoint from config file
 export function getCurrentEndpoint() {
   let rawData = fs.readFileSync(CONFIG_PATH);
   let config = JSON.parse(rawData);
@@ -168,7 +169,6 @@ export default async function fetchAllFromGraph(name, fields, extra = '') {
 // }
 
 export async function waitUntilGraphIsReady(graphEndpoint) {
-  currentEndpoint = 
   const query = `{ _meta { block { number } } }`;
   return await loop(
     async () => {
@@ -228,7 +228,6 @@ export async function getBlockNumber(graphEndpoint) {
   }
   return parseInt(chains[0].latestBlock.number, 10);
 }
-
 
 // Get subgraph status deployed in a given graphnode endpoint
 async function getSubgraphStatus(graphEndpoint) {
