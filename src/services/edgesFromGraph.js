@@ -1,6 +1,5 @@
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
-import fastJsonStringify from 'fast-json-stringify';
 import findTransferSteps from '@circles/transfer';
 import fs from 'fs';
 import { performance } from 'perf_hooks';
@@ -11,6 +10,7 @@ import fetchAllFromGraph from './graph';
 import web3 from './web3';
 import { getMetrics, setMetrics } from './metrics';
 import { minNumberString } from '../helpers/compare';
+import arrayToCSV from '../helpers/dataConversions';
 import {
   EDGES_FILE_PATH,
   EDGES_TMP_FILE_PATH,
@@ -25,25 +25,6 @@ const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
 );
-
-const stringify = fastJsonStringify({
-  title: 'Circles Edges Schema',
-  type: 'array',
-  properties: {
-    from: {
-      type: 'string',
-    },
-    to: {
-      type: 'string',
-    },
-    token: {
-      type: 'string',
-    },
-    capacity: {
-      type: 'string',
-    },
-  },
-});
 
 const findToken = (tokens, tokenAddress) => {
   return tokens.find((token) => token.address === tokenAddress);
@@ -380,10 +361,10 @@ export function checkFileExists() {
   return fs.existsSync(EDGES_FILE_PATH);
 }
 
-// Store edges into .json file for pathfinder executable
+// Store edges into .csv file for pathfinder executable
 export async function writeToFile(edges) {
   return new Promise((resolve, reject) => {
-    fs.writeFile(EDGES_TMP_FILE_PATH, stringify(edges), (error) => {
+    fs.writeFile(EDGES_TMP_FILE_PATH, arrayToCSV(edges), (error) => {
       if (error) {
         reject(
           new Error(`Could not write to ${EDGES_TMP_FILE_PATH} file: ${error}`),
