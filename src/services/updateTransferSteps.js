@@ -54,7 +54,7 @@ export default async function updatePath({ from, to, value }) {
     : DEFAULT_PROCESS_TIMEOUT;
 
   try {
-    return await updateSteps(await findTransferSteps(
+    return { updated: await updateSteps(await findTransferSteps(
       {
         from,
         to,
@@ -65,7 +65,7 @@ export default async function updatePath({ from, to, value }) {
         pathfinderExecutable: PATHFINDER_FILE_PATH,
         timeout,
       },
-    ));
+    ))};
   } catch (error){
     logger.error(`Error updating steps [${error.message}]`);
     throw error;
