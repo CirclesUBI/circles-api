@@ -13,6 +13,12 @@ router.put(
 );
 
 router.post(
+  '/update',
+  validate(transfersValidation.findTransferSteps),
+  transfersController.updateTransferSteps,
+);
+
+router.post(
   '/:transactionHash',
   validate(transfersValidation.getByTransactionHash),
   transfersController.getByTransactionHash,
