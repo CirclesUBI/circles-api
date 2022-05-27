@@ -42,31 +42,32 @@ async function updateSteps(result) {
   // Write edges.json file to update edges
   submitJob(tasks.exportEdges, 'exportEdges-findTransferSteps');
 
-  return values.every(
-    (step) => step.status === 'fulfilled',
-  );
+  return values.every((step) => step.status === 'fulfilled');
 }
 
 export default async function updatePath({ from, to, value }) {
-
   const timeout = process.env.TRANSFER_STEPS_TIMEOUT
     ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)
     : DEFAULT_PROCESS_TIMEOUT;
 
   try {
-    return { updated: await updateSteps(await findTransferSteps(
-      {
-        from,
-        to,
-        value,
-      },
-      {
-        edgesFile: EDGES_FILE_PATH,
-        pathfinderExecutable: PATHFINDER_FILE_PATH,
-        timeout,
-      },
-    ))};
-  } catch (error){
+    return {
+      updated: await updateSteps(
+        await findTransferSteps(
+          {
+            from,
+            to,
+            value,
+          },
+          {
+            edgesFile: EDGES_FILE_PATH,
+            pathfinderExecutable: PATHFINDER_FILE_PATH,
+            timeout,
+          },
+        ),
+      ),
+    };
+  } catch (error) {
     logger.error(`Error updating steps [${error.message}]`);
     throw error;
   }
