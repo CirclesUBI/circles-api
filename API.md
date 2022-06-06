@@ -43,6 +43,45 @@ Returns steps to transfer transitively through trust graph from one node to anot
 - `400` Parameters missing or malformed
 - `422` Invalid transfer
 
+### Update transitive transfer steps
+
+Updates the steps of a transitive transfer.
+
+**Request:**
+
+`POST /api/transfers/update`
+
+**Parameters:**
+
+```
+{
+  from: <string>,
+  to: <string>,
+  value: <number>,
+}
+```
+
+- `from`: Sender address
+- `to`: Receiver address
+- `value`: Amount of Freckles intended to be sent between sender and receiver (the fractional monetary unit of Circles is named Freckles. One Circle = 1,000,000,000,000,000,000 Freckles (10<sup>18</sup>))
+
+**Response:**
+
+```
+{
+  status: 'ok',
+  data: {
+    updated: <boolean>
+  }
+}
+```
+
+- `updated`: Whether all the steps have been successfully updated
+
+**Errors:**
+
+- `400` Parameters missing or malformed
+
 ### Store transfer meta data
 
 Stores meta data like payment note connected to a made transfer. This data is only readable for sender or receiver of that transaction.

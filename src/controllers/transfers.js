@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import APIError from '../helpers/errors';
 import Transfer from '../models/transfers';
 import transferSteps from '../services/findTransferSteps';
+import updatePath from '../services/updateTransferSteps';
 import { checkFileExists } from '../services/edgesFile';
 import { checkSignature } from '../helpers/signature';
 import { requestGraph } from '../services/graph';
@@ -126,6 +127,27 @@ export default {
 
     try {
       const result = await transferSteps({
+        ...req.body,
+      });
+
+      respondWithSuccess(res, result);
+    } catch (error) {
+      next(new APIError(httpStatus.UNPROCESSABLE_ENTITY, error.message));
+    }
+  },
+
+  updateTransferSteps: async (req, res, next) => {
+    if (!checkFileExists()) {
+      next(
+        new APIError(
+          httpStatus.SERVICE_UNAVAILABLE,
+          'Trust network file does not exist',
+        ),
+      );
+    }
+
+    try {
+      const result = await updatePath({
         ...req.body,
       });
 
