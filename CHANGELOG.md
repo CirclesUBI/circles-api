@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2022-06-06
+
+### Removed
+
+-  Remove Check transfer steps functionality from the findTransferSteps service [#119](https://github.com/CirclesUBI/circles-api/pull/119)
+
+### Added
+
+- Create a new route to update transitive transfer path [#119](https://github.com/CirclesUBI/circles-api/pull/119)
+
 ## [1.5.0] - 2022-05-13
 
 ### Added
