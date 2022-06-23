@@ -17,7 +17,7 @@ const DEFAULT_PORT = 3000;
 // Check database connection
 db.authenticate()
   .then(() => {
-    logger.info('Database connection has been established successfully');
+    logger.info('Database connection has been established successfully - api');
   })
   .catch(() => {
     logger.error('Unable to connect to database');

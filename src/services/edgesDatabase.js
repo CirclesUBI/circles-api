@@ -39,3 +39,4 @@ export async function getStoredEdges({ hasOnlyFileFields = false } = {}) {
     raw: true,
   });
 }
+Number.toString(2);

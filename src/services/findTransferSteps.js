@@ -9,7 +9,7 @@ import tasks from '../tasks';
 import submitJob from '../tasks/submitJob';
 import { minNumberString } from '../helpers/compare';
 import loop from '../helpers/loop';
-import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
+import { EDGES_BINARY_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 60;
 
@@ -98,7 +98,7 @@ export default async function transferSteps({ from, to, value }) {
           value,
         },
         {
-          edgesFile: EDGES_FILE_PATH,
+          edgesFile: EDGES_BINARY_PATH,
           pathfinderExecutable: PATHFINDER_FILE_PATH,
           timeout,
         },

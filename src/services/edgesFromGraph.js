@@ -1,3 +1,4 @@
+import child_process from 'child_process';
 import HubContract from 'circles-contracts/build/contracts/Hub.json';
 import TokenContract from 'circles-contracts/build/contracts/Token.json';
 import findTransferSteps from '@circles/transfer';
@@ -13,6 +14,7 @@ import { minNumberString } from '../helpers/compare';
 import arrayToCSV from '../helpers/dataConversions';
 import {
   EDGES_FILE_PATH,
+  EDGES_BINARY_PATH,
   EDGES_TMP_FILE_PATH,
   PATHFINDER_FILE_PATH,
 } from '../constants';
@@ -371,6 +373,16 @@ export async function writeToFile(edges) {
         );
       } else {
         fs.renameSync(EDGES_TMP_FILE_PATH, EDGES_FILE_PATH);
+        child_process.exec(
+          `${PATHFINDER_FILE_PATH} --edgesCSVToBin  ${EDGES_FILE_PATH} ${EDGES_BINARY_PATH}`,
+          (error, stdout, stderr) => {
+            if (error) {
+              logger.error(`Pathfinder execution error: ${error}`);
+              return;
+            }
+            logger.error(stderr);
+          },
+        );
         resolve();
       }
     });
@@ -391,7 +403,7 @@ export async function transferSteps({ from, to, value }) {
       value,
     },
     {
-      edgesFile: EDGES_FILE_PATH,
+      edgesFile: EDGES_BINARY_PATH,
       pathfinderExecutable: PATHFINDER_FILE_PATH,
       timeout: process.env.TRANSFER_STEPS_TIMEOUT || DEFAULT_PROCESS_TIMEOUT,
     },

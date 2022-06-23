@@ -71,7 +71,9 @@ function handleTrustChange({ address, topics, transactionHash }) {
 
 waitUntilGraphIsReady()
   .then(() => {
-    logger.info('Graph node connection has been established successfully');
+    logger.info(
+      'Graph node connection has been established successfully -  I AM HERE',
+    );
   })
   .then(() => {
     // Subscribe to events to handle trust graph updates for single addresses

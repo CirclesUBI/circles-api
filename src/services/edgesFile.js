@@ -1,9 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 
+import child_process from 'child_process';
 import web3 from './web3';
-import { EDGES_FILE_PATH, EDGES_DIRECTORY_PATH } from '../constants';
+import {
+  EDGES_BINARY_PATH,
+  PATHFINDER_FILE_PATH,
+  EDGES_FILE_PATH,
+  EDGES_DIRECTORY_PATH,
+} from '../constants';
 import arrayToCSV from '../helpers/dataConversions';
+import logger from '../helpers/logger';
 
 export function checkFileExists() {
   return fs.existsSync(EDGES_FILE_PATH);
@@ -32,6 +39,16 @@ export async function writeToFile(
       } else {
         // Finally rename it to destination file
         fs.renameSync(tmpFilePath, EDGES_FILE_PATH);
+        child_process.exec(
+          `${PATHFINDER_FILE_PATH} --edgesCSVToBin  ${EDGES_FILE_PATH} ${EDGES_BINARY_PATH}`,
+          (error, stdout, stderr) => {
+            if (error) {
+              logger.error(`Pathfinder execution error: ${error}`);
+              return;
+            }
+            logger.error(stderr);
+          },
+        );
         resolve();
       }
     });
