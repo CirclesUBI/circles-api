@@ -16,10 +16,13 @@ import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
 
+logger.info(process.env.GRAPH_NODE_ENDPOINT);
 // Connect with postgres database
 db.authenticate()
   .then(() => {
-    logger.info('Database connection has been established successfully');
+    logger.info(
+      'Database connection has been established successfully - hola!',
+    );
   })
   .catch(() => {
     logger.error('Unable to connect to database');
