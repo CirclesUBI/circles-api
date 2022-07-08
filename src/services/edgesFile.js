@@ -42,11 +42,11 @@ export async function writeToFile(
         child_process.exec(
           `${PATHFINDER_FILE_PATH} --edgesCSVToBin  ${EDGES_FILE_PATH} ${EDGES_BINARY_PATH}`,
           (error, stdout, stderr) => {
-            if (error) {
+            if (error || stderr) {
               logger.error(`Pathfinder execution error: ${error}`);
               return;
             }
-            logger.info('OUT' + stdout + 'Time' + stderr);
+            logger.info(stdout);
           },
         );
         resolve();

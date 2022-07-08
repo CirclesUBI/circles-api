@@ -6,7 +6,11 @@ import EdgeUpdateManager from './edgesUpdate';
 import logger from '../helpers/logger';
 import tasks from '../tasks';
 import submitJob from '../tasks/submitJob';
-import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
+import {
+  EDGES_BINARY_PATH,
+  EDGES_FILE_PATH,
+  PATHFINDER_FILE_PATH,
+} from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 60;
 
@@ -60,7 +64,7 @@ export default async function updatePath({ from, to, value }) {
             value,
           },
           {
-            edgesFile: EDGES_FILE_PATH,
+            edgesFile: EDGES_BINARY_PATH,
             pathfinderExecutable: PATHFINDER_FILE_PATH,
             timeout,
           },
