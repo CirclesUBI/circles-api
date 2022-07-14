@@ -1,7 +1,7 @@
 import findTransferSteps from '@circles/transfer';
 import { performance } from 'perf_hooks';
 
-import { EDGES_BINARY_PATH, PATHFINDER_FILE_PATH } from '../constants';
+import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 60;
 
@@ -22,12 +22,14 @@ export default async function transferSteps({ from, to, value }) {
       value,
     },
     {
-      edgesFile: EDGES_BINARY_PATH,
-      pathfinderExecutable: PATHFINDER_FILE_PATH,
+      edgesFile: EDGES_FILE_PATH,
+      pathfinderExecutable: PATHFINDER_FILE_PATH + ' --flowcsv',
       timeout,
     },
   );
-
+  console.log('result' + result);
+  console.log(pathfinderExecutable);
+  console.log(edgesFile);
   const endTime = performance.now();
 
   return {
