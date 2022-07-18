@@ -106,6 +106,9 @@ npm start
 npm worker:start
 ```
 
+### Pathfinder
+The source code of the pathfinder that is used can be found [here](https://github.com/chriseth/pathfinder). To update the pathfinder in the api, build a native binary according to the README instructions from chriseth and replace the old binary in this repository.
+
 ## License
 
 GNU Affero General Public License v3.0 [`AGPL-3.0`]
