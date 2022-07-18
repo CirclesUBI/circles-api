@@ -73,7 +73,6 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
     "pg": "^8.7.3",
-    "pg-copy-streams": "^6.0.2",
     "sequelize": "^6.19.0",
     "sequelize-cli": "^6.4.1",
     "sharp": "^0.27.2",
