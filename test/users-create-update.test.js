@@ -1,4 +1,5 @@
 import httpStatus from 'http-status';
+import { Op } from 'sequelize';
 import request from 'supertest';
 
 import { createUserPayload } from './utils/users';
@@ -169,5 +170,90 @@ describe('POST /users/:safeAddress - Updating user data', () => {
       .send(payload)
       .set('Accept', 'application/json')
       .expect(httpStatus.OK);
+  });
+});
+
+describe('POST /users/:safeAddress - Fail when username is too similar', () => {
+  let correctPayload;
+  let correctPrivateKey;
+  let otherPayload;
+  let otherPrivateKey;
+  const oldUsername = 'kitty';
+  const newUsername = 'MYusername';
+
+  beforeEach(() => {
+    const response = prepareUser({ username: 'myUsername' }, true);
+    correctPayload = response.payload;
+    correctPrivateKey = response.privateKey;
+
+    const response2 = prepareUser({ username: oldUsername }, true);
+    otherPayload = response2.payload;
+    otherPrivateKey = response2.privateKey;
+
+  });
+
+  afterEach(async () => {
+    return await User.destroy({
+      where: {
+        username: {[Op.or]: [correctPayload.data.username, oldUsername]}
+      },
+    });
+  });
+
+  it('should reject when is too similar to other username', async () => {
+    await request(app)
+      .put('/api/users')
+      .send(correctPayload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CREATED);
+    
+      await request(app)
+      .put('/api/users')
+      .send(otherPayload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CREATED);
+    
+    // Same username already exists
+    mockGraphUsers(otherPayload.address, otherPayload.data.safeAddress);
+    
+    const signature = getSignature(
+      [otherPayload.address, otherPayload.nonce, otherPayload.data.safeAddress, newUsername],
+      otherPrivateKey,
+    );
+    // Update payload values
+    otherPayload.data.username = newUsername;
+    otherPayload.signature = signature;
+    await request(app)
+      .post(`/api/users/${otherPayload.data.safeAddress}`)
+      .send(otherPayload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CONFLICT);
+
+  });
+
+  it('should reject when is too similar to same username', async () => {
+    await request(app)
+      .put('/api/users')
+      .send(correctPayload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CREATED);
+    
+    
+    // Same username already exists
+    mockGraphUsers(correctPayload.address, correctPayload.data.safeAddress);
+    
+    const signature = getSignature(
+      [correctPayload.address, correctPayload.nonce, correctPayload.data.safeAddress, newUsername],
+      correctPrivateKey,
+    );
+    // Update payload values
+    correctPayload.data.username = newUsername;
+    correctPayload.signature = signature;
+    await request(app)
+      .post(`/api/users/${correctPayload.data.safeAddress}`)
+      .send(correctPayload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CONFLICT);
+
   });
 });
