@@ -2,35 +2,40 @@ import httpStatus from 'http-status';
 import request from 'supertest';
 
 import { createUserPayload } from './utils/users';
-import { mockRelayerSafe } from './utils/mocks';
-import { randomChecksumAddress } from './utils/common';
+import { mockRelayerSafe, mockGraphUsers } from './utils/mocks';
+import { randomChecksumAddress, getSignature } from './utils/common';
 
 import User from '~/models/users';
 import app from '~';
 
-function prepareUser({ username = 'donkey' } = {}) {
+function prepareUser({ username = 'donkey' } = {}, returnPrivateKey = false) {
   const safeAddress = randomChecksumAddress();
   const nonce = new Date().getTime();
   const email = 'dk@kong.com';
   const avatarUrl = 'https://storage.com/image.jpg';
 
-  const payload = createUserPayload({
-    nonce,
-    safeAddress,
-    username,
-    email,
-    avatarUrl,
-  });
+  const userPayload = createUserPayload(
+    {
+      nonce,
+      safeAddress,
+      username,
+      email,
+      avatarUrl,
+    },
+    returnPrivateKey,
+  );
 
   mockRelayerSafe({
-    address: payload.address,
+    address: returnPrivateKey
+      ? userPayload.payload.address
+      : userPayload.address,
     nonce,
     safeAddress,
     isCreated: true,
     isDeployed: false,
   });
 
-  return payload;
+  return userPayload;
 }
 
 describe('PUT /users - Creating a new user', () => {
@@ -98,5 +103,52 @@ describe('PUT /users - Fail when username is too similar', () => {
         .set('Accept', 'application/json')
         .expect(httpStatus.CONFLICT);
     }
+  });
+});
+
+describe('POST /users/:safeAddress - Updating user data', () => {
+  let payload;
+  let privateKey;
+  const newUsername = 'dolfin';
+  const newEmail = 'dol@fin.com';
+  const newAvatarUrl = 'https://storage.com/image2.jpg';
+
+  beforeEach(() => {
+    const response = prepareUser({ username: 'doggy' }, true);
+    payload = response.payload;
+    privateKey = response.privateKey;
+  });
+
+  afterEach(async () => {
+    return await User.destroy({
+      where: {
+        username: payload.data.username,
+      },
+    });
+  });
+
+  it('should successfully respond when user was already created', async () => {
+    await request(app)
+      .put('/api/users')
+      .send(payload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.CREATED);
+
+    const signature = getSignature(
+      [payload.address, payload.nonce, payload.data.safeAddress, newUsername],
+      privateKey,
+    );
+    // Update payload values
+    payload.data.username = newUsername;
+    payload.data.email = newEmail;
+    payload.data.avatarUrl = newAvatarUrl;
+    payload.signature = signature;
+
+    mockGraphUsers(payload.address, payload.data.safeAddress);
+    await request(app)
+      .post(`/api/users/${payload.data.safeAddress}`)
+      .send(payload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK);
   });
 });
