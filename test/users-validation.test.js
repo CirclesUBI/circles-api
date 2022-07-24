@@ -160,7 +160,6 @@ describe('PUT /users - validation', () => {
   });
 });
 
-
 describe('POST /users/:safeAddress - validation', () => {
   let address;
   let nonce;

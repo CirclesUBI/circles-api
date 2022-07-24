@@ -141,8 +141,6 @@ describe('POST /users/:safeAddress - Safe verification', () => {
   let address;
   let nonce;
   let privateKey;
-  let safeAddress;
-  let signature;
   let username;
   let email;
 
@@ -151,15 +149,9 @@ describe('POST /users/:safeAddress - Safe verification', () => {
 
     address = account.address;
     privateKey = account.privateKey;
-    safeAddress = randomChecksumAddress();
     nonce = new Date().getTime();
     username = 'donkey' + Math.round(Math.random() * 1000);
     email = 'dk@kong.com';
-
-    signature = getSignature(
-      [address, nonce, safeAddress, username],
-      privateKey,
-    );
   });
 
   describe('when trying to hijack someones Safe', () => {
