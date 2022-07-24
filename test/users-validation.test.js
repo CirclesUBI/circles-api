@@ -17,6 +17,14 @@ async function expectErrorStatus(body, status = httpStatus.BAD_REQUEST) {
     .expect(status);
 }
 
+async function expectErrorStatusInPost(body, status = httpStatus.BAD_REQUEST) {
+  return await request(app)
+    .post(`/api/users/${body.data.safeAddress}`)
+    .send(body)
+    .set('Accept', 'application/json')
+    .expect(status);
+}
+
 describe('PUT /users - validation', () => {
   let address;
   let nonce;
@@ -136,6 +144,142 @@ describe('PUT /users - validation', () => {
 
       // Wrong nonce
       await expectErrorStatus(
+        {
+          address,
+          nonce: nonce + 1,
+          signature,
+          data: {
+            safeAddress,
+            username,
+            email,
+          },
+        },
+        httpStatus.FORBIDDEN,
+      );
+    });
+  });
+});
+
+
+describe('POST /users/:safeAddress - validation', () => {
+  let address;
+  let nonce;
+  let privateKey;
+  let safeAddress;
+  let signature;
+  let username;
+  let email;
+
+  beforeEach(() => {
+    const account = web3.eth.accounts.create();
+
+    address = account.address;
+    privateKey = account.privateKey;
+    safeAddress = randomChecksumAddress();
+    nonce = new Date().getTime();
+    username = 'donkey';
+    email = 'dk@kong.com';
+
+    signature = getSignature(
+      [address, nonce, safeAddress, username],
+      privateKey,
+    );
+  });
+
+  describe('when using invalid parameters', () => {
+    it('should return errors', async () => {
+      const correctBody = {
+        address: randomChecksumAddress(),
+        signature: signature,
+        nonce: 123456,
+        data: {
+          safeAddress: randomChecksumAddress(),
+          username: 'zebra',
+          email: 'zebra@zoo.org',
+        },
+      };
+
+      // Missing fields
+      await expectErrorStatusInPost({
+        ...correctBody,
+        address: 'invalid',
+      });
+
+      // Missing signature
+      await expectErrorStatusInPost({
+        ...correctBody,
+        signature: '',
+      });
+
+      // Wrong address
+      await expectErrorStatusInPost({
+        ...correctBody,
+        address: web3.utils.randomHex(21),
+      });
+
+      // Wrong address checksum
+      await expectErrorStatusInPost({
+        ...correctBody,
+        address: web3.utils.randomHex(20),
+      });
+
+      // Invalid nonce
+      await expectErrorStatusInPost({
+        ...correctBody,
+        nonce: -1,
+      });
+
+      // Username too short
+      await expectErrorStatusInPost({
+        ...correctBody,
+        data: {
+          ...correctBody.data,
+          username: 'ab',
+        },
+      });
+
+      // Invalid avatarUrl
+      await expectErrorStatusInPost({
+        ...correctBody,
+        avatarUrl: 'www.wrong.pizza',
+      });
+    });
+  });
+
+  describe('when using invalid signatures', () => {
+    it('should return errors', async () => {
+      // Wrong address
+      await expectErrorStatusInPost(
+        {
+          address: randomChecksumAddress(),
+          nonce,
+          signature,
+          data: {
+            safeAddress,
+            username,
+            email,
+          },
+        },
+        httpStatus.FORBIDDEN,
+      );
+
+      // Wrong username
+      await expectErrorStatusInPost(
+        {
+          address,
+          nonce,
+          signature,
+          data: {
+            safeAddress,
+            username: 'zebra',
+            email,
+          },
+        },
+        httpStatus.FORBIDDEN,
+      );
+
+      // Wrong nonce
+      await expectErrorStatusInPost(
         {
           address,
           nonce: nonce + 1,
