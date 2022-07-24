@@ -151,4 +151,23 @@ describe('POST /users/:safeAddress - Updating user data', () => {
       .set('Accept', 'application/json')
       .expect(httpStatus.OK);
   });
+
+  it('should successfully respond when user was not registered', async () => {
+    const signature = getSignature(
+      [payload.address, payload.nonce, payload.data.safeAddress, newUsername],
+      privateKey,
+    );
+    // Update payload values
+    payload.data.username = newUsername;
+    payload.data.email = newEmail;
+    payload.data.avatarUrl = newAvatarUrl;
+    payload.signature = signature;
+
+    mockGraphUsers(payload.address, payload.data.safeAddress);
+    await request(app)
+      .post(`/api/users/${payload.data.safeAddress}`)
+      .send(payload)
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK);
+  });
 });
