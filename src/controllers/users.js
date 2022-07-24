@@ -238,6 +238,9 @@ export default {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
+      // Check if entry already exists
+      await checkIfExists(username);
+
       // Check if signer ownes the claimed safe address
       const query = `{
         user(id: "${address.toLowerCase()}") {
