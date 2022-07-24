@@ -219,7 +219,7 @@ export default {
   },
 
   updateUser: async (req, res, next) => {
-    const { address, nonce, signature, data } = req.body;
+    const { address, nonce = UNSET_NONCE, signature, data } = req.body;
     const { safeAddress, username } = data;
 
     if (safeAddress != req.params.safeAddress) {
@@ -253,7 +253,7 @@ export default {
         !graphData.user ||
         !graphData.user.safeAddresses.includes(safeAddress.toLowerCase())
       ) {
-        throw new APIError(httpStatus.FORBIDDEN, 'Not allowed');
+        throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
       }
     } catch (err) {
       return next(err);
