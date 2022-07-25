@@ -219,7 +219,7 @@ export default {
   },
 
   updateUser: async (req, res, next) => {
-    const { address, nonce = UNSET_NONCE, signature, data } = req.body;
+    const { address, signature, data } = req.body;
     const { safeAddress, username } = data;
 
     if (safeAddress != req.params.safeAddress) {
@@ -229,11 +229,7 @@ export default {
     try {
       // Check signature
       if (
-        !checkSignature(
-          [address, nonce, safeAddress, username],
-          signature,
-          address,
-        )
+        !checkSignature([address, safeAddress, username], signature, address)
       ) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }

@@ -136,7 +136,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
       .expect(httpStatus.CREATED);
 
     const signature = getSignature(
-      [payload.address, payload.nonce, payload.data.safeAddress, newUsername],
+      [payload.address, payload.data.safeAddress, newUsername],
       privateKey,
     );
     // Update payload values
@@ -148,14 +148,18 @@ describe('POST /users/:safeAddress - Updating user data', () => {
     mockGraphUsers(payload.address, payload.data.safeAddress);
     await request(app)
       .post(`/api/users/${payload.data.safeAddress}`)
-      .send(payload)
+      .send({
+        address: payload.address,
+        signature: payload.signature,
+        data: payload.data,
+      })
       .set('Accept', 'application/json')
       .expect(httpStatus.OK);
   });
 
   it('should successfully respond when user was not registered', async () => {
     const signature = getSignature(
-      [payload.address, payload.nonce, payload.data.safeAddress, newUsername],
+      [payload.address, payload.data.safeAddress, newUsername],
       privateKey,
     );
     // Update payload values
@@ -167,7 +171,11 @@ describe('POST /users/:safeAddress - Updating user data', () => {
     mockGraphUsers(payload.address, payload.data.safeAddress);
     await request(app)
       .post(`/api/users/${payload.data.safeAddress}`)
-      .send(payload)
+      .send({
+        address: payload.address,
+        signature: payload.signature,
+        data: payload.data,
+      })
       .set('Accept', 'application/json')
       .expect(httpStatus.OK);
   });
@@ -223,12 +231,7 @@ describe('POST /users/:safeAddress - Fail when username is too similar', () => {
     mockGraphUsers(otherPayload.address, otherPayload.data.safeAddress);
 
     const signature = getSignature(
-      [
-        otherPayload.address,
-        otherPayload.nonce,
-        otherPayload.data.safeAddress,
-        newUsername,
-      ],
+      [otherPayload.address, otherPayload.data.safeAddress, newUsername],
       otherPrivateKey,
     );
     // Update payload values
@@ -236,7 +239,11 @@ describe('POST /users/:safeAddress - Fail when username is too similar', () => {
     otherPayload.signature = signature;
     await request(app)
       .post(`/api/users/${otherPayload.data.safeAddress}`)
-      .send(otherPayload)
+      .send({
+        address: otherPayload.address,
+        signature: otherPayload.signature,
+        data: otherPayload.data,
+      })
       .set('Accept', 'application/json')
       .expect(httpStatus.CONFLICT);
   });
@@ -252,12 +259,7 @@ describe('POST /users/:safeAddress - Fail when username is too similar', () => {
     mockGraphUsers(correctPayload.address, correctPayload.data.safeAddress);
 
     const signature = getSignature(
-      [
-        correctPayload.address,
-        correctPayload.nonce,
-        correctPayload.data.safeAddress,
-        newUsername,
-      ],
+      [correctPayload.address, correctPayload.data.safeAddress, newUsername],
       correctPrivateKey,
     );
     // Update payload values
@@ -265,7 +267,11 @@ describe('POST /users/:safeAddress - Fail when username is too similar', () => {
     correctPayload.signature = signature;
     await request(app)
       .post(`/api/users/${correctPayload.data.safeAddress}`)
-      .send(correctPayload)
+      .send({
+        address: correctPayload.address,
+        signature: correctPayload.signature,
+        data: correctPayload.data,
+      })
       .set('Accept', 'application/json')
       .expect(httpStatus.CONFLICT);
   });

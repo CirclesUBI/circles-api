@@ -175,7 +175,6 @@ describe('POST /users/:safeAddress - validation', () => {
     address = account.address;
     privateKey = account.privateKey;
     safeAddress = randomChecksumAddress();
-    nonce = new Date().getTime();
     username = 'donkey';
     email = 'dk@kong.com';
 
@@ -190,7 +189,6 @@ describe('POST /users/:safeAddress - validation', () => {
       const correctBody = {
         address: randomChecksumAddress(),
         signature: signature,
-        nonce: 123456,
         data: {
           safeAddress: randomChecksumAddress(),
           username: 'zebra',
@@ -222,12 +220,6 @@ describe('POST /users/:safeAddress - validation', () => {
         address: web3.utils.randomHex(20),
       });
 
-      // Invalid nonce
-      await expectErrorStatusInPost({
-        ...correctBody,
-        nonce: -1,
-      });
-
       // Username too short
       await expectErrorStatusInPost({
         ...correctBody,
@@ -251,7 +243,6 @@ describe('POST /users/:safeAddress - validation', () => {
       await expectErrorStatusInPost(
         {
           address: randomChecksumAddress(),
-          nonce,
           signature,
           data: {
             safeAddress,
@@ -266,26 +257,10 @@ describe('POST /users/:safeAddress - validation', () => {
       await expectErrorStatusInPost(
         {
           address,
-          nonce,
           signature,
           data: {
             safeAddress,
             username: 'zebra',
-            email,
-          },
-        },
-        httpStatus.FORBIDDEN,
-      );
-
-      // Wrong nonce
-      await expectErrorStatusInPost(
-        {
-          address,
-          nonce: nonce + 1,
-          signature,
-          data: {
-            safeAddress,
-            username,
             email,
           },
         },
