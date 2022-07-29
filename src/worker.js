@@ -19,7 +19,9 @@ const CRON_NIGHTLY = '0 0 0 * * *';
 // Connect with postgres database
 db.authenticate()
   .then(() => {
-    logger.info('Database connection has been established successfully');
+    logger.info(
+      'Database connection has been established successfully - local',
+    );
   })
   .catch(() => {
     logger.error('Unable to connect to database');

@@ -5,7 +5,7 @@ import logger from '../helpers/logger';
 import processor from './processor';
 //import reduceCapacities from '../helpers/reduce';
 //import { getStoredEdges } from '../services/edgesDatabase';
-import exportCSV from '../helpers/exportCSV';
+
 import { redisUrl, redisOptions } from '../services/redis';
 import { writeToFile } from '../services/edgesFile';
 
