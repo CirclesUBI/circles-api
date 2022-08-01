@@ -26,4 +26,10 @@ router.get(
   usersController.getByUsername,
 );
 
+router.post(
+  '/:safeAddress',
+  validate(usersValidation.updateUser),
+  usersController.updateUser,
+);
+
 export default router;

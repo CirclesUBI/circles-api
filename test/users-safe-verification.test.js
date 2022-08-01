@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import request from 'supertest';
 
 import web3 from './utils/web3';
-import { mockRelayerSafe } from './utils/mocks';
+import { mockRelayerSafe, mockGraphUsers } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
 
 import app from '~';
@@ -122,6 +122,50 @@ describe('PUT /users - Safe verification', () => {
 
       return await request(app)
         .put('/api/users')
+        .send({
+          address,
+          signature,
+          data: {
+            safeAddress: victimSafeAddress,
+            username,
+            email,
+          },
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.BAD_REQUEST);
+    });
+  });
+});
+
+describe('POST /users/:safeAddress - Safe verification', () => {
+  let address;
+  let safeAddress;
+  let privateKey;
+  let username;
+  let email;
+
+  beforeEach(() => {
+    const account = web3.eth.accounts.create();
+
+    address = account.address;
+    safeAddress = randomChecksumAddress();
+    privateKey = account.privateKey;
+    username = 'donkey' + Math.round(Math.random() * 1000);
+    email = 'dk@kong.com';
+  });
+
+  describe('when trying to hijack someones Safe', () => {
+    it('should return an error when owner is wrong', async () => {
+      const victimSafeAddress = randomChecksumAddress();
+
+      const signature = getSignature(
+        [address, victimSafeAddress, username],
+        privateKey,
+      );
+
+      mockGraphUsers(address, safeAddress);
+      return await request(app)
+        .post(`/api/users/${victimSafeAddress}`)
         .send({
           address,
           signature,

@@ -5,6 +5,7 @@ import APIError from '../helpers/errors';
 import User from '../models/users';
 import core from '../services/core';
 import web3 from '../services/web3';
+import { requestGraph } from '../services/graph';
 import { checkSignature } from '../helpers/signature';
 import { respondWithSuccess } from '../helpers/responses';
 
@@ -211,6 +212,53 @@ export default {
         } else {
           next(new APIError(httpStatus.NOT_FOUND));
         }
+      })
+      .catch((err) => {
+        next(err);
+      });
+  },
+
+  updateUser: async (req, res, next) => {
+    const { address, signature, data } = req.body;
+    const { safeAddress, username } = data;
+
+    if (safeAddress != req.params.safeAddress) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Incorrect Safe address');
+    }
+
+    try {
+      // Check signature
+      if (
+        !checkSignature([address, safeAddress, username], signature, address)
+      ) {
+        throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
+      }
+
+      // Check if entry already exists
+      await checkIfExists(username);
+
+      // Check if signer ownes the claimed safe address
+      const query = `{
+        user(id: "${address.toLowerCase()}") {
+          safeAddresses
+        }
+      }`;
+      const graphData = await requestGraph(query);
+      if (
+        !graphData ||
+        !graphData.user ||
+        !graphData.user.safeAddresses.includes(safeAddress.toLowerCase())
+      ) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
+      }
+    } catch (err) {
+      return next(err);
+    }
+
+    // Everything is fine, upsert entry!
+    await User.upsert(data, { where: { safeAddress: safeAddress } })
+      .then(() => {
+        respondWithSuccess(res, null);
       })
       .catch((err) => {
         next(err);
