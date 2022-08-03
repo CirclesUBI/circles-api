@@ -54,7 +54,7 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@circles/core": "^2.10.12",
-    "@circles/transfer": "^1.1.0",
+    "@circles/transfer": "^2.0.0",
     "aws-sdk": "^2.1133.0",
     "body-parser": "^1.20.0",
     "bull": "^3.29.3",
@@ -73,6 +73,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
     "pg": "^8.7.3",
+    "pg-copy-streams": "^6.0.2",
     "sequelize": "^6.19.0",
     "sequelize-cli": "^6.4.1",
     "sharp": "^0.27.2",

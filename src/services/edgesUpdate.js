@@ -1,5 +1,5 @@
-import HubContract from 'circles-contracts/build/contracts/Hub.json';
-import TokenContract from 'circles-contracts/build/contracts/Token.json';
+import HubContract from '@circles/circles-contracts/build/contracts/Hub.json';
+import TokenContract from '@circles/circles-contracts/build/contracts/Token.json';
 
 import logger from '../helpers/logger';
 import web3 from './web3';

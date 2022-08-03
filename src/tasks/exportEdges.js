@@ -3,8 +3,6 @@ import { performance } from 'perf_hooks';
 
 import logger from '../helpers/logger';
 import processor from './processor';
-//import reduceCapacities from '../helpers/reduce';
-//import { getStoredEdges } from '../services/edgesDatabase';
 
 import { redisUrl, redisOptions } from '../services/redis';
 import { writeToFile } from '../services/edgesFile';
@@ -17,19 +15,14 @@ processor(exportEdges).process(async () => {
   // Measure time of the whole process
   const startTime = performance.now();
 
-  // Get edges from database and write them to the .csv file
-  //const edges = await getStoredEdges({ hasOnlyFileFields: true });
-  // @FIXME(adz): We filter out too small edges and add a small negative buffer
-  // to the others, to work around small inaccuracies in our database with the
-  // actual trust limits on the blockchain. We plan to remove this when the
-  // trust indexing algorithm got stabilized.
-  //const filteredEdges = reduceCapacities(edges);
+  // Write edges.csv
   await writeToFile();
-  //await exportCSV();
-  // Show metrics
+
+  // End time
   const endTime = performance.now();
   const milliseconds = Math.round(endTime - startTime);
 
+  // Show metrics
   logger.info(`Written edges.csv in ${milliseconds}ms`);
 
   return Promise.resolve();

@@ -1,4 +1,4 @@
-import HubContract from 'circles-contracts/build/contracts/Hub.json';
+import HubContract from '@circles/circles-contracts/build/contracts/Hub.json';
 import findTransferSteps from '@circles/transfer';
 
 import web3 from './web3';

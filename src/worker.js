@@ -1,5 +1,5 @@
-import HubContract from 'circles-contracts/build/contracts/Hub.json';
-import TokenContract from 'circles-contracts/build/contracts/Token.json';
+import HubContract from '@circles/circles-contracts/build/contracts/Hub.json';
+import TokenContract from '@circles/circles-contracts/build/contracts/Token.json';
 
 import './helpers/env';
 
@@ -98,9 +98,6 @@ waitUntilGraphIsReady()
         cron: CRON_NIGHTLY,
       },
     });
-
-    // Always write edges.json file on start to make sure it exists
-    submitJob(tasks.exportEdges, 'exportEdges-initial');
   })
   .catch(() => {
     logger.error('Unable to connect to graph node');
