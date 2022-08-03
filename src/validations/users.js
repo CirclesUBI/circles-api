@@ -23,6 +23,21 @@ export default {
       }).required(),
     }),
   },
+  updateUser: {
+    body: Joi.object({
+      address: customJoi.web3().address().addressChecksum().required(),
+      signature: Joi.string().length(132).required(),
+      data: Joi.object({
+        safeAddress: customJoi.web3().address().addressChecksum().required(),
+        username: Joi.string().alphanum().min(3).max(24).required(),
+        email: Joi.string().email().required(''),
+        avatarUrl: Joi.string().uri().empty(''),
+      }).required(),
+    }),
+    params: {
+      safeAddress: customJoi.web3().address().addressChecksum(),
+    },
+  },
   getByUsername: {
     params: {
       username: Joi.string().required(),

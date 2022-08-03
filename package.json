@@ -1,11 +1,15 @@
 {
   "name": "circles-api",
-  "version": "1.6.0",
+  "version": "1.7.0-pre-47226e2",
   "description": "Offchain database and API service for Circles",
   "main": "src/index.js",
   "private": true,
   "contributors": [
-    "adzialocha"
+    "adzialocha",
+    "llunaCreixent",
+    "ana0",
+    "louilinn",
+    "JacqueGM"
   ],
   "license": "AGPL-3.0",
   "repository": {
@@ -76,7 +80,7 @@
     "pg-copy-streams": "^6.0.2",
     "sequelize": "^6.19.0",
     "sequelize-cli": "^6.4.1",
-    "sharp": "^0.27.2",
+    "sharp": "^0.30.5",
     "web3": "^1.7.3",
     "winston": "^3.7.2"
   }
