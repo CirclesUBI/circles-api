@@ -89,6 +89,31 @@ async function checkIfExists(username, safeAddress) {
   }
 }
 
+async function checkIfUsernameTakenByOther(username, safeAddress) {
+  const equalUsernameCondition = Sequelize.where(
+    Sequelize.fn('lower', Sequelize.col('username')),
+    Sequelize.fn('lower', username),
+  );
+
+  const response = await User.findOne({
+    where: {
+      [Op.and]: [
+        equalUsernameCondition,
+        {
+          safeAddress: { [Op.ne]: safeAddress },
+        },
+      ],
+    },
+  });
+
+  if (response) {
+    throw new APIError(
+      httpStatus.CONFLICT,
+      'Username already taken by other safeAddress',
+    );
+  }
+}
+
 async function resolveBatch(req, res, next) {
   const { username, address } = req.query;
 
@@ -234,8 +259,8 @@ export default {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
-      // Check if entry already exists
-      await checkIfExists(username);
+      // Check if username is taken by another safeAddress
+      await checkIfUsernameTakenByOther(username, safeAddress);
 
       // Check if signer ownes the claimed safe address
       const query = `{
