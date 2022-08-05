@@ -232,8 +232,12 @@ describe('POST /users/:safeAddress - validation', () => {
       // Invalid avatarUrl
       await expectErrorStatusInPost({
         ...correctBody,
-        avatarUrl: 'www.wrong.pizza',
+        data: {
+          ...correctBody.data,
+          avatarUrl: 'www.wrong.pizza',
+        },
       });
+
       // Invalid email
       await expectErrorStatusInPost({
         ...correctBody,
@@ -242,6 +246,7 @@ describe('POST /users/:safeAddress - validation', () => {
           email: 'hola@',
         },
       });
+
       // Empty email
       await expectErrorStatusInPost({
         ...correctBody,

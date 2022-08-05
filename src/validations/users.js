@@ -30,7 +30,7 @@ export default {
       data: Joi.object({
         safeAddress: customJoi.web3().address().addressChecksum().required(),
         username: Joi.string().alphanum().min(3).max(24).required(),
-        email: Joi.string().email(),
+        email: Joi.string().email().empty(''),
         avatarUrl: Joi.string().uri().empty(''),
       }).required(),
     }),

@@ -240,7 +240,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
         .expect(httpStatus.OK);
     });
 
-    it('should successfully respond when mail is missing', async () => {
+    it('should successfully respond when mail is empty', async () => {
       await request(app)
         .put('/api/users')
         .send(payload)
@@ -254,6 +254,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
       // Update payload values
       payload.data.username = newUsername;
       payload.data.avatarUrl = newAvatarUrl;
+      payload.data.email = '';
       payload.signature = signature;
 
       mockGraphUsers(payload.address, payload.data.safeAddress);
@@ -262,11 +263,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
         .send({
           address: payload.address,
           signature: payload.signature,
-          data: {
-            safeAddress: payload.data.safeAddress,
-            username: payload.data.username,
-            avatarUrl: payload.data.avatarUrl,
-          },
+          data: payload.data,
         })
         .set('Accept', 'application/json')
         .expect(httpStatus.OK);
@@ -274,7 +271,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
   });
 
   describe('when user was not registered', () => {
-    it('should fail when mail is missing', async () => {
+    it('should fail when mail is empty', async () => {
       const signature = getSignature(
         [payload.address, payload.data.safeAddress, newUsername],
         privateKey,
@@ -282,6 +279,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
       // Update payload values
       payload.data.username = newUsername;
       payload.data.avatarUrl = newAvatarUrl;
+      payload.data.email = '';
       payload.signature = signature;
 
       mockGraphUsers(payload.address, payload.data.safeAddress);
@@ -290,11 +288,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
         .send({
           address: payload.address,
           signature: payload.signature,
-          data: {
-            safeAddress: payload.data.safeAddress,
-            username: payload.data.username,
-            avatarUrl: payload.data.avatarUrl,
-          },
+          data: payload.data,
         })
         .set('Accept', 'application/json')
         .expect(httpStatus.BAD_REQUEST);

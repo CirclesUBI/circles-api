@@ -267,7 +267,7 @@ export default {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
-      if (!email) {
+      if (!email || email == '') {
         // get email from db
         const user = await getUserEmail(safeAddress);
         if (!user || !user.email) {
