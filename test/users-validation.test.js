@@ -187,15 +187,15 @@ describe('POST /users/:safeAddress - validation', () => {
   describe('when using invalid parameters', () => {
     it('should return errors', async () => {
       const correctBody = {
-        address: randomChecksumAddress(),
+        address: address,
         signature: signature,
         data: {
-          safeAddress: randomChecksumAddress(),
-          username: 'zebra',
+          safeAddress: safeAddress,
+          username: username,
           email: 'zebra@zoo.org',
         },
       };
-
+      mockGraphUsers(address, safeAddress);
       // Missing fields
       await expectErrorStatusInPost({
         ...correctBody,
@@ -233,6 +233,22 @@ describe('POST /users/:safeAddress - validation', () => {
       await expectErrorStatusInPost({
         ...correctBody,
         avatarUrl: 'www.wrong.pizza',
+      });
+      // Invalid email
+      await expectErrorStatusInPost({
+        ...correctBody,
+        data: {
+          ...correctBody.data,
+          email: 'hola@',
+        },
+      });
+      // Empty email
+      await expectErrorStatusInPost({
+        ...correctBody,
+        data: {
+          ...correctBody.data,
+          email: '',
+        },
       });
     });
   });
