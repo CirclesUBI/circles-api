@@ -267,11 +267,14 @@ export default {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
-      if (!email){
+      if (!email) {
         // get email from db
         const user = await getUserEmail(safeAddress);
         if (!user || !user.email) {
-          throw new APIError(httpStatus.BAD_REQUEST, 'Email is missing for new entry');
+          throw new APIError(
+            httpStatus.BAD_REQUEST,
+            'Email is missing for new entry',
+          );
         }
         data.email = user.email;
       }

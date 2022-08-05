@@ -277,7 +277,7 @@ describe('POST /users/:safeAddress - validation', () => {
       data: {
         safeAddress,
         username,
-      }
+      },
     });
   });
 });
