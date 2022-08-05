@@ -3,7 +3,7 @@ import request from 'supertest';
 
 import web3 from './utils/web3';
 import { createUserPayload } from './utils/users';
-import { mockRelayerSafe } from './utils/mocks';
+import { mockRelayerSafe, mockGraphUsers } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
 
 import app from '~';
@@ -266,6 +266,18 @@ describe('POST /users/:safeAddress - validation', () => {
         },
         httpStatus.FORBIDDEN,
       );
+    });
+  });
+
+  it('when missing email should fail', async () => {
+    mockGraphUsers(address, safeAddress);
+    await expectErrorStatusInPost({
+      address,
+      signature,
+      data: {
+        safeAddress,
+        username,
+      }
     });
   });
 });
