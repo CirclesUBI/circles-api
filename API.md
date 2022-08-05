@@ -287,8 +287,8 @@ Create a new entry in the database, connecting a `username` with a `safeAddress`
 - `signature`: Signed data payload of this request via the users keypair. The data contains: `address + nonce + safeAddress + username` with `nonce` being `0` when not given
 - `nonce`: Optional nonce which is required to [predict the Safe address](https://gnosis-safe.readthedocs.io/en/latest/contracts/deployment.html#trustless-deployment-with-create2)
 - `data/safeAddress`: Public address of the owned Safe of the user
-- `data/email`: Private email address of the user (not unique)
 - `data/username`: Username which should be connected to the `safeAddress`
+- `data/email`: Private email address of the user (not unique)
 - `data/avatarUrl` (optional): URL of avatar image
 
 **Verification steps:**
@@ -317,11 +317,10 @@ Update (or create) an entry in the database, connecting a `username` with a `saf
 {
   address: <string>,
   signature: <string>,
-  nonce: <int> (optional),
   data: {
     safeAddress: <string>,
-    email: <string>,
     username: <string>,
+    email: <string>,
     avatarUrl: <string>
   }
 }
@@ -330,15 +329,16 @@ Update (or create) an entry in the database, connecting a `username` with a `saf
 - `address`: Public address of user wallet
 - `signature`: Signed data payload of this request via the users keypair. The data contains: `address + nonce + safeAddress + username` with `nonce` being `0` when not given
 - `data/safeAddress`: Public address of the owned Safe of the user
-- `data/email`: Private email address of the user (not unique)
 - `data/username`: Username which should be connected to the `safeAddress`
+- `data/email` (optional): Private email address of the user (not unique, not null)
 - `data/avatarUrl` (optional): URL of avatar image
 
 **Verification steps:**
 
 1. Check if the `signature` can be verified successfully.
-2. Check if the `username` is taken
-3. Check if `address` is owner of the given Safe.
+2. Check that an email is given when the entry has to be created, and reuse the email is not provided. 
+3. Check if the `username` is taken by another user.
+4. Check if `address` is owner of the given Safe.
 
 **Errors:**
 
