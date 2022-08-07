@@ -327,7 +327,7 @@ Update (or create) an entry in the database, connecting a `username` with a `saf
 ```
 
 - `address`: Public address of user wallet
-- `signature`: Signed data payload of this request via the users keypair. The data contains: `address + nonce + safeAddress + username` with `nonce` being `0` when not given
+- `signature`: Signed data payload of this request via the users keypair. The data contains: `address + safeAddress + username`.
 - `data/safeAddress`: Public address of the owned Safe of the user
 - `data/username`: Username which should be connected to the `safeAddress`
 - `data/email` (optional): Private email address of the user (not unique, not null)
@@ -336,9 +336,8 @@ Update (or create) an entry in the database, connecting a `username` with a `saf
 **Verification steps:**
 
 1. Check if the `signature` can be verified successfully.
-2. Check that an email is given when the entry has to be created, and reuse the email is not provided. 
-3. Check if the `username` is taken by another user.
-4. Check if `address` is owner of the given Safe.
+2. Check if the `username` is taken by another user.
+3. Check if `address` is owner of the given Safe.
 
 **Errors:**
 

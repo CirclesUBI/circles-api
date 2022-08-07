@@ -114,16 +114,6 @@ async function checkIfUsernameTakenByOther(username, safeAddress) {
   }
 }
 
-async function getUserEmail(safeAddress) {
-  const result = await User.findOne({
-    attributes: ['email'],
-    where: {
-      safeAddress: safeAddress,
-    },
-  });
-  return result;
-}
-
 async function resolveBatch(req, res, next) {
   const { username, address } = req.query;
 
@@ -255,7 +245,7 @@ export default {
 
   updateUser: async (req, res, next) => {
     const { address, signature, data } = req.body;
-    const { safeAddress, username, email } = data;
+    const { safeAddress, username } = data;
     if (safeAddress != req.params.safeAddress) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Incorrect Safe address');
     }
@@ -267,17 +257,6 @@ export default {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
-      if (!email || email == '') {
-        // get email from db
-        const user = await getUserEmail(safeAddress);
-        if (!user || !user.email) {
-          throw new APIError(
-            httpStatus.BAD_REQUEST,
-            'Email is missing for new entry',
-          );
-        }
-        data.email = user.email;
-      }
       // Check if username is taken by another safeAddress
       await checkIfUsernameTakenByOther(username, safeAddress);
 

@@ -239,61 +239,9 @@ describe('POST /users/:safeAddress - Updating user data', () => {
         .set('Accept', 'application/json')
         .expect(httpStatus.OK);
     });
-
-    it('should successfully respond when mail is empty', async () => {
-      await request(app)
-        .put('/api/users')
-        .send(payload)
-        .set('Accept', 'application/json')
-        .expect(httpStatus.CREATED);
-
-      const signature = getSignature(
-        [payload.address, payload.data.safeAddress, newUsername],
-        privateKey,
-      );
-      // Update payload values
-      payload.data.username = newUsername;
-      payload.data.avatarUrl = newAvatarUrl;
-      payload.data.email = '';
-      payload.signature = signature;
-
-      mockGraphUsers(payload.address, payload.data.safeAddress);
-      await request(app)
-        .post(`/api/users/${payload.data.safeAddress}`)
-        .send({
-          address: payload.address,
-          signature: payload.signature,
-          data: payload.data,
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.OK);
-    });
   });
 
   describe('when user was not registered', () => {
-    it('should fail when mail is empty', async () => {
-      const signature = getSignature(
-        [payload.address, payload.data.safeAddress, newUsername],
-        privateKey,
-      );
-      // Update payload values
-      payload.data.username = newUsername;
-      payload.data.avatarUrl = newAvatarUrl;
-      payload.data.email = '';
-      payload.signature = signature;
-
-      mockGraphUsers(payload.address, payload.data.safeAddress);
-      await request(app)
-        .post(`/api/users/${payload.data.safeAddress}`)
-        .send({
-          address: payload.address,
-          signature: payload.signature,
-          data: payload.data,
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
-    });
-
     it('should not fail when providing all the data fields', async () => {
       const signature = getSignature(
         [payload.address, payload.data.safeAddress, newUsername],
