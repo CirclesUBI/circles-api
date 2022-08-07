@@ -32,4 +32,10 @@ router.post(
   usersController.updateUser,
 );
 
+router.get(
+  '/:safeAddress/email',
+  validate(usersValidation.getEmail),
+  usersController.getEmail,
+);
+
 export default router;

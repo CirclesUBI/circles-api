@@ -38,6 +38,15 @@ export default {
       safeAddress: customJoi.web3().address().addressChecksum(),
     },
   },
+  getEmail: {
+    body: Joi.object({
+      address: customJoi.web3().address().addressChecksum().required(),
+      signature: Joi.string().length(132).required(),
+    }),
+    params: {
+      safeAddress: customJoi.web3().address().addressChecksum(),
+    },
+  },
   getByUsername: {
     params: {
       username: Joi.string().required(),

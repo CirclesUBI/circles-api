@@ -344,3 +344,35 @@ Update (or create) an entry in the database, connecting a `username` with a `saf
 - `400` Parameters missing or malformed
 - `403` Verification failed
 - `409` Entry already exists
+
+### Get email
+
+**Request:**
+
+`GET /api/users/<safeAddress>/email`
+
+Get the email from the entry of the `safeAddress` in the database.
+
+**Parameters:**
+
+```
+{
+  address: <string>,
+  signature: <string>,
+}
+```
+
+- `address`: Public address of user wallet
+- `signature`: Signed data payload of this request via the users keypair. The data contains: `address + safeAddress`.
+
+**Verification steps:**
+
+1. Check if the `signature` can be verified successfully.
+2. Check if `address` is owner of the given Safe.
+
+**Errors:**
+
+- `400` Parameters missing or malformed
+- `403` Verification failed
+
+When no user was found an empty response will be returned.
