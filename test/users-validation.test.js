@@ -25,7 +25,11 @@ async function expectErrorStatusInPost(body, status = httpStatus.BAD_REQUEST) {
     .expect(status);
 }
 
-async function expectErrorStatusGetEmail(body, param, status = httpStatus.BAD_REQUEST) {
+async function expectErrorStatusGetEmail(
+  body,
+  param,
+  status = httpStatus.BAD_REQUEST,
+) {
   return await request(app)
     .get(`/api/users/${param.safeAddress}/email`)
     .send(body)

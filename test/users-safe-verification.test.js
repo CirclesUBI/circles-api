@@ -198,10 +198,7 @@ describe('GET /users/:safeAddress/email - Safe verification', () => {
     it('should return an error when owner is wrong', async () => {
       const victimSafeAddress = randomChecksumAddress();
 
-      const signature = getSignature(
-        [address, victimSafeAddress],
-        privateKey,
-      );
+      const signature = getSignature([address, victimSafeAddress], privateKey);
 
       mockGraphUsers(address, safeAddress);
       return await request(app)
