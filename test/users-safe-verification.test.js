@@ -180,3 +180,38 @@ describe('POST /users/:safeAddress - Safe verification', () => {
     });
   });
 });
+
+describe('GET /users/:safeAddress/email - Safe verification', () => {
+  let address;
+  let safeAddress;
+  let privateKey;
+
+  beforeEach(() => {
+    const account = web3.eth.accounts.create();
+
+    address = account.address;
+    safeAddress = randomChecksumAddress();
+    privateKey = account.privateKey;
+  });
+
+  describe('when trying to hijack someones Safe', () => {
+    it('should return an error when owner is wrong', async () => {
+      const victimSafeAddress = randomChecksumAddress();
+
+      const signature = getSignature(
+        [address, victimSafeAddress],
+        privateKey,
+      );
+
+      mockGraphUsers(address, safeAddress);
+      return await request(app)
+        .post(`/api/users/${victimSafeAddress}/mail`)
+        .send({
+          address,
+          signature,
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.BAD_REQUEST);
+    });
+  });
+});

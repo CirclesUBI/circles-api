@@ -25,6 +25,14 @@ async function expectErrorStatusInPost(body, status = httpStatus.BAD_REQUEST) {
     .expect(status);
 }
 
+async function expectErrorStatusGetEmail(body, param, status = httpStatus.BAD_REQUEST) {
+  return await request(app)
+    .get(`/api/users/${param.safeAddress}/email`)
+    .send(body)
+    .set('Accept', 'application/json')
+    .expect(status);
+}
+
 describe('PUT /users - validation', () => {
   let address;
   let nonce;
@@ -395,5 +403,78 @@ describe('POST /users - dry run create user validation', () => {
       })
       .set('Accept', 'application/json')
       .expect(httpStatus.OK);
+  });
+});
+
+describe('GET /users/:safeAddress/email - validation', () => {
+  let address;
+  let privateKey;
+  let safeAddress;
+  let signature;
+
+  beforeEach(() => {
+    const account = web3.eth.accounts.create();
+    address = account.address;
+    privateKey = account.privateKey;
+    safeAddress = randomChecksumAddress();
+    signature = getSignature([address, safeAddress], privateKey);
+  });
+
+  describe('when using invalid parameters', () => {
+    it('should return errors', async () => {
+      const correctBody = {
+        address: address,
+        signature: signature,
+      };
+      // Missing fields
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          address: 'invalid',
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Missing signature
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          signature: '',
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Wrong address
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          address: web3.utils.randomHex(21),
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Wrong address checksum
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          address: web3.utils.randomHex(20),
+        },
+        { safeAddress: safeAddress },
+      );
+    });
+  });
+
+  describe('when using invalid signatures', () => {
+    it('should return errors', async () => {
+      // Wrong address
+      await expectErrorStatusGetEmail(
+        {
+          address: randomChecksumAddress(),
+          signature,
+        },
+        { safeAddress: safeAddress },
+        httpStatus.FORBIDDEN,
+      );
+    });
   });
 });
