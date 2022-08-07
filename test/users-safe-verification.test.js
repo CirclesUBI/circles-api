@@ -181,7 +181,7 @@ describe('POST /users/:safeAddress - Safe verification', () => {
   });
 });
 
-describe('GET /users/:safeAddress/email - Safe verification', () => {
+describe('POST /users/:safeAddress/email - Safe verification', () => {
   let address;
   let safeAddress;
   let privateKey;
@@ -202,7 +202,7 @@ describe('GET /users/:safeAddress/email - Safe verification', () => {
 
       mockGraphUsers(address, safeAddress);
       return await request(app)
-        .post(`/api/users/${victimSafeAddress}/mail`)
+        .post(`/api/users/${victimSafeAddress}/email`)
         .send({
           address,
           signature,

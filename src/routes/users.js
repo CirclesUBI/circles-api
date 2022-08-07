@@ -20,6 +20,12 @@ router.put(
 
 router.get('/', validate(usersValidation.findUsers), usersController.findUsers);
 
+router.post(
+  '/:safeAddress/email',
+  validate(usersValidation.getEmail),
+  usersController.getEmail,
+);
+
 router.get(
   '/:username',
   validate(usersValidation.getByUsername),
@@ -30,12 +36,6 @@ router.post(
   '/:safeAddress',
   validate(usersValidation.updateUser),
   usersController.updateUser,
-);
-
-router.get(
-  '/:safeAddress/email',
-  validate(usersValidation.getEmail),
-  usersController.getEmail,
 );
 
 export default router;

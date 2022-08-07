@@ -31,7 +31,7 @@ async function expectErrorStatusGetEmail(
   status = httpStatus.BAD_REQUEST,
 ) {
   return await request(app)
-    .get(`/api/users/${param.safeAddress}/email`)
+    .post(`/api/users/${param.safeAddress}/email`)
     .send(body)
     .set('Accept', 'application/json')
     .expect(status);
@@ -410,7 +410,7 @@ describe('POST /users - dry run create user validation', () => {
   });
 });
 
-describe('GET /users/:safeAddress/email - validation', () => {
+describe('POST /users/:safeAddress/email - validation', () => {
   let address;
   let privateKey;
   let safeAddress;
