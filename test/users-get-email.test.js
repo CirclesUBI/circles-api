@@ -84,7 +84,7 @@ describe('GET /users/:safeAddress/email - Getting the user email', () => {
           throw new Error('Wrong email returned');
         }
       });
-    
+
     // Get the email again
     mockGraphUsers(payload.address, payload.data.safeAddress);
     await request(app)
@@ -100,7 +100,7 @@ describe('GET /users/:safeAddress/email - Getting the user email', () => {
           throw new Error('Wrong email returned');
         }
       });
-    });
+  });
 
   it('should return an error when signature is valid but entry was not found', async () => {
     // Create a user and not register
@@ -108,14 +108,11 @@ describe('GET /users/:safeAddress/email - Getting the user email', () => {
     const address = account.address;
     const privateKey = account.privateKey;
     const safeAddress = randomChecksumAddress();
-    const signature = getSignature(
-      [address, safeAddress],
-      privateKey,
-    );
+    const signature = getSignature([address, safeAddress], privateKey);
 
     // Get the email
     mockGraphUsers(address, safeAddress);
-    const response = await request(app)
+    await request(app)
       .post(`/api/users/${safeAddress}/email`)
       .send({
         address: address,
