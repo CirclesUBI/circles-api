@@ -323,7 +323,11 @@ export default {
       },
     })
       .then((data) => {
-        respondWithSuccess(res, data);
+        if (!data) {
+          next(new APIError(httpStatus.NOT_FOUND));
+        } else {
+          respondWithSuccess(res, data);
+        }
       })
       .catch((err) => {
         next(err);

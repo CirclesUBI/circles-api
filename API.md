@@ -374,5 +374,4 @@ Get the email from the entry of the `safeAddress` in the database.
 
 - `400` Parameters missing or malformed
 - `403` Verification failed
-
-When no user was found an empty response will be returned.
+- `404` User entry not found
