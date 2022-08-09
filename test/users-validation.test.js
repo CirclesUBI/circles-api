@@ -3,7 +3,7 @@ import request from 'supertest';
 
 import web3 from './utils/web3';
 import { createUserPayload } from './utils/users';
-import { mockRelayerSafe } from './utils/mocks';
+import { mockRelayerSafe, mockGraphUsers } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
 
 import app from '~';
@@ -20,6 +20,18 @@ async function expectErrorStatus(body, status = httpStatus.BAD_REQUEST) {
 async function expectErrorStatusInPost(body, status = httpStatus.BAD_REQUEST) {
   return await request(app)
     .post(`/api/users/${body.data.safeAddress}`)
+    .send(body)
+    .set('Accept', 'application/json')
+    .expect(status);
+}
+
+async function expectErrorStatusGetEmail(
+  body,
+  param,
+  status = httpStatus.BAD_REQUEST,
+) {
+  return await request(app)
+    .post(`/api/users/${param.safeAddress}/email`)
     .send(body)
     .set('Accept', 'application/json')
     .expect(status);
@@ -187,15 +199,15 @@ describe('POST /users/:safeAddress - validation', () => {
   describe('when using invalid parameters', () => {
     it('should return errors', async () => {
       const correctBody = {
-        address: randomChecksumAddress(),
+        address: address,
         signature: signature,
         data: {
-          safeAddress: randomChecksumAddress(),
-          username: 'zebra',
+          safeAddress: safeAddress,
+          username: username,
           email: 'zebra@zoo.org',
         },
       };
-
+      mockGraphUsers(address, safeAddress);
       // Missing fields
       await expectErrorStatusInPost({
         ...correctBody,
@@ -232,7 +244,28 @@ describe('POST /users/:safeAddress - validation', () => {
       // Invalid avatarUrl
       await expectErrorStatusInPost({
         ...correctBody,
-        avatarUrl: 'www.wrong.pizza',
+        data: {
+          ...correctBody.data,
+          avatarUrl: 'www.wrong.pizza',
+        },
+      });
+
+      // Invalid email
+      await expectErrorStatusInPost({
+        ...correctBody,
+        data: {
+          ...correctBody.data,
+          email: 'hola@',
+        },
+      });
+
+      // Empty email
+      await expectErrorStatusInPost({
+        ...correctBody,
+        data: {
+          ...correctBody.data,
+          email: '',
+        },
       });
     });
   });
@@ -266,6 +299,18 @@ describe('POST /users/:safeAddress - validation', () => {
         },
         httpStatus.FORBIDDEN,
       );
+    });
+  });
+
+  it('when missing email should fail', async () => {
+    mockGraphUsers(address, safeAddress);
+    await expectErrorStatusInPost({
+      address,
+      signature,
+      data: {
+        safeAddress,
+        username,
+      },
     });
   });
 });
@@ -362,5 +407,78 @@ describe('POST /users - dry run create user validation', () => {
       })
       .set('Accept', 'application/json')
       .expect(httpStatus.OK);
+  });
+});
+
+describe('POST /users/:safeAddress/email - validation', () => {
+  let address;
+  let privateKey;
+  let safeAddress;
+  let signature;
+
+  beforeEach(() => {
+    const account = web3.eth.accounts.create();
+    address = account.address;
+    privateKey = account.privateKey;
+    safeAddress = randomChecksumAddress();
+    signature = getSignature([address, safeAddress], privateKey);
+  });
+
+  describe('when using invalid parameters', () => {
+    it('should return errors', async () => {
+      const correctBody = {
+        address: address,
+        signature: signature,
+      };
+      // Missing fields
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          address: 'invalid',
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Missing signature
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          signature: '',
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Wrong address
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          address: web3.utils.randomHex(21),
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Wrong address checksum
+      await expectErrorStatusGetEmail(
+        {
+          ...correctBody,
+          address: web3.utils.randomHex(20),
+        },
+        { safeAddress: safeAddress },
+      );
+    });
+  });
+
+  describe('when using invalid signatures', () => {
+    it('should return errors', async () => {
+      // Wrong address
+      await expectErrorStatusGetEmail(
+        {
+          address: randomChecksumAddress(),
+          signature,
+        },
+        { safeAddress: safeAddress },
+        httpStatus.FORBIDDEN,
+      );
+    });
   });
 });

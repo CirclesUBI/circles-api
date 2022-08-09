@@ -113,6 +113,7 @@ describe('POST /users/:safeAddress - Updating user data', () => {
   const newUsername = 'dolfin';
   const newEmail = 'dol@fin.com';
   const newAvatarUrl = 'https://storage.com/image2.jpg';
+  const similarUserName = 'Doggy';
 
   beforeEach(() => {
     const response = prepareUser({ username: 'doggy' }, true);
@@ -128,56 +129,141 @@ describe('POST /users/:safeAddress - Updating user data', () => {
     });
   });
 
-  it('should successfully respond when user was already created', async () => {
-    await request(app)
-      .put('/api/users')
-      .send(payload)
-      .set('Accept', 'application/json')
-      .expect(httpStatus.CREATED);
+  describe('when user was already created', () => {
+    it('should successfully respond when I update all the fields', async () => {
+      await request(app)
+        .put('/api/users')
+        .send(payload)
+        .set('Accept', 'application/json')
+        .expect(httpStatus.CREATED);
 
-    const signature = getSignature(
-      [payload.address, payload.data.safeAddress, newUsername],
-      privateKey,
-    );
-    // Update payload values
-    payload.data.username = newUsername;
-    payload.data.email = newEmail;
-    payload.data.avatarUrl = newAvatarUrl;
-    payload.signature = signature;
+      const signature = getSignature(
+        [payload.address, payload.data.safeAddress, newUsername],
+        privateKey,
+      );
+      // Update payload values
+      payload.data.username = newUsername;
+      payload.data.email = newEmail;
+      payload.data.avatarUrl = newAvatarUrl;
+      payload.signature = signature;
 
-    mockGraphUsers(payload.address, payload.data.safeAddress);
-    await request(app)
-      .post(`/api/users/${payload.data.safeAddress}`)
-      .send({
-        address: payload.address,
-        signature: payload.signature,
-        data: payload.data,
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.OK);
+      mockGraphUsers(payload.address, payload.data.safeAddress);
+      await request(app)
+        .post(`/api/users/${payload.data.safeAddress}`)
+        .send({
+          address: payload.address,
+          signature: payload.signature,
+          data: payload.data,
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.OK);
+    });
+
+    it('should successfully respond when I update only the username', async () => {
+      await request(app)
+        .put('/api/users')
+        .send(payload)
+        .set('Accept', 'application/json')
+        .expect(httpStatus.CREATED);
+
+      const signature = getSignature(
+        [payload.address, payload.data.safeAddress, newUsername],
+        privateKey,
+      );
+      // Update payload values
+      payload.data.username = newUsername;
+      payload.signature = signature;
+
+      mockGraphUsers(payload.address, payload.data.safeAddress);
+      await request(app)
+        .post(`/api/users/${payload.data.safeAddress}`)
+        .send({
+          address: payload.address,
+          signature: payload.signature,
+          data: payload.data,
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.OK);
+    });
+
+    it('should successfully respond when I update to a similar username', async () => {
+      await request(app)
+        .put('/api/users')
+        .send(payload)
+        .set('Accept', 'application/json')
+        .expect(httpStatus.CREATED);
+
+      const signature = getSignature(
+        [payload.address, payload.data.safeAddress, similarUserName],
+        privateKey,
+      );
+      // Update payload values
+      payload.data.username = similarUserName;
+      payload.signature = signature;
+
+      mockGraphUsers(payload.address, payload.data.safeAddress);
+      await request(app)
+        .post(`/api/users/${payload.data.safeAddress}`)
+        .send({
+          address: payload.address,
+          signature: payload.signature,
+          data: payload.data,
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.OK);
+    });
+
+    it('should successfully respond when I update only the avatarUrl', async () => {
+      await request(app)
+        .put('/api/users')
+        .send(payload)
+        .set('Accept', 'application/json')
+        .expect(httpStatus.CREATED);
+
+      const signature = getSignature(
+        [payload.address, payload.data.safeAddress, payload.data.username],
+        privateKey,
+      );
+      // Update payload values
+      payload.data.avatarUrl = newAvatarUrl;
+      payload.signature = signature;
+
+      mockGraphUsers(payload.address, payload.data.safeAddress);
+      await request(app)
+        .post(`/api/users/${payload.data.safeAddress}`)
+        .send({
+          address: payload.address,
+          signature: payload.signature,
+          data: payload.data,
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.OK);
+    });
   });
 
-  it('should successfully respond when user was not registered', async () => {
-    const signature = getSignature(
-      [payload.address, payload.data.safeAddress, newUsername],
-      privateKey,
-    );
-    // Update payload values
-    payload.data.username = newUsername;
-    payload.data.email = newEmail;
-    payload.data.avatarUrl = newAvatarUrl;
-    payload.signature = signature;
+  describe('when user was not registered', () => {
+    it('should not fail when providing all the data fields', async () => {
+      const signature = getSignature(
+        [payload.address, payload.data.safeAddress, newUsername],
+        privateKey,
+      );
+      // Update payload values
+      payload.data.username = newUsername;
+      payload.data.email = newEmail;
+      payload.data.avatarUrl = newAvatarUrl;
+      payload.signature = signature;
 
-    mockGraphUsers(payload.address, payload.data.safeAddress);
-    await request(app)
-      .post(`/api/users/${payload.data.safeAddress}`)
-      .send({
-        address: payload.address,
-        signature: payload.signature,
-        data: payload.data,
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.OK);
+      mockGraphUsers(payload.address, payload.data.safeAddress);
+      await request(app)
+        .post(`/api/users/${payload.data.safeAddress}`)
+        .send({
+          address: payload.address,
+          signature: payload.signature,
+          data: payload.data,
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.OK);
+    });
   });
 });
 
@@ -248,7 +334,7 @@ describe('POST /users/:safeAddress - Fail when username is too similar', () => {
       .expect(httpStatus.CONFLICT);
   });
 
-  it('should reject when is too similar to same username', async () => {
+  it('should suceed when is similar to same username', async () => {
     await request(app)
       .put('/api/users')
       .send(correctPayload)
@@ -273,6 +359,6 @@ describe('POST /users/:safeAddress - Fail when username is too similar', () => {
         data: correctPayload.data,
       })
       .set('Accept', 'application/json')
-      .expect(httpStatus.CONFLICT);
+      .expect(httpStatus.OK);
   });
 });

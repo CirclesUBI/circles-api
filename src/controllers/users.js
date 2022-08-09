@@ -89,6 +89,31 @@ async function checkIfExists(username, safeAddress) {
   }
 }
 
+async function checkIfUsernameTakenByOther(username, safeAddress) {
+  const equalUsernameCondition = Sequelize.where(
+    Sequelize.fn('lower', Sequelize.col('username')),
+    Sequelize.fn('lower', username),
+  );
+
+  const response = await User.findOne({
+    where: {
+      [Op.and]: [
+        equalUsernameCondition,
+        {
+          safeAddress: { [Op.ne]: safeAddress },
+        },
+      ],
+    },
+  });
+
+  if (response) {
+    throw new APIError(
+      httpStatus.CONFLICT,
+      'Username already taken by other safeAddress',
+    );
+  }
+}
+
 async function resolveBatch(req, res, next) {
   const { username, address } = req.query;
 
@@ -221,11 +246,9 @@ export default {
   updateUser: async (req, res, next) => {
     const { address, signature, data } = req.body;
     const { safeAddress, username } = data;
-
     if (safeAddress != req.params.safeAddress) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Incorrect Safe address');
     }
-
     try {
       // Check signature
       if (
@@ -234,8 +257,8 @@ export default {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
-      // Check if entry already exists
-      await checkIfExists(username);
+      // Check if username is taken by another safeAddress
+      await checkIfUsernameTakenByOther(username, safeAddress);
 
       // Check if signer ownes the claimed safe address
       const query = `{
@@ -259,6 +282,52 @@ export default {
     await User.upsert(data, { where: { safeAddress: safeAddress } })
       .then(() => {
         respondWithSuccess(res, null);
+      })
+      .catch((err) => {
+        next(err);
+      });
+  },
+
+  getEmail: async (req, res, next) => {
+    const { address, signature } = req.body;
+    const { safeAddress } = req.params;
+
+    try {
+      // Check signature
+      if (!checkSignature([address, safeAddress], signature, address)) {
+        throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
+      }
+
+      // Check if signer ownes the claimed safe address
+      const query = `{
+        user(id: "${address.toLowerCase()}") {
+          safeAddresses
+        }
+      }`;
+      const graphData = await requestGraph(query);
+      if (
+        !graphData ||
+        !graphData.user ||
+        !graphData.user.safeAddresses.includes(safeAddress.toLowerCase())
+      ) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
+      }
+    } catch (err) {
+      return next(err);
+    }
+    // Everything is fine, get email!
+    await User.findOne({
+      attributes: ['email'],
+      where: {
+        safeAddress: safeAddress,
+      },
+    })
+      .then((data) => {
+        if (!data) {
+          next(new APIError(httpStatus.NOT_FOUND));
+        } else {
+          respondWithSuccess(res, data);
+        }
       })
       .catch((err) => {
         next(err);
