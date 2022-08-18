@@ -56,6 +56,6 @@ export async function writeToFile(
     await exportCSV(tmpFilePath);
     fs.renameSync(tmpFilePath, EDGES_FILE_PATH);
   } catch (error) {
-    throw new Error('Could not create csv file. Error:t' + error);
+    throw new Error('Could not create csv file. Error:' + error);
   }
 }

@@ -19,9 +19,7 @@ const CRON_NIGHTLY = '0 0 0 * * *';
 // Connect with postgres database
 db.authenticate()
   .then(() => {
-    logger.info(
-      'Database connection has been established successfully - local',
-    );
+    logger.info('Database connection has been established successfully');
   })
   .catch(() => {
     logger.error('Unable to connect to database');
@@ -98,6 +96,8 @@ waitUntilGraphIsReady()
         cron: CRON_NIGHTLY,
       },
     });
+    // Always write edges.json file on start to make sure it exists
+    submitJob(tasks.exportEdges, 'exportEdges-initial');
   })
   .catch(() => {
     logger.error('Unable to connect to graph node');
