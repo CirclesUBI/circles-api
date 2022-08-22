@@ -29,6 +29,8 @@ async function exportCSV(file) {
         resolve(data);
       });
       output.on('data', (chunk) => (data += chunk)).pipe(stream);
+    }).catch(err => {
+      reject(err);
     });
   });
 }
