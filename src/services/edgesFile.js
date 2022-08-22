@@ -2,7 +2,7 @@ import path from 'path';
 import web3 from './web3';
 import fs from 'fs';
 import { execSync } from 'child_process';
-const copyTo = require('pg-copy-streams').to;
+import copyTo from 'pg-copy-streams/copy-to';
 
 import db from '../database';
 import { EDGES_FILE_PATH, EDGES_DIRECTORY_PATH } from '../constants';
