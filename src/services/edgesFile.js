@@ -1,6 +1,7 @@
 import path from 'path';
 import web3 from './web3';
 import fs from 'fs';
+import { execSync } from 'child_process';
 const copyTo = require('pg-copy-streams').to;
 
 import db from '../database';
@@ -55,6 +56,8 @@ export async function writeToFile(
     fs.closeSync(fs.openSync(tmpFilePath, 'w'));
     await exportCSV(tmpFilePath);
     fs.renameSync(tmpFilePath, EDGES_FILE_PATH);
+    const lines = execSync(`wc -l testlines.csv | awk '{ print $1 }`);
+    return lines;
   } catch (error) {
     throw new Error('Could not create csv file. Error:' + error);
   }

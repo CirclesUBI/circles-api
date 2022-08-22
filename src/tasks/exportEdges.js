@@ -16,14 +16,14 @@ processor(exportEdges).process(async () => {
   const startTime = performance.now();
 
   // Write edges.csv
-  await writeToFile();
+  const lines = await writeToFile();
 
   // End time
   const endTime = performance.now();
   const milliseconds = Math.round(endTime - startTime);
 
   // Show metrics
-  logger.info(`Written edges.csv in ${milliseconds}ms`);
+  logger.info(`Written ${lines} lines edges.csv in ${milliseconds}ms`);
 
   return Promise.resolve();
 });
