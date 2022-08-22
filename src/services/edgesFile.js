@@ -56,7 +56,7 @@ export async function writeToFile(
     fs.closeSync(fs.openSync(tmpFilePath, 'w'));
     await exportCSV(tmpFilePath);
     fs.renameSync(tmpFilePath, EDGES_FILE_PATH);
-    const lines = execSync(`wc -l ${EDGES_FILE_PATH} | awk '{ print $1 }`);
+    const lines = execSync(`wc -l ${EDGES_FILE_PATH} | awk '{ print $1 }'`);
     return lines;
   } catch (error) {
     throw new Error('Could not create csv file. Error:' + error);
