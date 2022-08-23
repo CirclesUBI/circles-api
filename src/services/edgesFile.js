@@ -10,28 +10,31 @@ import { EDGES_FILE_PATH, EDGES_DIRECTORY_PATH } from '../constants';
 // Export from PostgresDB to CSV file
 async function exportCSV(file) {
   return new Promise((resolve, reject) => {
-    db.connectionManager.getConnection().then((client) => {
-      let data = '';
-      const stream = fs.createWriteStream(file);
-      const output = client.query(
-        copyTo(
-          `COPY  edges ("from",  "to", "token", "capacity") TO STDOUT WITH (FORMAT CSV)`,
-        ),
-      );
-      stream.setDefaultEncoding('utf8');
-      stream.on('error', (err) => {
-        db.connectionManager.releaseConnection(client);
-        reject('Error in DB connection. Error:', err);
-      });
+    db.connectionManager
+      .getConnection()
+      .then((client) => {
+        const output = client.query(
+          copyTo(
+            `COPY edges ("from", "to", "token", "capacity") TO STDOUT WITH (FORMAT CSV)`,
+          ),
+        );
+        let data = '';
+        const stream = fs.createWriteStream(file);
+        stream.setDefaultEncoding('utf8');
+        stream.on('error', (err) => {
+          db.connectionManager.releaseConnection(client);
+          reject('Error in DB connection. Error:', err);
+        });
 
-      stream.on('finish', () => {
-        db.connectionManager.releaseConnection(client);
-        resolve(data);
+        stream.on('finish', () => {
+          db.connectionManager.releaseConnection(client);
+          resolve(data);
+        });
+        output.on('data', (chunk) => (data += chunk)).pipe(stream);
+      })
+      .catch((err) => {
+        reject(err);
       });
-      output.on('data', (chunk) => (data += chunk)).pipe(stream);
-    }).catch(err => {
-      reject(err);
-    });
   });
 }
 
