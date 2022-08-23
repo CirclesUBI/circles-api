@@ -96,6 +96,7 @@ waitUntilGraphIsReady()
         cron: CRON_NIGHTLY,
       },
     });
+ 
     // Always write edges.json file on start to make sure it exists
     submitJob(tasks.exportEdges, 'exportEdges-initial');
   })
