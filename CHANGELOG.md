@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2022-08-23
+
+### Added
+
+- Update user profile endpoint [#38](https://github.com/CirclesUBI/circles-api/pull/38), [#128](https://github.com/CirclesUBI/circles-api/pull/128) 
+- Add get user email endpoint: [#128](https://github.com/CirclesUBI/circles-api/pull/128)
+
+### Changes
+
+- Update dependencies [#120](https://github.com/CirclesUBI/circles-api/pull/120), [#121](https://github.com/CirclesUBI/circles-api/pull/121), [#126](https://github.com/CirclesUBI/circles-api/pull/126)
+- Update pathfinder to latest commit [chriseth/pathfinder@41f5eda](https://github.com/chriseth/pathfinder/commit/41f5eda7941e35dc67ebdb04a842eb7d65c810ef) 
+- Change format of edges file from json to csv [#123](https://github.com/CirclesUBI/circles-api/pull/123)
+- Update circles-transfer dependency to be compatible with the new pathfinder version [#123](https://github.com/CirclesUBI/circles-api/pull/123)
+
 ## [1.6.0] - 2022-06-06
 
 ### Removed
