@@ -3,7 +3,6 @@ import { performance } from 'perf_hooks';
 
 import logger from '../helpers/logger';
 import processor from './processor';
-
 import { redisUrl, redisOptions } from '../services/redis';
 import { writeToFile } from '../services/edgesFile';
 
@@ -15,7 +14,7 @@ processor(exportEdges).process(async () => {
   // Measure time of the whole process
   const startTime = performance.now();
 
-  try{
+  try {
     // Write edges.csv
     const lines = await writeToFile();
 
