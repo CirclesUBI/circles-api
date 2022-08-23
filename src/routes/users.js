@@ -20,6 +20,12 @@ router.put(
 
 router.get('/', validate(usersValidation.findUsers), usersController.findUsers);
 
+router.post(
+  '/:safeAddress/email',
+  validate(usersValidation.getEmail),
+  usersController.getEmail,
+);
+
 router.get(
   '/:username',
   validate(usersValidation.getByUsername),
