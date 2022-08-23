@@ -23,7 +23,7 @@ processor(syncAddress).process(async (job) => {
     isSuccessful = await processTrustEvent(job.data);
   }
 
-  // Always write edges .json file afterwards
+  // Always write edges .csv file afterwards
   if (isSuccessful) {
     submitJob(
       tasks.exportEdges,

@@ -61,7 +61,7 @@ async function rebuildTrustNetwork() {
 processor(syncFullGraph).process(async () => {
   await rebuildTrustNetwork();
 
-  // Always write edges .json file afterwards
+  // Always write edges .csv file afterwards
   submitJob(tasks.exportEdges, `exportEdges-after-fullSync`);
 });
 

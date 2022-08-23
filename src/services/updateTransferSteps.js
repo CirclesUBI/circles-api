@@ -1,4 +1,4 @@
-import HubContract from 'circles-contracts/build/contracts/Hub.json';
+import HubContract from '@circles/circles-contracts/build/contracts/Hub.json';
 import findTransferSteps from '@circles/transfer';
 
 import web3 from './web3';
@@ -9,7 +9,7 @@ import submitJob from '../tasks/submitJob';
 import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 60;
-
+const FLAG = '--flowcsv';
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
@@ -39,7 +39,7 @@ async function updateSteps(result) {
     }),
   );
 
-  // Write edges.json file to update edges
+  // Write edges.csv file to update edges
   submitJob(tasks.exportEdges, 'exportEdges-findTransferSteps');
 
   return values.every((step) => step.status === 'fulfilled');
@@ -62,6 +62,7 @@ export default async function updatePath({ from, to, value }) {
           {
             edgesFile: EDGES_FILE_PATH,
             pathfinderExecutable: PATHFINDER_FILE_PATH,
+            flag: FLAG,
             timeout,
           },
         ),

@@ -4,10 +4,10 @@ import { performance } from 'perf_hooks';
 import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 60;
-
+const FLAG = '--flowcsv';
 export default async function transferSteps({ from, to, value }) {
   if (from === to) {
-    throw new Error('Can not send to yourself');
+    throw new Error('Cannot send to yourself');
   }
   const startTime = performance.now();
 
@@ -24,6 +24,7 @@ export default async function transferSteps({ from, to, value }) {
     {
       edgesFile: EDGES_FILE_PATH,
       pathfinderExecutable: PATHFINDER_FILE_PATH,
+      flag: FLAG,
       timeout,
     },
   );

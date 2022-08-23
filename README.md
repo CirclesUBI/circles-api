@@ -106,6 +106,12 @@ npm start
 npm worker:start
 ```
 
+## Pathfinder
+
+`pathfinder` is a C++ program by [chriseth](https://github.com/chriseth/pathfinder) compiled for Linux arm64 in this repository. To update the pathfinder in the api, build a native binary according to the README instructions from `chriseth` and move the target into your project.
+
+The version we are using corresponds with this commit: https://github.com/chriseth/pathfinder/commit/41f5eda7941e35dc67ebdb04a842eb7d65c810ef
+
 ## License
 
 GNU Affero General Public License v3.0 [`AGPL-3.0`]

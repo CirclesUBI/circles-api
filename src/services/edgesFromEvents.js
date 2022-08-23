@@ -1,4 +1,4 @@
-import HubContract from 'circles-contracts/build/contracts/Hub.json';
+import HubContract from '@circles/circles-contracts/build/contracts/Hub.json';
 
 import EdgeUpdateManager from './edgesUpdate';
 import logger from '../helpers/logger';

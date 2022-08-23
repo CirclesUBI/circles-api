@@ -3,12 +3,10 @@ import { performance } from 'perf_hooks';
 
 import logger from '../helpers/logger';
 import processor from './processor';
-import reduceCapacities from '../helpers/reduce';
-import { getStoredEdges } from '../services/edgesDatabase';
 import { redisUrl, redisOptions } from '../services/redis';
 import { writeToFile } from '../services/edgesFile';
 
-const exportEdges = new Queue('Export edges to json file', redisUrl, {
+const exportEdges = new Queue('Export edges to csv', redisUrl, {
   settings: redisOptions,
 });
 
@@ -16,24 +14,22 @@ processor(exportEdges).process(async () => {
   // Measure time of the whole process
   const startTime = performance.now();
 
-  // Get edges from database and write them to the .json file
-  const edges = await getStoredEdges({ hasOnlyFileFields: true });
-  // @FIXME(adz): We filter out too small edges and add a small negative buffer
-  // to the others, to work around small inaccuracies in our database with the
-  // actual trust limits on the blockchain. We plan to remove this when the
-  // trust indexing algorithm got stabilized.
-  const filteredEdges = reduceCapacities(edges);
-  await writeToFile(filteredEdges);
+  try {
+    // Write edges.csv
+    const lines = await writeToFile();
 
-  // Show metrics
-  const endTime = performance.now();
-  const milliseconds = Math.round(endTime - startTime);
+    // End time
+    const endTime = performance.now();
+    const milliseconds = Math.round(endTime - startTime);
 
-  logger.info(
-    `Written ${filteredEdges.length} of ${edges.length} edges to file in ${milliseconds}ms`,
-  );
+    // Show metrics
+    logger.info(`Written ${lines} lines edges.csv in ${milliseconds}ms`);
 
-  return Promise.resolve();
+    return Promise.resolve();
+  } catch (error) {
+    logger.error(`Export edges failed [${error.message}]`);
+    throw error;
+  }
 });
 
 export default exportEdges;
