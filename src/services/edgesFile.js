@@ -43,23 +43,28 @@ export function checkFileExists() {
 export async function writeToFile(
   tmpFileKey = web3.utils.randomHex(16).slice(2),
 ) {
+  // Create temporary file path first
+  const tmpFilePath = path.join(
+    EDGES_DIRECTORY_PATH,
+    `edges-tmp-${tmpFileKey}.csv`,
+  );
   try {
     // Check if `edges-data` folder exists and create it otherwise
     if (!fs.existsSync(EDGES_DIRECTORY_PATH)) {
       fs.mkdirSync(EDGES_DIRECTORY_PATH);
     }
-
-    // Create temporary file path first
-    const tmpFilePath = path.join(
-      EDGES_DIRECTORY_PATH,
-      `edges-tmp-${tmpFileKey}.csv`,
-    );
     // Create empty file
     fs.closeSync(fs.openSync(tmpFilePath, 'w'));
     await exportCSV(tmpFilePath);
     fs.renameSync(tmpFilePath, EDGES_FILE_PATH);
+    // count lines of final csv
     return parseInt(execSync(`wc -l ${EDGES_FILE_PATH} | awk '{ print $1 }'`));
   } catch (error) {
+    try {
+      fs.unlinkSync(tmpFilePath);
+    } catch (err) {
+      throw new Error('Could not delete temporary csv file. Error:' + err);
+    }
     throw new Error('Could not create csv file. Error:' + error);
   }
 }

@@ -15,17 +15,22 @@ processor(exportEdges).process(async () => {
   // Measure time of the whole process
   const startTime = performance.now();
 
-  // Write edges.csv
-  const lines = await writeToFile();
+  try{
+    // Write edges.csv
+    const lines = await writeToFile();
 
-  // End time
-  const endTime = performance.now();
-  const milliseconds = Math.round(endTime - startTime);
+    // End time
+    const endTime = performance.now();
+    const milliseconds = Math.round(endTime - startTime);
 
-  // Show metrics
-  logger.info(`Written ${lines} lines edges.csv in ${milliseconds}ms`);
+    // Show metrics
+    logger.info(`Written ${lines} lines edges.csv in ${milliseconds}ms`);
 
-  return Promise.resolve();
+    return Promise.resolve();
+  } catch (error) {
+    logger.error(`Export edges failed [${error.message}]`);
+    throw error;
+  }
 });
 
 export default exportEdges;
