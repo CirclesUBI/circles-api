@@ -8,7 +8,7 @@ import tasks from '../tasks';
 import submitJob from '../tasks/submitJob';
 import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
-const DEFAULT_PROCESS_TIMEOUT = 1000 * 150;
+const DEFAULT_PROCESS_TIMEOUT = 1000 * 200;
 const FLAG = '--flowcsv';
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
