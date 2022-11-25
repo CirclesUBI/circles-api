@@ -27,19 +27,19 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get ref
         id: parse_ref
         run: |
-          echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
+          echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Digital Ocean Registry login
         run: |
           doctl registry login
 
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           push: true
