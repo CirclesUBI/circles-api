@@ -45,7 +45,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
+      - name: Setup env file
+        run: cp .env.example .env
       - run: npm run db:migrate
       - run: npm run db:seed
       - run: npm test
