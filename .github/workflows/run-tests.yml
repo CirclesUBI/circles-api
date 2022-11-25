@@ -14,7 +14,7 @@ jobs:
       SAFE_DEFAULT_CALLBACK_HANDLER: '0x67B5656d60a809915323Bf2C40A8bEF15A152e3e'
       API_SERVICE_ENDPOINT: http://api.circles.local
       GRAPH_NODE_ENDPOINT: http://graph.circles.local
-      SUBGRAPH_NAME: CirclesUBI/circles-subgraph
+      SUBGRAPH_NAME: circlesubi/circles-subgraph
       ETHEREUM_NODE_WS: ws://localhost:8545
       DATABASE_SOURCE: graph
     services:
