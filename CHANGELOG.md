@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2022-11-25
+
+### Fixed
+
+- Increase timeout for finding and updating steps [#139](https://github.com/CirclesUBI/circles-api/pull/139)
+
+### Changed
+
+- Update api with safe-contract 1.3.0 [#139](https://github.com/CirclesUBI/circles-api/pull/139)
+- Bump moment-timezone from 0.5.34 to 0.5.39 [#140](https://github.com/CirclesUBI/circles-api/pull/140)
+- Bump apollo-server-core from 3.10.0 to 3.11.1 [#141](https://github.com/CirclesUBI/circles-api/pull/141)
+- Update GH action dependencies [#142](https://github.com/CirclesUBI/circles-api/pull/142)
+
 ## [1.7.0] - 2022-08-23
 
 ### Added
@@ -14,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update user profile endpoint [#38](https://github.com/CirclesUBI/circles-api/pull/38), [#128](https://github.com/CirclesUBI/circles-api/pull/128) 
 - Add get user email endpoint: [#128](https://github.com/CirclesUBI/circles-api/pull/128)
 
-### Changes
+### Changed
 
 - Update dependencies [#120](https://github.com/CirclesUBI/circles-api/pull/120), [#121](https://github.com/CirclesUBI/circles-api/pull/121), [#126](https://github.com/CirclesUBI/circles-api/pull/126)
 - Update pathfinder to latest commit [chriseth/pathfinder@41f5eda](https://github.com/chriseth/pathfinder/commit/41f5eda7941e35dc67ebdb04a842eb7d65c810ef) 
