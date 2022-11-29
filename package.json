@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@circles/core": "^3.0.0",
+    "@circles/core": "^3.1.0",
     "@circles/transfer": "^2.0.0",
     "aws-sdk": "^2.1133.0",
     "body-parser": "^1.20.0",
