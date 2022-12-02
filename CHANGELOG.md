@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.2] - 2022-12-02
+
+### Changed
+
+- Update circles-core and use the GnosisSafeL2 [#143](https://github.com/CirclesUBI/circles-api/pull/143)
+
 ## [1.7.1] - 2022-11-25
 
 ### Fixed
