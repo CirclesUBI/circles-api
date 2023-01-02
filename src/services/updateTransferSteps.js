@@ -9,7 +9,8 @@ import submitJob from '../tasks/submitJob';
 import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 200;
-const FLAG = '--flowcsv';
+const FLAG = '--csv';
+const HOPS = '10';
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
@@ -58,6 +59,7 @@ export default async function updatePath({ from, to, value }) {
             from,
             to,
             value,
+            hops: HOPS,
           },
           {
             edgesFile: EDGES_FILE_PATH,
