@@ -25,7 +25,7 @@ const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
 );
-
+const HOPS = 15;
 const stringify = fastJsonStringify({
   title: 'Circles Edges Schema',
   type: 'array',
@@ -396,7 +396,7 @@ export async function writeToFile(edges) {
   });
 }
 
-export async function transferSteps({ from, to, value }) {
+export async function transferSteps({ from, to, value, hops }) {
   if (from === to) {
     throw new Error('Can not send to yourself');
   }
