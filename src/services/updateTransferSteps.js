@@ -10,6 +10,7 @@ import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 200;
 const FLAG = '--csv';
+const HOPS = 15;
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
@@ -45,11 +46,13 @@ async function updateSteps(result) {
   return values.every((step) => step.status === 'fulfilled');
 }
 
-export default async function updatePath({ from, to, value }) {
+export default async function updatePath({ from, to, value, hops }) {
   const timeout = process.env.TRANSFER_STEPS_TIMEOUT
     ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)
     : DEFAULT_PROCESS_TIMEOUT;
-
+  if (hops === null) {
+    hops = HOPS;
+  }
   try {
     return {
       updated: await updateSteps(
