@@ -31,6 +31,7 @@ export default {
       value: Joi.string()
         .pattern(/^[0-9]+$/, { name: 'numbers' })
         .required(),
+      hops: Joi.string().pattern(/^[0-9]+$/, { name: 'numbers' }),
     }),
   },
 };
