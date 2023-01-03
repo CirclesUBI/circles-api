@@ -5,7 +5,6 @@ import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 200;
 const FLAG = '--csv';
-const HOPS = '10';
 export default async function transferSteps({ from, to, value, hops }) {
   if (from === to) {
     throw new Error('Cannot send to yourself');
@@ -21,7 +20,7 @@ export default async function transferSteps({ from, to, value, hops }) {
       from,
       to,
       value,
-      hops: HOPS,
+      hops,
     },
     {
       edgesFile: EDGES_FILE_PATH,

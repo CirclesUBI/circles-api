@@ -10,7 +10,6 @@ import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 200;
 const FLAG = '--csv';
-const HOPS = '10';
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
@@ -41,7 +40,7 @@ async function updateSteps(result) {
   );
 
   // Write edges.csv file to update edges
-  submitJob(tasks.exportEdges, 'exportEdges-findTransferSteps');
+  submitJob(tasks.exportEdges, 'exportEdges-0');
 
   return values.every((step) => step.status === 'fulfilled');
 }
@@ -59,7 +58,7 @@ export default async function updatePath({ from, to, value }) {
             from,
             to,
             value,
-            hops: HOPS,
+            hops,
           },
           {
             edgesFile: EDGES_FILE_PATH,
