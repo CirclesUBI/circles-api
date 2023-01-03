@@ -5,6 +5,7 @@ import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 200;
 const FLAG = '--csv';
+const HOPS = 15;
 export default async function transferSteps({ from, to, value, hops }) {
   if (from === to) {
     throw new Error('Cannot send to yourself');
@@ -14,7 +15,9 @@ export default async function transferSteps({ from, to, value, hops }) {
   const timeout = process.env.TRANSFER_STEPS_TIMEOUT
     ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)
     : DEFAULT_PROCESS_TIMEOUT;
-
+  if (hops === null) {
+    hops = HOPS;
+  }
   const result = await findTransferSteps(
     {
       from,

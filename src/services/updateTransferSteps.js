@@ -40,7 +40,7 @@ async function updateSteps(result) {
   );
 
   // Write edges.csv file to update edges
-  submitJob(tasks.exportEdges, 'exportEdges-0');
+  submitJob(tasks.exportEdges, 'exportEdges-update-edges');
 
   return values.every((step) => step.status === 'fulfilled');
 }
