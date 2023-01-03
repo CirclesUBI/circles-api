@@ -408,6 +408,7 @@ export async function transferSteps({ from, to, value }) {
       from,
       to,
       value,
+      hops,
     },
     {
       edgesFile: EDGES_FILE_PATH,
