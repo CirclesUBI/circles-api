@@ -14,6 +14,7 @@ import { minNumberString } from '../helpers/compare';
 import {
   EDGES_FILE_PATH,
   EDGES_TMP_FILE_PATH,
+  HOPS_DEFAULT,
   PATHFINDER_FILE_PATH,
 } from '../constants';
 
@@ -25,7 +26,7 @@ const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
 );
-const HOPS = 15;
+
 const stringify = fastJsonStringify({
   title: 'Circles Edges Schema',
   type: 'array',
@@ -396,7 +397,7 @@ export async function writeToFile(edges) {
   });
 }
 
-export async function transferSteps({ from, to, value, hops }) {
+export async function transferSteps({ from, to, value, hops = HOPS_DEFAULT }) {
   if (from === to) {
     throw new Error('Can not send to yourself');
   }
