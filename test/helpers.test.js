@@ -148,7 +148,7 @@ describe('Helpers', () => {
       expect(r('9999999999999999999')).toBe('9999899999999999999');
     });
 
-    it('should not reduce capacity when the value is the same order of magnitude as the the buffer', () => {
+    it('should not reduce capacity when the value is the same order of magnitude as the buffer', () => {
       const r = reduceCapacity;
       expect(r('10000', 5)).toBe('10000');
       expect(r('12345', 5)).toBe('12345');
