@@ -130,6 +130,7 @@ export default {
         ...req.body,
       });
       respondWithSuccess(res, result);
+
     } catch (error) {
       next(new APIError(httpStatus.UNPROCESSABLE_ENTITY, error.message));
     }
