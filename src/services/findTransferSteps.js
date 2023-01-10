@@ -24,6 +24,7 @@ export default async function transferSteps({
   const timeout = process.env.TRANSFER_STEPS_TIMEOUT
     ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)
     : DEFAULT_PROCESS_TIMEOUT;
+
   const result = await findTransferSteps(
     {
       from,
