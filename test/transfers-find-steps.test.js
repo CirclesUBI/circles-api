@@ -17,7 +17,7 @@ describe('POST /transfers - Find transfer steps', () => {
       .send({
         from: randomChecksumAddress(),
         to: randomChecksumAddress(),
-        value: 0,
+        value: '0',
       })
       .set('Accept', 'application/json')
       .expect(httpStatus.BAD_REQUEST);
