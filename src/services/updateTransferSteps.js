@@ -6,10 +6,15 @@ import EdgeUpdateManager from './edgesUpdate';
 import logger from '../helpers/logger';
 import tasks from '../tasks';
 import submitJob from '../tasks/submitJob';
-import { EDGES_FILE_PATH, PATHFINDER_FILE_PATH } from '../constants';
+import {
+  EDGES_FILE_PATH,
+  HOPS_DEFAULT,
+  PATHFINDER_FILE_PATH,
+} from '../constants';
 
 const DEFAULT_PROCESS_TIMEOUT = 1000 * 200;
-const FLAG = '--flowcsv';
+const FLAG = '--csv';
+
 const hubContract = new web3.eth.Contract(
   HubContract.abi,
   process.env.HUB_ADDRESS,
@@ -40,12 +45,17 @@ async function updateSteps(result) {
   );
 
   // Write edges.csv file to update edges
-  submitJob(tasks.exportEdges, 'exportEdges-findTransferSteps');
+  submitJob(tasks.exportEdges, 'exportEdges-updateSteps');
 
   return values.every((step) => step.status === 'fulfilled');
 }
 
-export default async function updatePath({ from, to, value }) {
+export default async function updatePath({
+  from,
+  to,
+  value,
+  hops = HOPS_DEFAULT
+}) {
   const timeout = process.env.TRANSFER_STEPS_TIMEOUT
     ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)
     : DEFAULT_PROCESS_TIMEOUT;
@@ -58,6 +68,7 @@ export default async function updatePath({ from, to, value }) {
             from,
             to,
             value,
+            hops,
           },
           {
             edgesFile: EDGES_FILE_PATH,

@@ -14,6 +14,7 @@ import { minNumberString } from '../helpers/compare';
 import {
   EDGES_FILE_PATH,
   EDGES_TMP_FILE_PATH,
+  HOPS_DEFAULT,
   PATHFINDER_FILE_PATH,
 } from '../constants';
 
@@ -396,7 +397,7 @@ export async function writeToFile(edges) {
   });
 }
 
-export async function transferSteps({ from, to, value }) {
+export async function transferSteps({ from, to, value, hops = HOPS_DEFAULT }) {
   if (from === to) {
     throw new Error('Can not send to yourself');
   }
@@ -408,6 +409,7 @@ export async function transferSteps({ from, to, value }) {
       from,
       to,
       value,
+      hops,
     },
     {
       edgesFile: EDGES_FILE_PATH,

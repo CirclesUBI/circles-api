@@ -22,4 +22,28 @@ describe('POST /transfers - Find transfer steps', () => {
       .set('Accept', 'application/json')
       .expect(httpStatus.BAD_REQUEST);
   });
+  it('should return an error when hops is not positive', async () => {
+    await request(app)
+      .post('/api/transfers')
+      .send({
+        from: randomChecksumAddress(),
+        to: randomChecksumAddress(),
+        value: '5',
+        hops: '0'
+      })
+      .set('Accept', 'application/json')
+      .expect(httpStatus.BAD_REQUEST);
+  });
+  it('should return an error when hops is empty', async () => {
+    await request(app)
+      .post('/api/transfers')
+      .send({
+        from: randomChecksumAddress(),
+        to: randomChecksumAddress(),
+        value: '5',
+        hops: ''
+      })
+      .set('Accept', 'application/json')
+      .expect(httpStatus.BAD_REQUEST);
+  });
 });

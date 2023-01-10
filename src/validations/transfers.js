@@ -31,6 +31,7 @@ export default {
       value: Joi.string()
         .pattern(/^[0-9]+$/, { name: 'numbers' })
         .required(),
+      hops: Joi.number().integer().min(1).max(100).allow(null),
     }),
   },
 };

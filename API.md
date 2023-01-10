@@ -15,12 +15,14 @@ Returns steps to transfer transitively through trust graph from one node to anot
   from: <string>,
   to: <string>,
   value: <number>,
+  hops: <number>,
 }
 ```
 
 - `from`: Sender address
 - `to`: Receiver address
 - `value`: Amount of Freckles to send between sender and receiver (the fractional monetary unit of Circles is named Freckles. One Circle = 1,000,000,000,000,000,000 Freckles (10<sup>18</sup>))
+- `hops` (optional): pathfinder2 parameter used to limit the area around the sender that is explored; the maximal "chain length"
 
 **Response:**
 
@@ -58,12 +60,14 @@ Updates the steps of a transitive transfer.
   from: <string>,
   to: <string>,
   value: <number>,
+  hops: <number>,
 }
 ```
 
 - `from`: Sender address
 - `to`: Receiver address
 - `value`: Amount of Freckles intended to be sent between sender and receiver (the fractional monetary unit of Circles is named Freckles. One Circle = 1,000,000,000,000,000,000 Freckles (10<sup>18</sup>))
+- `hops` (optional): pathfinder2 parameter used to limit the area around the sender that is explored; the maximal "chain length"
 
 **Response:**
 
