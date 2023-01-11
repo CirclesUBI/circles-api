@@ -110,7 +110,7 @@ npm worker:start
 
 `pathfinder` is a rust program by [chriseth](https://github.com/chriseth/pathfinder2) compiled for Linux arm64 in this repository. To update the pathfinder in the api, build a native binary according to the README instructions from `chriseth` and move the target into your project.
 
-The version we are using corresponds with this commit: https://github.com/chriseth/pathfinder2/commit/a677c3a9a0ea692abc69ef7095927af7e10da636
+The version we are using corresponds with this commit: https://github.com/chriseth/pathfinder2/commit/641eb7a31e8a4f3418d9b59eb97e5307a265e195
 
 ## License
 
