@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2023-01-11
+
+### Changed
+
+- Update dependencies [#144](https://github.com/CirclesUBI/circles-api/pull/144), [#155](https://github.com/CirclesUBI/circles-api/pull/155)
+- Integrate the [`pathfinder2`](https://github.com/chriseth/pathfinder2) using [`@circles/transfer@3.0.0`](https://github.com/CirclesUBI/circles-transfer/releases/tag/v3.0.0) library [#149](https://github.com/CirclesUBI/circles-api/pull/149), [#154](https://github.com/CirclesUBI/circles-api/pull/154)
+- Update tag of the docker image [#149](https://github.com/CirclesUBI/circles-api/pull/149)
+
+### Added
+
+- Add `hops` as optional parameter in the endpoints `POST /api/transfers` and `POST /api/transfers/update` [#149](https://github.com/CirclesUBI/circles-api/pull/149)
+
 ## [1.7.2] - 2022-12-02
 
 ### Changed
