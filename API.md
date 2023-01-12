@@ -14,8 +14,8 @@ Returns steps to transfer transitively through trust graph from one node to anot
 {
   from: <string>,
   to: <string>,
-  value: <number>,
-  hops: <number>,
+  value: <string>,
+  hops: <string>,
 }
 ```
 
@@ -59,8 +59,8 @@ Updates the steps of a transitive transfer.
 {
   from: <string>,
   to: <string>,
-  value: <number>,
-  hops: <number>,
+  value: <string>,
+  hops: <string>,
 }
 ```
 
