@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Reduce `HOPS_DEFAULT` to 3 for the pathfinder, and fix hops toString [#156](https://github.com/CirclesUBI/circles-api/pull/156)
+- Reduce `HOPS_DEFAULT` to 3 for the pathfinder, convert all hops to string and update api documentation [#156](https://github.com/CirclesUBI/circles-api/pull/156) [#157](https://github.com/CirclesUBI/circles-api/pull/157)
 
 ## [1.8.0] - 2023-01-11
 
