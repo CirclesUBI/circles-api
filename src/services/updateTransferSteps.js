@@ -68,7 +68,7 @@ export default async function updatePath({
             from,
             to,
             value,
-            hops,
+            hops: hops.toString(),
           },
           {
             edgesFile: EDGES_FILE_PATH,
