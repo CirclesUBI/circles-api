@@ -54,7 +54,7 @@ export default async function updatePath({
   from,
   to,
   value,
-  hops = HOPS_DEFAULT
+  hops = HOPS_DEFAULT,
 }) {
   const timeout = process.env.TRANSFER_STEPS_TIMEOUT
     ? parseInt(process.env.TRANSFER_STEPS_TIMEOUT, 10)

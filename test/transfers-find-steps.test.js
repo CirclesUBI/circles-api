@@ -29,7 +29,7 @@ describe('POST /transfers - Find transfer steps', () => {
         from: randomChecksumAddress(),
         to: randomChecksumAddress(),
         value: '5',
-        hops: '0'
+        hops: '0',
       })
       .set('Accept', 'application/json')
       .expect(httpStatus.BAD_REQUEST);
@@ -41,7 +41,7 @@ describe('POST /transfers - Find transfer steps', () => {
         from: randomChecksumAddress(),
         to: randomChecksumAddress(),
         value: '5',
-        hops: ''
+        hops: '',
       })
       .set('Accept', 'application/json')
       .expect(httpStatus.BAD_REQUEST);

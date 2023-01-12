@@ -14,7 +14,7 @@ export default async function transferSteps({
   from,
   to,
   value,
-  hops = HOPS_DEFAULT
+  hops = HOPS_DEFAULT,
 }) {
   if (from === to) {
     throw new Error('Cannot send to yourself');
