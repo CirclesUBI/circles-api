@@ -30,7 +30,7 @@ export default async function transferSteps({
       from,
       to,
       value,
-      hops,
+      hops: hops.toString(),
     },
     {
       edgesFile: EDGES_FILE_PATH,
