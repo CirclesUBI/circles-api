@@ -13,9 +13,9 @@ router.put(
 );
 
 router.post(
-  '/update',
+  '/update/:safeAddress',
   validate(transfersValidation.findTransferSteps),
-  transfersController.updateTransferSteps,
+  transfersController.updateAllEdgesSafe,
 );
 
 router.post(

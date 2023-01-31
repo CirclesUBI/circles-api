@@ -1,23 +1,23 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
-import { mockGraphSafes } from './utils/mocks';
+import { mockGraphSafes, mockGraphUsers } from './utils/mocks';
 import { randomChecksumAddress } from './utils/common';
 
 import app from '~';
 
-describe('POST /transfers/update - Update transfer steps', () => {
+describe('POST /transfers/update/:safeAddress - Update edges for safe', () => {
   beforeAll(async () => {
     mockGraphSafes();
   });
 
   it('should return an error when value is not positive', async () => {
+    const safeAddress = randomChecksumAddress();
+
     await request(app)
-      .post('/api/transfers/update')
+      .post(`/api/transfers/update/${safeAddress}`)
       .send({
-        from: randomChecksumAddress(),
-        to: randomChecksumAddress(),
-        value: 0,
+        safeAddress: safeAddress(),
       })
       .set('Accept', 'application/json')
       .expect(httpStatus.BAD_REQUEST);

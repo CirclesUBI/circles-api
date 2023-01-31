@@ -4,6 +4,7 @@ import APIError from '../helpers/errors';
 import Transfer from '../models/transfers';
 import transferSteps from '../services/findTransferSteps';
 import updatePath from '../services/updateTransferSteps';
+import updateAllEdges from '../services/updateTransferSteps';
 import { checkFileExists } from '../services/edgesFile';
 import { checkSignature } from '../helpers/signature';
 import { requestGraph } from '../services/graph';
@@ -136,6 +137,24 @@ export default {
     }
   },
 
+  updateAllEdgesSafe: async (req, res, next) => {
+    if (!checkIfExists()) {
+      next(
+        APIError(
+          httpStatus.SERVICE_UNAVAILABLE,
+          'Trust network file does not exists',
+        ),
+      );
+    }
+    try {
+      const result = await updateAllEdges({
+        ...req.body,
+      });
+      respondWithSuccess(res, result);
+    } catch (error) {
+      next(new APIError(httpStatus.UNPROCESSABLE_ENTITY, error.message));
+    }
+  },
   updateTransferSteps: async (req, res, next) => {
     if (!checkFileExists()) {
       next(
