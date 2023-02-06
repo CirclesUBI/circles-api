@@ -6,7 +6,6 @@ import EdgeUpdateManager from './edgesUpdate';
 import logger from '../helpers/logger';
 import tasks from '../tasks';
 import submitJob from '../tasks/submitJob';
-
 import {
   EDGES_FILE_PATH,
   HOPS_DEFAULT,
