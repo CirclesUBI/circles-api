@@ -17,10 +17,16 @@ const News = db.define('news', {
     validate: {
       notEmpty: true,
     },
+    defaultValue: Sequelize.NOW,
   },
   icon_id: {
     type: Sequelize.INTEGER,
     allowNull: false,
+  },
+  active: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
   },
 });
 
