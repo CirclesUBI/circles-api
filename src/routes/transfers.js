@@ -13,7 +13,7 @@ router.put(
 );
 
 router.post(
-  '/update/:safeAddress',
+  '/update',
   validate(transfersValidation.findTransferSteps),
   transfersController.updateAllEdgesSafe,
 );
