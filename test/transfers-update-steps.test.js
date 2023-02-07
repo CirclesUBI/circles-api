@@ -1,31 +1,25 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
-import { mockGraphSafes, mockGraphUsers } from './utils/mocks';
+import { mockGraphSafes } from './utils/mocks';
 import { randomChecksumAddress } from './utils/common';
-import { ZERO_ADDRESS } from '../src/constants';
+
 import app from '~';
 
-describe('POST /transfers/update/:safeAddress - Update edges for safe', () => {
+describe('POST /transfers/update - Update transfer steps', () => {
   beforeAll(async () => {
     mockGraphSafes();
   });
-  it('should fail when using the zero address', async () => {
+
+  it('should return an error when value is not positive', async () => {
     await request(app)
-      .post(`/api/transfers/update`)
+      .post('/api/transfers/update')
       .send({
-        safeAddress: ZERO_ADDRESS,
+        from: randomChecksumAddress(),
+        to: randomChecksumAddress(),
+        value: 0,
       })
       .set('Accept', 'application/json')
-      .expect(httpStatus.NOT_ACCEPTABLE);
-  });
-  it('should return ok even if limit is not passed', async () => {
-    await request(app)
-      .post(`/api/transfers/update`)
-      .send({
-        safeAddress: randomChecksumAddress(),
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.OK);
+      .expect(httpStatus.BAD_REQUEST);
   });
 });
