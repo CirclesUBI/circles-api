@@ -19,7 +19,7 @@ module.exports = {
         type: Sequelize.TEXT,
       },
       date: {
-        type: Sequelize.STRING,
+        type: Sequelize.DATE,
         allowNull: false,
         validate: {
           notEmpty: true,
