@@ -138,7 +138,7 @@ export default {
   },
 
   updateAllEdgesSafe: async (req, res, next) => {
-    if (!checkIfExists()) {
+    if (!checkFileExists()) {
       next(
         APIError(
           httpStatus.SERVICE_UNAVAILABLE,
