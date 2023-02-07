@@ -34,10 +34,11 @@ async function updateEdges(edges) {
 }
 
 // Get edges given an address and its limit
-async function getUserEdges(safeAddress, limit) {
+async function getUserEdges(safeAddress, limit, offset) {
   return await Edge.findAll({
-    order: [['updatedAt', 'ASC']],
+    order: [['id', 'ASC']],
     limit: limit,
+    offset: offset,
     raw: true,
     where: {
       [Op.or]: [{ from: safeAddress }, { to: safeAddress }],
@@ -45,31 +46,15 @@ async function getUserEdges(safeAddress, limit) {
   });
 }
 
-async function updateSafeEdges(safeAddress, limit = 10000) {
-  // Retrieve all the edges from the db in batches
-  // This function iterates over all the edges sorted by updatedAt
-  // The stop condition of the loop is when the last updated edge
-  // is updated in the present date
-  let isOld = true;
-  let count = 0;
-  while (isOld) {
-    const edges = await getUserEdges(limit, safeAddress);
+async function updateSafeEdges(safeAddress) {
+  // Query data from DB in batches and from the last batch
+  let limit = 10000;
+  let offset = 0;
+  const edges = await getUserEdges(safeAddress, limit, offset);
+  if (edges <= limit) {
     await updateEdges(edges);
-    count++;
-    const date1 = edges[0].updatedAt;
-    const date2 = new Date(Date.now());
-    const date1utc = Date.UTC(
-      date1.getFullYear(),
-      date1.getMonth(),
-      date1.getDate(),
-    );
-    const date2utc = Date.UTC(
-      date2.getFullYear(),
-      date2.getMonth(),
-      date2.getDate(),
-    );
-    const difference = (date2utc - date1utc) / day;
-    isOld = difference > 0;
+  } else {
+    offset += limit;
   }
 }
 
