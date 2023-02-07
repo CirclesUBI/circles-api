@@ -2,6 +2,7 @@ import express from 'express';
 import httpStatus from 'http-status';
 
 import APIError from '../helpers/errors';
+import newsRouter from './news';
 import transfersRouter from './transfers';
 import uploadsRouter from './uploads';
 import usersRouter from './users';
@@ -13,6 +14,7 @@ router.get('/', (req, res) => {
   respondWithSuccess(res);
 });
 
+router.use('/news', newsRouter);
 router.use('/transfers', transfersRouter);
 router.use('/uploads', uploadsRouter);
 router.use('/users', usersRouter);
