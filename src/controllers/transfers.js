@@ -4,7 +4,7 @@ import APIError from '../helpers/errors';
 import Transfer from '../models/transfers';
 import transferSteps from '../services/findTransferSteps';
 import updatePath from '../services/updateTransferSteps';
-import updateAllEdges from '../services/updateTransferSteps';
+import updateAllEdges from '../services/updateSafeEdges';
 import { checkFileExists } from '../services/edgesFile';
 import { checkSignature } from '../helpers/signature';
 import { requestGraph } from '../services/graph';
