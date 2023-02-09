@@ -18,7 +18,11 @@ router.post(
   transfersController.updateTransferSteps,
 );
 
-router.post('/update/edges', transfersController.updateAllEdgesSafe);
+router.post(
+  '/update/edges',
+  validate(transfersValidation.updateSafeEdges),
+  transfersController.updateAllEdgesSafe,
+);
 
 router.post(
   '/:transactionHash',

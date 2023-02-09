@@ -9,6 +9,7 @@ import { checkFileExists } from '../services/edgesFile';
 import { checkSignature } from '../helpers/signature';
 import { requestGraph } from '../services/graph';
 import { respondWithSuccess } from '../helpers/responses';
+import logger from '../helpers/logger';
 
 function prepareTransferResult(response) {
   return {
@@ -138,6 +139,7 @@ export default {
   },
 
   updateAllEdgesSafe: async (req, res, next) => {
+    const { safeAddress } = req.body;
     if (!checkFileExists()) {
       next(
         APIError(
@@ -147,14 +149,14 @@ export default {
       );
     }
     try {
-      const result = await updateAllEdges({
-        ...req.body,
-      });
+      logger.info(req.body);
+      const result = await updateAllEdges(safeAddress);
       respondWithSuccess(res, result);
     } catch (error) {
       next(new APIError(httpStatus.UNPROCESSABLE_ENTITY, error.message));
     }
   },
+
   updateTransferSteps: async (req, res, next) => {
     if (!checkFileExists()) {
       next(

@@ -13,7 +13,6 @@ const hubContract = new web3.eth.Contract(
 const { Edge } = require('../models/edges');
 
 const { Op } = require('sequelize');
-const day = 1000 * 60 * 60 * 24;
 
 // Update given edges
 async function updateEdges(edges) {
@@ -47,10 +46,13 @@ async function getUserEdges(safeAddress, limit, offset) {
 }
 
 async function updateSafeEdges(safeAddress) {
+  logger.info('In updateSafeEdges');
   // Query data from DB in batches and from the last batch
   let limit = 10000;
   let offset = 0;
   const edges = await getUserEdges(safeAddress, limit, offset);
+  logger.info('edges', edges);
+  logger.info(edges);
   if (edges <= limit) {
     await updateEdges(edges);
   } else {
@@ -58,12 +60,14 @@ async function updateSafeEdges(safeAddress) {
   }
 }
 
-export default async function updateAllEdges({ safeAddress, limit }) {
+export default async function updateAllEdges(safeAddress) {
   try {
+    logger.error('updateAllEdges');
     return {
-      updated: await updateSafeEdges(safeAddress, limit),
+      updated: await updateSafeEdges(safeAddress),
     };
   } catch (error) {
+    logger.error('pdateSafeEdges(safeAddres)');
     logger.error(
       `Error updating edges [${error.message}] for safe ${safeAddress}`,
     );

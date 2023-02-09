@@ -34,4 +34,9 @@ export default {
       hops: Joi.number().integer().min(1).max(100).allow(null),
     }),
   },
+  updateSafeEdges: {
+    body: Joi.object({
+      address: customJoi.web3().address().addressChecksum().required(),
+    }),
+  },
 };
