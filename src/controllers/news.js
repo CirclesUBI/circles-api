@@ -1,17 +1,29 @@
 import News from '../models/news';
 import { respondWithSuccess } from '../helpers/responses';
 
+function prepareNewsResult(response) {
+  return {
+    iconId: response.iconId,
+    message: {
+      en: response.message_en,
+    },
+    date: response.date,
+  };
+}
 
 async function resolveBatch(req, res, next) {
-  const { username, address } = req.query;
+  const { active, limit, offset } = req.query;
 
-  User.findAll({
+  News.findAll({
     where: {
-      active: true,
+      active: active || true ,
     },
+    order: [['date', 'DESC']],
+    limit: limit || 10,
+    offset: offset || 0,
   })
     .then((response) => {
-      respondWithSuccess(res, response);
+      respondWithSuccess(res, response.map(prepareNewsResult));
     })
     .catch((err) => {
       next(err);
@@ -19,17 +31,19 @@ async function resolveBatch(req, res, next) {
 }
 
 async function findByDate(req, res, next) {
-  const { query } = req.query;
+  const { active, afterDate, limit, offset } = req.query;
 
   News.findAll({
     where: {
-      date: ..., // TODO (and active==true)
+      active: active || true ,
+      date: { [Op.gte]: afterDate },
     },
-    order: [['date', 'ASC']], // Review
-    limit: 10, // Review
+    order: [['date', 'DESC']],
+    limit: limit || 10,
+    offset: offset || 0,
   })
     .then((response) => {
-      respondWithSuccess(res, response);
+      respondWithSuccess(res, response.map(prepareNewsResult));
     })
     .catch((err) => {
       next(err);
@@ -39,10 +53,9 @@ async function findByDate(req, res, next) {
 export default {
 
   findNews: async (req, res, next) => {
-    if (req.query.date) {
+    if (req.query.query) {
       return await findByDate(req, res, next);
     }
-
     return await resolveBatch(req, res, next);
   },
 };
