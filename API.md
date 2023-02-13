@@ -379,3 +379,36 @@ Get the email from the entry of the `safeAddress` in the database.
 - `400` Parameters missing or malformed
 - `403` Verification failed
 - `404` User entry not found
+
+### Search news database by date
+
+Find news in the database.
+
+**Request:**
+
+`GET /api/news?active=<boolean>&afterDate=<Date>&limit=<int>&offset=<int>`
+
+**Response:**
+
+```
+{
+  status: 'ok',
+  data: [
+    {
+      iconId: <int>,
+      message: {
+        en: <string>,
+      },
+      date: <date>,
+    },
+    {
+      [...]
+    },
+    [...]
+  ]
+}
+```
+
+**Errors:**
+
+When no news was found an empty response will be returned.
