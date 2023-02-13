@@ -148,7 +148,7 @@ Returns stored transfer meta data including the payment note. This data is only 
 - `403` Verification failed or not allowed to read data
 - `404` Transaction hash not found
 
-### Get entry by username
+### Get user entry by username
 
 Get the users entry including its `safeAddress`.
 
@@ -174,7 +174,7 @@ Get the users entry including its `safeAddress`.
 
 - `404` Not found
 
-### Search database by usernames
+### Search users database by usernames
 
 Find a user in the database.
 
@@ -206,7 +206,7 @@ Find a user in the database.
 
 When no user was found an empty response will be returned.
 
-### Get multiple entries by username / address
+### Get multiple user entries by username / address
 
 Resolve multiple usernames (via `username[]`) and/or Safe addresses (via `address[]`) in a batch.
 
@@ -263,7 +263,7 @@ Do a dry-run to check if `email` and `username` fields are valid before creating
 - `400` Parameters missing or malformed
 - `409` Entry already exists
 
-### Create new entry
+### Create new user entry
 
 **Request:**
 
@@ -307,7 +307,7 @@ Create a new entry in the database, connecting a `username` with a `safeAddress`
 - `403` Verification failed
 - `409` Entry already exists
 
-### Update entry
+### Update user entry
 
 **Request:**
 
@@ -349,7 +349,7 @@ Update (or create) an entry in the database, connecting a `username` with a `saf
 - `403` Verification failed
 - `409` Entry already exists
 
-### Get email
+### Get user email
 
 **Request:**
 
