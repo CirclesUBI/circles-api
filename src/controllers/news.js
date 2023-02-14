@@ -1,3 +1,5 @@
+import { Op } from 'sequelize';
+
 import News from '../models/news';
 import { respondWithSuccess } from '../helpers/responses';
 
