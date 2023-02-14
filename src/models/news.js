@@ -19,11 +19,11 @@ const News = db.define('news', {
     },
     defaultValue: Sequelize.NOW,
   },
-  icon_id: {
+  iconId: {
     type: Sequelize.INTEGER,
     allowNull: false,
   },
-  active: {
+  isActive: {
     type: Sequelize.BOOLEAN,
     allowNull: false,
     defaultValue: true,

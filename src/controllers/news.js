@@ -14,11 +14,16 @@ function prepareNewsResult(response) {
 }
 
 async function resolveBatch(req, res, next) {
-  const { active, limit, offset } = req.query;
+  const { isActive, limit, offset } = req.query;
+
+  let activeBool = true;
+  if (isActive === false){
+    activeBool = false;
+  }
 
   News.findAll({
     where: {
-      active: active || true ,
+      isActive: activeBool,
     },
     order: [['date', 'DESC']],
     limit: limit || 10,
@@ -33,12 +38,16 @@ async function resolveBatch(req, res, next) {
 }
 
 async function findByDate(req, res, next) {
-  const { active, afterDate, limit, offset } = req.query;
+  const { isActive, afterDate, limit, offset } = req.query;
+  const activeBool = true;
+  if (isActive && isActive === 'false'){
+    activeBool = false;
+  }
 
   News.findAll({
     where: {
-      active: active || true ,
-      date: { [Op.gte]: afterDate },
+      isActive: activeBool,
+      date: { [Op.gte]: new Date(afterDate) },
     },
     order: [['date', 'DESC']],
     limit: limit || 10,
