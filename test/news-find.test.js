@@ -21,7 +21,7 @@ beforeAll(async () => {
         message_en,
         date: date.toISOString(),
         iconId,
-      })
+      });
 
       news.push({
         id: newsInstance.dataValues.id,
@@ -59,7 +59,7 @@ describe('GET /news/?afterDate=... - Search via date', () => {
   });
 
   it('should return all matching news ordered by the most recent first', async () => {
-    const resp = await request(app)
+    await request(app)
       .get(`/api/news/?afterDate=${news[3].date}`)
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
@@ -75,7 +75,7 @@ describe('GET /news/?afterDate=... - Search via date', () => {
   });
 
   it('should return all matching news with pagination', async () => {
-    const resp = await request(app)
+    await request(app)
       .get(`/api/news/?afterDate=${news[1].date}&limit=2&offset=1`)
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
@@ -108,7 +108,6 @@ describe('GET /news/?afterDate=... - Search via date', () => {
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
-        console.log({body});
         if (body.data.length !== 0) {
           throw new Error('Invalid entries found');
         }
