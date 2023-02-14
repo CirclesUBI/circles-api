@@ -64,7 +64,7 @@ async function findByDate(req, res, next) {
 export default {
 
   findNews: async (req, res, next) => {
-    if (req.query.query) {
+    if (req.query.afterDate) {
       return await findByDate(req, res, next);
     }
     return await resolveBatch(req, res, next);
