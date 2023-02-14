@@ -17,7 +17,7 @@ async function resolveBatch(req, res, next) {
   const { isActive, limit, offset } = req.query;
 
   let activeBool = true;
-  if (isActive === false){
+  if (isActive === false) {
     activeBool = false;
   }
 
@@ -39,8 +39,9 @@ async function resolveBatch(req, res, next) {
 
 async function findByDate(req, res, next) {
   const { isActive, afterDate, limit, offset } = req.query;
-  const activeBool = true;
-  if (isActive && isActive === 'false'){
+
+  let activeBool = true;
+  if (isActive === false) {
     activeBool = false;
   }
 
@@ -62,7 +63,6 @@ async function findByDate(req, res, next) {
 }
 
 export default {
-
   findNews: async (req, res, next) => {
     if (req.query.afterDate) {
       return await findByDate(req, res, next);
