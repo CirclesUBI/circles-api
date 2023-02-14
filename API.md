@@ -386,7 +386,7 @@ Find news in the database.
 
 **Request:**
 
-`GET /api/news?active=<boolean>&afterDate=<Date>&limit=<int>&offset=<int>`
+`GET /api/news?isActive=<boolean>&afterDate=<Date>&limit=<int>&offset=<int>`
 
 **Response:**
 
@@ -411,4 +411,4 @@ Find news in the database.
 
 **Errors:**
 
-When no news was found an empty response will be returned.
+When no news were found an empty response will be returned.
