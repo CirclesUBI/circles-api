@@ -3,10 +3,10 @@ import { Joi } from 'celebrate';
 export default {
   findNews: {
     query: Joi.object({
-      isActive: Joi.boolean(),
+      isActive: Joi.boolean().default(true),
       afterDate: Joi.date(),
-      limit: Joi.number().integer(),
-      offset: Joi.number().integer(),
+      limit: Joi.number().integer().default(10),
+      offset: Joi.number().integer().default(0),
     }),
   },
 };
