@@ -102,7 +102,7 @@ describe('GET /news/?afterDate=... - Search via date', () => {
       });
   });
 
-  it('should fail silently when no items were found (because no inactive users)', async () => {
+  it('should fail silently when no items were found (because no inactive news items)', async () => {
     await request(app)
       .get('/api/news/?isActive=false')
       .set('Accept', 'application/json')
