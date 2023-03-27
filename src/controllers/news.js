@@ -10,6 +10,7 @@ function prepareNewsResult(response) {
       en: response.message_en,
     },
     date: response.date,
+    isActive: response.isActive,
   };
 }
 

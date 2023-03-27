@@ -21,6 +21,7 @@ beforeAll(async () => {
         message_en,
         date: date.toISOString(),
         iconId,
+        isActive: index !== 2, // Only one news in inactive
       });
 
       news.push({
@@ -46,13 +47,13 @@ afterAll(async () => {
 });
 
 describe('GET /news/?afterDate=... - Search via date', () => {
-  it('should return all news', async () => {
+  it('should return active news by default', async () => {
     await request(app)
       .get('/api/news')
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
-        if (body.data.length !== NUM_TEST_NEWS) {
+        if (body.data.length !== NUM_TEST_NEWS - 1) {
           throw new Error('Did not return all expected entries');
         }
       });
@@ -102,25 +103,28 @@ describe('GET /news/?afterDate=... - Search via date', () => {
       });
   });
 
-  it('should fail silently when no items were found (because no inactive news items)', async () => {
+  it('should return inactive news when asking for inactive news', async () => {
     await request(app)
       .get('/api/news/?isActive=false')
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
-        if (body.data.length !== 0) {
+        if (body.data.length !== 1 || body.data[0].isActive !== false) {
           throw new Error('Invalid entries found');
         }
       });
   });
 
-  it('should return all news when asking for active news', async () => {
+  it('should return active news when asking for active news', async () => {
     await request(app)
       .get('/api/news/?isActive=true')
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
-        if (body.data.length !== NUM_TEST_NEWS) {
+        if (
+          body.data.length !== NUM_TEST_NEWS - 1 ||
+          body.data[0].isActive !== true
+        ) {
           throw new Error('Did not return all expected entries');
         }
       });
