@@ -424,6 +424,7 @@ export async function transferSteps({ from, to, value, hops = HOPS_DEFAULT }) {
     from,
     to,
     maxFlowValue: result.maxFlowValue,
+    numberOfSteps: result.numberOfSteps,
     processDuration: Math.round(endTime - startTime),
     transferValue: value,
     transferSteps: result.transferSteps.map(({ token, ...step }) => {
