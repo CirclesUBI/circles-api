@@ -46,6 +46,7 @@ export default async function transferSteps({
     from,
     to,
     maxFlowValue: result.maxFlowValue,
+    numberOfSteps: result.numberOfSteps,
     processDuration: Math.round(endTime - startTime),
     transferValue: value,
     transferSteps: result.transferSteps.map(({ token, ...step }) => {
