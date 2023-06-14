@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2023-06-14
+
+### Added
+
+- New API endpoint: search news database [#164](https://github.com/CirclesUBI/circles-api/pull/164)
+
+### Changed
+
+- Update dependencies [#162](https://github.com/CirclesUBI/circles-api/pull/162) [#178](https://github.com/CirclesUBI/circles-api/pull/178) [#179](https://github.com/CirclesUBI/circles-api/pull/179) [#180](https://github.com/CirclesUBI/circles-api/pull/180) [#181](https://github.com/CirclesUBI/circles-api/pull/181) [#183](https://github.com/CirclesUBI/circles-api/pull/183)
+
+- Update to Node 16 [#178](https://github.com/CirclesUBI/circles-api/pull/178)
+
 ## [1.8.1] - 2023-01-12
 
 ### Changed
