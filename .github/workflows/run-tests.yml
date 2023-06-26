@@ -19,7 +19,7 @@ jobs:
       DATABASE_SOURCE: graph
     services:
       redis:
-        image: redis
+        image: redis:6-alpine
       postgres:
         image: postgres
         env:
