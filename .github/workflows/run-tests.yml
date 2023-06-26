@@ -18,6 +18,8 @@ jobs:
       ETHEREUM_NODE_WS: ws://localhost:8545
       DATABASE_SOURCE: graph
     services:
+      redis:
+        image: redis
       postgres:
         image: postgres
         env:
