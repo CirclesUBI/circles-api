@@ -62,6 +62,7 @@ describe('GET /news/?afterDate=... - Search via date', () => {
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
+        console.log(body);
         if (
           body.data.length !== 1 ||
           body.data[0].message.en !== news[4].message_en ||
