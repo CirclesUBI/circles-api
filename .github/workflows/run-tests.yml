@@ -9,7 +9,7 @@ jobs:
         ports:
           - 6379:6379
       postgres:
-        image: postgres
+        image: postgres:12-alpine
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -34,7 +34,7 @@ jobs:
           node-version: '${{ steps.nvmrc.outputs.NODE_VERSION }}'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Setup env file
         run: cp .env.example .env
       - run: npm run db:migrate
