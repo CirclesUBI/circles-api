@@ -58,13 +58,12 @@ describe('GET /news/?afterDate=... - Search via date', () => {
 
   it('should return all matching news ordered by the most recent first', async () => {
     await request(app)
-      .get(`/api/news/?afterDate=${news[3].date}`)
+      .get(`/api/news/?afterDate=${news[2].date}`)
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
-        console.log(body);
         if (
-          body.data.length !== 1 ||
+          body.data.length !== 2 ||
           body.data[0].message.en !== news[4].message_en ||
           body.data[0].iconId !== news[4].iconId
         ) {
