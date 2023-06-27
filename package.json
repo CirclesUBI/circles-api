@@ -28,7 +28,7 @@
     "serve": "cross-env NODE_ENV=development babel-node ./src/index.js --source-maps inline",
     "serve:all": "concurrently --prefix '{pid}-{name}' --names 'API,WORKERS' --kill-others 'npm run serve' 'npm run worker:serve'",
     "start": "cross-env NODE_ENV=production node ./build/index.js",
-    "test": "cross-env NODE_ENV=test jest --forceExit --detectOpenHandles",
+    "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "npm run test -- --watch",
     "watch": "nodemon --watch ./src --exec npm run serve",
     "watch:all": "concurrently --prefix '{pid}-{name}' --names 'API,WORKERS' --kill-others 'npm run watch' 'npm run worker:watch'",
