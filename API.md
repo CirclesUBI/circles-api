@@ -385,8 +385,8 @@ Get the email from the entry of the `safeAddress` in the database.
 Resolves multiple news items starting from newest item in the database, via:
 - `isActive` specifies whether only active or only inactive items should be returned (default true)
 - `afterDate` sets a past limit in time before which no news items are included. The response will include news on the exact "afterDate"-date. (default no limit)
-- `limit` the maximum number of items returned
-- `offset` skips that number of the filtered latest items
+- `limit` the maximum number of items returned (default 10)
+- `offset` skips that number of the filtered latest items (default 0)
 
 **Request:**
 
