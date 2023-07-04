@@ -22,6 +22,10 @@ var options = {
   },
 };
 
+const web3Ws = new Web3(
+  new Web3WsProvider(process.env.ETHEREUM_NODE_WS, options),
+);
+
 export async function checkConnection() {
   return (await web3.eth.getBlock('latest')).number;
 }
@@ -34,10 +38,6 @@ export function getEventSignature(contract, eventName) {
 }
 
 export function subscribeEvent(contract, address, eventName, callbackFn) {
-  const web3Ws = new Web3(
-    new Web3WsProvider(process.env.ETHEREUM_NODE_WS, options),
-  );
-
   const handleCallback = (error, result) => {
     if (error) {
       logger.error(`Web3 subscription error: ${error}`);
