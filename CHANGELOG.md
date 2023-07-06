@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.9.1] - 2023-07-06
+
+### Changed
+
+- Use `http` for the blockchain connection when `ws` not necessary [#186](https://github.com/CirclesUBI/circles-api/pull/186)
+- Use `node-version-file` option in `actions/setup-node@v3` [#190](https://github.com/CirclesUBI/circles-api/pull/190)
+- Update dependencies: Bump `fast-xml-parser` and `@aws-sdk/client-s3` [#191](https://github.com/CirclesUBI/circles-api/pull/191)
+
+### Fixed
+
+- Fix node version in Dockerfile [#189](https://github.com/CirclesUBI/circles-api/pull/189)
+
 ## [1.9.0] - 2023-06-14
 
 ### Added
