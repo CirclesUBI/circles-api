@@ -1,21 +1,12 @@
 module.exports = {
   up: async (queryInterface) => {
-    await queryInterface.addIndex(
-      'users',
-      ['username', 'safeAddress', 'email', 'avatarUrl'],
-      {
-        name: 'users_unique',
-        unique: true,
-        concurrently: true,
-      },
-    );
+    await queryInterface.addIndex('users', ['username'], {
+      name: 'IX_users_name',
+      unique: true,
+      concurrently: true,
+    });
   },
   down: async (queryInterface) => {
-    await queryInterface.removeIndex('users', [
-      'username',
-      'safeAddress',
-      'email',
-      'avatarUrl',
-    ]);
+    await queryInterface.removeIndex('users', ['username']);
   },
 };
