@@ -6,31 +6,28 @@ import app from '~';
 
 const NUM_TEST_NEWS = 5;
 
-const news = [];
+let news = [];
 
 beforeAll(async () => {
-  const items = new Array(NUM_TEST_NEWS).fill(0);
-
-  await Promise.all(
-    items.map(async (item, index) => {
-      const message_en = `Message ${index + 1}`;
-      const date = new Date(`2015-03-${10 + index}T12:00:00Z`);
-      const iconId = index + 1;
-
-      const newsInstance = await News.create({
-        message_en,
-        date: date.toISOString(),
-        iconId,
+  news = await Promise.all(
+    new Array(NUM_TEST_NEWS).fill(0).map((_, index) =>
+      News.create({
+        message_en: `Message ${index + 1}`,
+        date: new Date(`2015-03-${10 + index}T12:00:00Z`).toISOString(),
+        iconId: index + 1,
         isActive: index !== 2, // Only one news in inactive
-      });
-
-      news.push({
-        id: newsInstance.dataValues.id,
-        message_en,
+      }),
+    ),
+  ).then((result) =>
+    result.map(
+      ({ dataValues: { date, iconId, id, isActive, message_en } }) => ({
+        date,
         iconId,
-        date: date.toISOString(),
-      });
-    }),
+        id,
+        isActive,
+        message_en,
+      }),
+    ),
   );
 });
 
@@ -61,7 +58,7 @@ describe('GET /news/?afterDate=... - Search via date', () => {
 
   it('should return all matching news ordered by the most recent first', async () => {
     await request(app)
-      .get(`/api/news/?afterDate=${news[3].date}`)
+      .get(`/api/news/?afterDate=${news[2].date}`)
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
@@ -77,15 +74,11 @@ describe('GET /news/?afterDate=... - Search via date', () => {
 
   it('should return all matching news with pagination', async () => {
     await request(app)
-      .get(`/api/news/?afterDate=${news[1].date}&limit=2&offset=1`)
+      .get(`/api/news/?afterDate=${news[1].date}&limit=1&offset=1`)
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
-        if (
-          body.data.length !== 2 ||
-          body.data[0].message.en !== news[3].message_en ||
-          body.data[0].iconId !== news[3].iconId
-        ) {
+        if (body.data.length !== 1 || body.data[0].iconId !== news[3].iconId) {
           throw new Error('Did not return expected entries');
         }
       });

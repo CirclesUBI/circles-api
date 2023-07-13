@@ -7,11 +7,12 @@ import db from './database';
 import logger from './helpers/logger';
 import tasks from './tasks';
 import submitJob from './tasks/submitJob';
-import web3, {
+import web3 from './services/web3';
+import {
   checkConnection,
   getEventSignature,
   subscribeEvent,
-} from './services/web3';
+} from './services/web3Ws';
 import { waitUntilGraphIsReady } from './services/graph';
 
 const CRON_NIGHTLY = '0 0 0 * * *';
