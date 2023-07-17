@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.2] - 2023-07-10
+
+### Added
+
+- Add index for username and safe address in users table [#19](https://github.com/CirclesUBI/circles-api/pull/195)
 
 ## [1.9.1] - 2023-07-06
 
