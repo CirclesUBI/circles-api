@@ -1,3 +1,4 @@
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import httpStatus from 'http-status';
 import mime from 'mime';
 
@@ -24,18 +25,17 @@ export default {
       const { buffer, fileName, fileType } = req.locals.images[FIELD_NAME][0];
       const key = `uploads/avatars/${fileName}`;
 
-      await s3
-        .putObject({
-          Bucket: bucket,
-          Key: key,
-          Body: buffer,
-          ACL: 'public-read',
-          ContentType: mime.getType(fileType),
-        })
-        .promise();
+      const params = {
+        Bucket: bucket, // The name of the bucket.
+        Key: key, // The name of the object.
+        Body: buffer, // The content of the object.
+        ACL: 'public-read',
+        ContentType: mime.getType(fileType),
+      };
 
+      const results = await s3.send(new PutObjectCommand(params));
       respondWithSuccess(
-        res,
+        results,
         {
           url: `https://${bucket}.s3.amazonaws.com/${key}`,
           fileName,

@@ -7,6 +7,7 @@ import { EDGES_FILE_PATH } from '../constants';
 import { checkFileExists } from '../services/edgesFile';
 import { redisUrl, redisOptions } from '../services/redis';
 import { s3 } from '../services/aws';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 
 const uploadEdgesS3 = new Queue('Upload edges to S3 storage', redisUrl, {
   settings: redisOptions,
@@ -19,16 +20,13 @@ processor(uploadEdgesS3).process(async () => {
   }
 
   const edges = fs.readFileSync(EDGES_FILE_PATH);
-
-  return await s3
-    .putObject({
-      Bucket: process.env.AWS_S3_BUCKET_TRUST_NETWORK,
-      Key: `${new Date()}.csv`,
-      Body: edges,
-      ACL: 'public-read',
-      ContentType: 'application/json',
-    })
-    .promise();
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_TRUST_NETWORK,
+    Key: `${new Date()}.csv`,
+    Body: edges,
+    ACL: 'public-read',
+    ContentType: 'application/json',
+  };
+  return await s3.send(new PutObjectCommand(params));
 });
-
 export default uploadEdgesS3;
