@@ -33,9 +33,9 @@ export default {
         ContentType: mime.getType(fileType),
       };
 
-      const results = await s3.send(new PutObjectCommand(params));
+      res = await s3.send(new PutObjectCommand(params));
       respondWithSuccess(
-        results,
+        res,
         {
           url: `https://${bucket}.s3.amazonaws.com/${key}`,
           fileName,
