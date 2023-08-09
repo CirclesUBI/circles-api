@@ -33,7 +33,7 @@ export default {
         ContentType: mime.getType(fileType),
       };
 
-      res = await s3.send(new PutObjectCommand(params));
+      const results = await s3.send(new PutObjectCommand(params));
       respondWithSuccess(
         res,
         {
@@ -41,7 +41,7 @@ export default {
           fileName,
           fileType,
         },
-        httpStatus.CREATED,
+        results.$metadata.httpStatusCode,
       );
     } catch (error) {
       next(error);
