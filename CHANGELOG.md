@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.9.2] - 2023-07-10
+### Fixed
+
+## [1.9.3] - 2023-08-10
+
+- Fix upload picture  due to  aws/sdk deprecated [#200](https://github.com/CirclesUBI/circles-api/pull/200)
+
+### Changed
+
+-  Bump word-wrap from 1.2.3 to 1.2.4 [#196](https://github.com/CirclesUBI/circles-api/pull/196) from CirclesUBI/dependabot/npm_and_yarn/word-wrap-1.2.4
+
+# [1.9.2] - 2023-07-10
 
 ### Added
 
