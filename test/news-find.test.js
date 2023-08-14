@@ -60,17 +60,21 @@ describe('GET /news/?afterDate=... - Search via date', () => {
       });
   });
 
-  it('should return all matching news ordered by the most recent first', async () => {
+  it('should return all matching news ordered by the most recent first (last row in the table)', async () => {
     await request(app)
       .get(`/api/news/?afterDate=${news[2].date}`)
       .set('Accept', 'application/json')
       .expect(httpStatus.OK)
       .expect(({ body }) => {
+        console.log(body);
+        console.log(news);
+        console.log(news[2]);
+        console.log(body.data);
         if (
           body.data.length !== 2 ||
           body.data[0].message.en !== news[4].message_en ||
           body.data[0].iconId !== news[4].iconId ||
-          body.data[0].title_en !== news[4].title_en
+          body.data[0].title.en !== news[4].title_en
         ) {
           throw new Error('Did not return expected entries');
         }
