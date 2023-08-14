@@ -16,16 +16,20 @@ beforeAll(async () => {
         date: new Date(`2015-03-${10 + index}T12:00:00Z`).toISOString(),
         iconId: index + 1,
         isActive: index !== 2, // Only one news in inactive
+        title_en: `Title ${index + 1}`,
       }),
     ),
   ).then((result) =>
     result.map(
-      ({ dataValues: { date, iconId, id, isActive, message_en } }) => ({
+      ({
+        dataValues: { date, iconId, id, isActive, message_en, title_en },
+      }) => ({
         date,
         iconId,
         id,
         isActive,
         message_en,
+        title_en,
       }),
     ),
   );
@@ -65,7 +69,8 @@ describe('GET /news/?afterDate=... - Search via date', () => {
         if (
           body.data.length !== 2 ||
           body.data[0].message.en !== news[4].message_en ||
-          body.data[0].iconId !== news[4].iconId
+          body.data[0].iconId !== news[4].iconId ||
+          body.data[0].title_en !== news[4].title_en
         ) {
           throw new Error('Did not return expected entries');
         }
