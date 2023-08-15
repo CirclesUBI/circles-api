@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.4] - 2023-08-15
+
+### Fixed
+
+- Fix missing field in news table [#202](https://github.com/CirclesUBI/circles-api/pull/202)
+
 ## [1.9.3] - 2023-08-10
 
 ### Fixed
