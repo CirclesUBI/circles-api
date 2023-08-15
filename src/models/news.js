@@ -8,6 +8,9 @@ const News = db.define('news', {
     primaryKey: true,
     autoIncrement: true,
   },
+  title_en: {
+    type: Sequelize.TEXT,
+  },
   message_en: {
     type: Sequelize.TEXT,
   },

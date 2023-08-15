@@ -400,6 +400,9 @@ Resolves multiple news items starting from newest item in the database, via:
   data: [
     {
       iconId: <int>,
+      title: {
+        en: <string>
+      },
       message: {
         en: <string>,
       },

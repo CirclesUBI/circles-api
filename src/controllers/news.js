@@ -11,6 +11,9 @@ function prepareNewsResult(response) {
     },
     date: response.date,
     isActive: response.isActive,
+    title: {
+      en: response.title_en,
+    },
   };
 }
 
