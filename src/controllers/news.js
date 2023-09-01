@@ -3,17 +3,15 @@ import { Op } from 'sequelize';
 import News from '../models/news';
 import { respondWithSuccess } from '../helpers/responses';
 
-function prepareNewsResult(response) {
+function prepareNewsResult({ dataValues: { message_en, title_en, ...rest } }) {
   return {
-    iconId: response.iconId,
     message: {
-      en: response.message_en,
+      en: message_en,
     },
-    date: response.date,
-    isActive: response.isActive,
     title: {
-      en: response.title_en,
+      en: title_en,
     },
+    ...rest,
   };
 }
 
