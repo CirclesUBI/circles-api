@@ -48,6 +48,24 @@ afterAll(async () => {
 });
 
 describe('GET /news/?afterDate=... - Search via date', () => {
+  it('should return the correct response format', () =>
+    request(app)
+      .get('/api/news')
+      .set('Accept', 'application/json')
+      .expect(httpStatus.OK)
+      .expect(({ body: { data } }) =>
+        data.forEach((obj) => {
+          expect(obj).toHaveProperty('id');
+          expect(obj).toHaveProperty('date');
+          expect(obj).toHaveProperty('iconId');
+          expect(obj).toHaveProperty('isActive');
+          expect(obj).toHaveProperty('createdAt');
+          expect(obj).toHaveProperty('updatedAt');
+          expect(obj).toHaveProperty('title.en');
+          expect(obj).toHaveProperty('message.en');
+        }),
+      ));
+
   it('should return active news by default', async () => {
     await request(app)
       .get('/api/news')
