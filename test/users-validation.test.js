@@ -25,7 +25,11 @@ async function expectErrorStatusInPost(body, status = httpStatus.BAD_REQUEST) {
     .expect(status);
 }
 
-async function expectErrorStatusInDelete(body, param, status = httpStatus.BAD_REQUEST) {
+async function expectErrorStatusInDelete(
+  body,
+  param,
+  status = httpStatus.BAD_REQUEST,
+) {
   return await request(app)
     .delete(`/api/users/${param.safeAddress}`)
     .send(body)
