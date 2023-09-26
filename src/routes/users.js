@@ -38,4 +38,10 @@ router.post(
   usersController.updateUser,
 );
 
+router.delete(
+  '/:safeAddress',
+  validate(usersValidation.deleteUser),
+  usersController.deleteUser,
+);
+
 export default router;
