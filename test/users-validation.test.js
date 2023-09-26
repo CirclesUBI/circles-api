@@ -25,6 +25,17 @@ async function expectErrorStatusInPost(body, status = httpStatus.BAD_REQUEST) {
     .expect(status);
 }
 
+async function expectErrorStatusDeleteUser(
+  body,
+  status = httpStatus.BAD_REQUEST,
+) {
+  return await request(app)
+    .delete(`/api/users/${body.data.safeAddress}`)
+    .send(body)
+    .set('Accept', 'application/json')
+    .expect(status);
+}
+
 async function expectErrorStatusGetEmail(
   body,
   param,
@@ -479,6 +490,58 @@ describe('POST /users/:safeAddress/email - validation', () => {
         { safeAddress: safeAddress },
         httpStatus.FORBIDDEN,
       );
+    });
+  });
+
+  describe('DELETE /users/:safeAddress/ - validation', () => {
+    let address;
+    let privateKey;
+    let safeAddress;
+    let signature;
+
+    beforeEach(() => {
+      const account = web3.eth.accounts.create();
+      address = account.address;
+      privateKey = account.privateKey;
+      safeAddress = randomChecksumAddress();
+      signature = getSignature([address, safeAddress], privateKey);
+    });
+
+    it('should return errors when user does not exist', async () => {
+      // Wrong address
+      await expectErrorStatusDeleteUser(
+        {
+          address: randomChecksumAddress(),
+          signature,
+        },
+        { safeAddress: safeAddress },
+        httpStatus.FORBIDDEN,
+      );
+    });
+    it('should fail when using invalid signature', async () => {
+      // Wrong signature
+      await expectErrorStatusDeleteUser(
+        {
+          address: address,
+          signature: getSignature(
+            [randomChecksumAddress(), randomChecksumAddress()],
+            privateKey,
+          ),
+        },
+        { safeAddress: safeAddress },
+        httpStatus.FORBIDDEN,
+      );
+    });
+    it('should return OK when successful', async () => {
+      // Correct user and signature
+      await request(app)
+        .delete(`/api/users/${safeAddress}`)
+        .send({
+          address: address,
+          signature: signature,
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.OK);
     });
   });
 });
