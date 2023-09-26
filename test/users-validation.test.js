@@ -25,6 +25,14 @@ async function expectErrorStatusInPost(body, status = httpStatus.BAD_REQUEST) {
     .expect(status);
 }
 
+async function expectErrorStatusInDelete(body, param, status = httpStatus.BAD_REQUEST) {
+  return await request(app)
+    .delete(`/api/users/${param.safeAddress}`)
+    .send(body)
+    .set('Accept', 'application/json')
+    .expect(status);
+}
+
 async function expectErrorStatusGetEmail(
   body,
   param,
@@ -407,6 +415,79 @@ describe('POST /users - dry run create user validation', () => {
       })
       .set('Accept', 'application/json')
       .expect(httpStatus.OK);
+  });
+});
+
+describe('DELETE /users/:safeAddress - validation', () => {
+  let address;
+  let privateKey;
+  let safeAddress;
+  let signature;
+
+  beforeEach(() => {
+    const account = web3.eth.accounts.create();
+    address = account.address;
+    privateKey = account.privateKey;
+    safeAddress = randomChecksumAddress();
+    signature = getSignature([address, safeAddress], privateKey);
+  });
+
+  describe('when using invalid parameters', () => {
+    it('should return errors', async () => {
+      const correctBody = {
+        address: address,
+        signature: signature,
+      };
+      // Missing fields
+      await expectErrorStatusInDelete(
+        {
+          ...correctBody,
+          address: 'invalid',
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Missing signature
+      await expectErrorStatusInDelete(
+        {
+          ...correctBody,
+          signature: '',
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Wrong address
+      await expectErrorStatusInDelete(
+        {
+          ...correctBody,
+          address: web3.utils.randomHex(21),
+        },
+        { safeAddress: safeAddress },
+      );
+
+      // Wrong address checksum
+      await expectErrorStatusInDelete(
+        {
+          ...correctBody,
+          address: web3.utils.randomHex(20),
+        },
+        { safeAddress: safeAddress },
+      );
+    });
+  });
+
+  describe('when using invalid signatures', () => {
+    it('should return errors', async () => {
+      // Wrong address
+      await expectErrorStatusInDelete(
+        {
+          address: randomChecksumAddress(),
+          signature,
+        },
+        { safeAddress: safeAddress },
+        httpStatus.FORBIDDEN,
+      );
+    });
   });
 });
 
