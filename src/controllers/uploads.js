@@ -68,7 +68,9 @@ export default {
             avatarUrl: url,
           },
         });
-        if (!avatarExists) {
+        if (avatarExists) {
+          respondWithError(res, {}, httpStatus.UNPROCESSABLE_ENTITY);
+        } else {
           const pathSplit = imageUrl.pathname.split('/');
           const fileName = pathSplit[pathSplit.length - 1];
           const key = `${KEY_PATH}${fileName}`;
@@ -77,16 +79,7 @@ export default {
             Key: key, // The name of the object.
           };
           const results = await s3.send(new DeleteObjectCommand(params));
-          respondWithSuccess(
-            res,
-            { avatarUrlIsUsed: false },
-            results.$metadata.httpStatusCode,
-          );
-        } else {
-          respondWithSuccess(
-            res,
-            { avatarUrlIsUsed: true }, // the avatar image cannot be deleted because is used by an user entry
-          );
+          respondWithSuccess(res, {}, results.$metadata.httpStatusCode);
         }
       }
     } catch (error) {
