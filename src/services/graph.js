@@ -2,9 +2,11 @@ import fetch from 'isomorphic-fetch';
 
 import logger from '../helpers/logger';
 import loop from '../helpers/loop';
-import core from './core';
+import createCore from '../services/core';
+import web3 from '../services/web3';
 
 const PAGINATION_SIZE = 500;
+const core = createCore(web3);
 
 function isOfficialNode() {
   return process.env.GRAPH_NODE_ENDPOINT.includes('api.thegraph.com');
@@ -93,7 +95,6 @@ async function* fetchGraphGenerator(name, fields, extra = '') {
   let lastID = '';
 
   while (hasData) {
-    //console.log({lastID});
     const data = await fetchFromGraph(name, fields, extra, lastID);
     await wait(500);
     hasData = data.length > 0;

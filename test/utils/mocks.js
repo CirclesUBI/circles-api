@@ -1,7 +1,6 @@
 import httpStatus from 'http-status';
 import nock from 'nock';
 
-import web3 from './web3';
 import graphSafesMockData from '../data/graph-safes.json';
 
 export function mockGraphSafes() {
@@ -38,80 +37,4 @@ export function mockGraphUsers(address, safeAddress) {
         },
       },
     });
-}
-
-export function mockRelayerSafe({
-  address,
-  nonce,
-  safeAddress,
-  isCreated,
-  isDeployed,
-}) {
-  if (isCreated) {
-    nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .get(`/api/v2/safes/${safeAddress}/funded/`)
-      .reply(httpStatus.OK, {
-        blockNumber: null,
-        txHash: isDeployed ? web3.utils.randomHex(32) : null,
-      });
-  } else {
-    nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .get(`/api/v2/safes/${safeAddress}/funded/`)
-      .reply(httpStatus.NOT_FOUND);
-  }
-
-  if (isCreated) {
-    nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .post('/api/v3/safes/', {
-        saltNonce: nonce,
-        owners: [address],
-        threshold: 1,
-      })
-      .reply(httpStatus.UNPROCESSABLE_ENTITY, {
-        exception: `SafeAlreadyExistsException: Safe=${safeAddress} cannot be created, already exists`,
-      });
-  } else {
-    nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .post('/api/v3/safes/', {
-        saltNonce: nonce,
-        owners: [address],
-        threshold: 1,
-      })
-      .reply(httpStatus.CREATED);
-  }
-
-  nock(process.env.RELAY_SERVICE_ENDPOINT)
-    .post('/api/v3/safes/predict/', {
-      saltNonce: nonce,
-      owners: [address],
-      threshold: 1,
-    })
-    .reply(httpStatus.OK, {
-      safe: safeAddress,
-    });
-
-  if (isCreated) {
-    if (isDeployed) {
-      nock(process.env.RELAY_SERVICE_ENDPOINT)
-        .get(`/api/v1/safes/${safeAddress}/`)
-        .reply(httpStatus.OK, {
-          address: safeAddress,
-          masterCopy: process.env.SAFE_ADDRESS,
-          nonce: 0,
-          threshold: 1,
-          owners: [address],
-          version: '1.1.1',
-        });
-    } else {
-      nock(process.env.RELAY_SERVICE_ENDPOINT)
-        .get(`/api/v1/safes/${safeAddress}/`)
-        .reply(httpStatus.UNPROCESSABLE_ENTITY, {
-          exception: `"SafeNotDeployed: Safe with address=${safeAddress} not deployed"`,
-        });
-    }
-  } else {
-    nock(process.env.RELAY_SERVICE_ENDPOINT)
-      .get(`/api/v1/safes/${safeAddress}`)
-      .reply(httpStatus.NOT_FOUND);
-  }
 }

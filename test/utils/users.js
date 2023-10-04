@@ -1,11 +1,11 @@
-import web3 from './web3';
 import { getSignature } from './common';
 
 export function createUserPayload(
-  { nonce, safeAddress, username, email, avatarUrl },
+  { nonce, safeAddress, username, email, avatarUrl, account = {} },
   returnPrivateKey = false,
 ) {
-  const { address, privateKey } = web3.eth.accounts.create();
+  const address = account.address;
+  const privateKey = account.privateKey;
   const signature = getSignature(
     [address, nonce, safeAddress, username],
     privateKey,

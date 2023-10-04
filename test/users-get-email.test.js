@@ -1,50 +1,31 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-
-import web3 from './utils/web3';
-import { createUserPayload } from './utils/users';
-import { mockRelayerSafe, mockGraphUsers } from './utils/mocks';
+import createCore from './utils/core';
+import setupWeb3 from './utils/setupWeb3';
+import getAccounts from './utils/getAccounts';
+import { createTestUser } from './utils/createTestUser';
+import { mockGraphUsers } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
 
 import User from '~/models/users';
 import app from '~';
 
-function prepareUser({ username = 'donkey' } = {}, returnPrivateKey = false) {
-  const safeAddress = randomChecksumAddress();
-  const nonce = new Date().getTime();
-  const email = 'dk@kong.com';
-  const avatarUrl = 'https://storage.com/image.jpg';
-
-  const userPayload = createUserPayload(
-    {
-      nonce,
-      safeAddress,
-      username,
-      email,
-      avatarUrl,
-    },
-    returnPrivateKey,
-  );
-
-  mockRelayerSafe({
-    address: returnPrivateKey
-      ? userPayload.payload.address
-      : userPayload.address,
-    nonce,
-    safeAddress,
-    isCreated: true,
-    isDeployed: false,
-  });
-
-  return userPayload;
-}
-
 describe('GET /users/:safeAddress/email - Getting the user email', () => {
   let payload;
   let privateKey;
+  const { web3 } = setupWeb3();
+  const core = createCore(web3);
+  const accounts = getAccounts(web3);
 
-  beforeEach(() => {
-    const response = prepareUser({ username: 'doggy' }, true);
+  beforeEach(async () => {
+    const response = await createTestUser(
+      core,
+      accounts[0],
+      { username: 'doggy' },
+      'dk@kong.com',
+      'https://storage.com/image.jpg',
+      true,
+    );
     payload = response.payload;
     privateKey = response.privateKey;
   });

@@ -3,14 +3,14 @@ import Sequelize, { Op } from 'sequelize';
 
 import APIError from '../helpers/errors';
 import User from '../models/users';
-import core from '../services/core';
+import createCore from '../services/core';
 import web3 from '../services/web3';
 import { requestGraph } from '../services/graph';
 import { checkSignature } from '../helpers/signature';
 import { respondWithSuccess } from '../helpers/responses';
 
 const UNSET_NONCE = 0;
-
+const core = createCore(web3);
 function prepareUserResult(response) {
   return {
     id: response.id,
@@ -20,32 +20,20 @@ function prepareUserResult(response) {
   };
 }
 
-async function checkSafeStatus(isNonceGiven, safeAddress) {
-  const { txHash } = await core.utils.requestRelayer({
-    path: ['safes', safeAddress, 'funded'],
-    method: 'GET',
-    version: 2,
-  });
-
-  const isCreated = txHash !== null;
-
-  if ((!isNonceGiven && !isCreated) || (isNonceGiven && isCreated)) {
-    throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe state');
-  }
+// Check if safe is deployed
+async function checkSafeDeployed(address, safeAddress) {
+  const isDeployed = await core.safe.isDeployed(
+    {
+      address,
+      // Fake private key to work around core validation
+      privateKey: web3.utils.randomHex(64),
+    },
+    { safeAddress },
+  );
+  return await isDeployed;
 }
 
-async function checkOwner(address, safeAddress) {
-  const response = await core.utils.requestRelayer({
-    path: ['safes', safeAddress],
-    method: 'GET',
-    version: 1,
-  });
-
-  if (!response || !response.owners.includes(address)) {
-    throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
-  }
-}
-
+// Check saltNonce and safeAddress match
 async function checkSaltNonce(saltNonce, address, safeAddress) {
   const predictedSafeAddress = await core.safe.predictAddress(
     {
@@ -65,6 +53,7 @@ async function checkSaltNonce(saltNonce, address, safeAddress) {
   }
 }
 
+// Check user and safeAddress relation exist on the database
 async function checkIfExists(username, safeAddress) {
   const equalUsernameCondition = Sequelize.where(
     Sequelize.fn('lower', Sequelize.col('username')),
@@ -180,8 +169,6 @@ export default {
   createNewUser: async (req, res, next) => {
     const { address, nonce = UNSET_NONCE, signature, data } = req.body;
     const { safeAddress, username, email, avatarUrl } = data;
-    const isNonceGiven = nonce !== UNSET_NONCE;
-
     try {
       // Check signature
       if (
@@ -193,16 +180,20 @@ export default {
       ) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
-
       // Check if entry already exists
       await checkIfExists(username, safeAddress);
 
-      // Check if claimed safe is correct and owned by address
-      await checkSafeStatus(isNonceGiven, safeAddress);
-      if (isNonceGiven) {
+      // Check if nonce given that is the one of the safe address
+      if (nonce) {
         await checkSaltNonce(nonce, address, safeAddress);
-      } else {
-        await checkOwner(address, safeAddress);
+      }
+      // Check if safe is already deployed
+      const deployed = await checkSafeDeployed(address, safeAddress);
+      if (deployed) {
+        throw new APIError(
+          httpStatus.FORBIDDEN,
+          'Safe already deployed. Cannot create another user with the same safe address.',
+        );
       }
     } catch (err) {
       return next(err);

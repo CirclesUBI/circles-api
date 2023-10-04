@@ -1,9 +1,11 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 
-import web3 from './utils/web3';
-import { mockRelayerSafe } from './utils/mocks';
-import { randomChecksumAddress, getSignature } from './utils/common';
+import { createTestUser } from './utils/createTestUser';
+import createCore from './utils/core';
+import setupWeb3 from './utils/setupWeb3';
+import getAccounts from './utils/getAccounts';
+import { randomChecksumAddress } from './utils/common';
 
 import User from '~/models/users';
 import app from '~';
@@ -33,50 +35,33 @@ async function expectUser(app, username, safeAddress) {
 }
 
 beforeAll(async () => {
+  const { web3 } = setupWeb3();
+  const core = createCore(web3);
+  const accounts = getAccounts(web3);
   const items = new Array(NUM_TEST_USERS).fill(0);
-
   await Promise.all(
     items.map(async (item, index) => {
-      const account = web3.eth.accounts.create();
-      const address = account.address;
-      const privateKey = account.privateKey;
-
-      const safeAddress = randomChecksumAddress();
-      const nonce = index + 1;
       const username = `panda${index + 1}`;
       const email = `panda${index + 1}@zoo.org`;
-
-      const signature = getSignature(
-        [address, nonce, safeAddress, username],
-        privateKey,
+      const avatarUrl = 'https://storage.com/image.jpg';
+      item = await createTestUser(
+        core,
+        accounts[index],
+        {
+          username: username,
+        },
+        email,
+        avatarUrl,
       );
-
-      mockRelayerSafe({
-        address,
-        nonce,
-        safeAddress,
-        isCreated: true,
-        isDeployed: false,
-      });
-
       await request(app)
         .put('/api/users')
-        .send({
-          address,
-          nonce,
-          signature,
-          data: {
-            safeAddress,
-            username,
-            email,
-          },
-        })
+        .send(item)
         .set('Accept', 'application/json')
         .expect(httpStatus.CREATED);
 
       users.push({
         username,
-        safeAddress,
+        safeAddress: item.data.safeAddress,
       });
     }),
   );
