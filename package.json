@@ -27,7 +27,7 @@
     "lint": "eslint --ignore-path .gitignore .",
     "serve": "cross-env NODE_ENV=development babel-node ./src/index.js --source-maps inline",
     "serve:all": "concurrently --prefix '{pid}-{name}' --names 'API,WORKERS' --kill-others 'npm run serve' 'npm run worker:serve'",
-    "start": "DEBUG=express:* cross-env NODE_ENV=production node ./build/index.js",
+    "start": "cross-env NODE_ENV=production node ./build/index.js",
     "test": "jest --forceExit ",
     "test:watch": "npm run test -- --watch",
     "watch": "nodemon --watch ./src --exec npm run serve",
