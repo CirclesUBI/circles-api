@@ -45,8 +45,6 @@ async function checkSaltNonce(saltNonce, address, safeAddress) {
       nonce: saltNonce,
     },
   );
-  console.log('address safeAddress', address, safeAddress, saltNonce);
-  console.log('predicted address', predictedSafeAddress);
   if (predictedSafeAddress !== safeAddress) {
     throw new APIError(httpStatus.BAD_REQUEST, 'Invalid nonce');
   }
@@ -166,7 +164,6 @@ export default {
   },
 
   createNewUser: async (req, res, next) => {
-    // console.log(req);
     const { address, nonce = UNSET_NONCE, signature, data } = req.body;
     const { safeAddress, username, email, avatarUrl } = data;
     try {

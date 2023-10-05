@@ -43,6 +43,7 @@ describe('Users', () => {
         .set('Accept', 'application/json')
         .expect(httpStatus.CONFLICT);
     });
+
     it('should fail when trying to create an user with the different owner address', async () => {
       payload.address = randomChecksumAddress();
       await request(app)
@@ -52,6 +53,7 @@ describe('Users', () => {
         .expect(httpStatus.FORBIDDEN);
     });
   });
+
   describe('PUT /users - Fail when username is too similar', () => {
     let correctPayload;
     const duplicatePayloads = [];
