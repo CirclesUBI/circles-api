@@ -329,4 +329,40 @@ export default {
 
     return await resolveBatch(req, res, next);
   },
+  deleteUser: async (req, res, next) => {
+    const { address, signature } = req.body;
+    const { safeAddress } = req.params;
+
+    try {
+      // Check signature
+      if (!checkSignature([address, safeAddress], signature, address)) {
+        throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
+      }
+
+      // Check if signer ownes the claimed safe address
+      const query = `{
+        user(id: "${address.toLowerCase()}") {
+          safeAddresses
+        }
+      }`;
+      const graphData = await requestGraph(query);
+      if (
+        !graphData ||
+        !graphData.user ||
+        !graphData.user.safeAddresses.includes(safeAddress.toLowerCase())
+      ) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'Invalid Safe owner');
+      }
+    } catch (err) {
+      return next(err);
+    }
+    // Everything is fine, remove user entry!
+    await User.destroy({ where: { safeAddress: safeAddress } })
+      .then(() => {
+        respondWithSuccess(res, null);
+      })
+      .catch((err) => {
+        next(err);
+      });
+  },
 };

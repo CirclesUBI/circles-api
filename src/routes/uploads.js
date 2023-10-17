@@ -3,6 +3,8 @@ import express from 'express';
 import uploadsController from '../controllers/uploads';
 import uploadFilesMiddleware from '../middlewares/uploads';
 import convertImagesMiddleware from '../middlewares/images';
+import uploadsValidation from '../validations/uploads';
+import validate from '../helpers/validate';
 
 export const FIELD_NAME = 'files';
 
@@ -29,6 +31,12 @@ router.post(
     },
   ]),
   uploadsController.uploadAvatarImage,
+);
+
+router.delete(
+  '/avatar',
+  validate(uploadsValidation.deleteAvatarImage),
+  uploadsController.deleteAvatarImage,
 );
 
 export default router;
