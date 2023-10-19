@@ -2,9 +2,8 @@ import httpStatus from 'http-status';
 import request from 'supertest';
 
 import { createTestUser } from './utils/createTestUser';
-import createCore from './utils/core';
-import setupWeb3 from './utils/setupWeb3';
-import getAccounts from './utils/getAccounts';
+import core from './utils/core';
+import accounts from './utils/accounts';
 import { randomChecksumAddress } from './utils/common';
 
 import User from '~/models/users';
@@ -35,24 +34,19 @@ async function expectUser(app, username, safeAddress) {
 }
 
 beforeAll(async () => {
-  const { web3 } = setupWeb3();
-  const core = createCore(web3);
-  const accounts = getAccounts(web3);
   const items = new Array(NUM_TEST_USERS).fill(0);
   await Promise.all(
     items.map(async (item, index) => {
       const username = `panda${index + 1}`;
       const email = `panda${index + 1}@zoo.org`;
       const avatarUrl = 'https://storage.com/image.jpg';
-      item = await createTestUser(
+      item = await createTestUser({
         core,
-        accounts[index],
-        {
-          username: username,
-        },
+        account: accounts[index],
+        username,
         email,
         avatarUrl,
-      );
+      });
       await request(app)
         .put('/api/users')
         .send(item)

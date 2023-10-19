@@ -1,21 +1,16 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-import createCore from './utils/core';
-import setupWeb3 from './utils/setupWeb3';
-import getAccounts from './utils/getAccounts';
+import core from './utils/core';
+import accounts from './utils/accounts';
 import deploySafeManually from './utils/deploySafeManually';
 import generateSaltNonce from './utils/generateSaltNonce';
 import { getSignature } from './utils/common';
 
 import app from '~';
 describe('Safe verification', () => {
-  const { web3 } = setupWeb3();
-  const core = createCore(web3);
-  const accounts = getAccounts(web3);
   let account;
   let address;
   let nonce;
-  let privateKey;
   let safeAddress;
   let signature;
   let username;
@@ -24,16 +19,17 @@ describe('Safe verification', () => {
   beforeAll(async () => {
     account = accounts[0];
     address = account.address;
-    privateKey = account.privateKey;
     nonce = generateSaltNonce();
     safeAddress = await deploySafeManually({ account, nonce }, core);
     username = 'donkey' + Math.round(Math.random() * 1000);
     email = 'dk@kong.com';
 
-    signature = getSignature(
-      [address, nonce, safeAddress, username],
-      privateKey,
-    );
+    signature = await getSignature(account, [
+      address,
+      nonce,
+      safeAddress,
+      username,
+    ]);
   });
 
   describe('PUT /users', () => {
@@ -58,10 +54,12 @@ describe('Safe verification', () => {
       it('should return an error when we cant guess the right nonce', async () => {
         const attackerNonce = 123;
 
-        const signature = getSignature(
-          [address, attackerNonce, safeAddress, username],
-          privateKey,
-        );
+        const signature = await getSignature(account, [
+          address,
+          attackerNonce,
+          safeAddress,
+          username,
+        ]);
 
         return await request(app)
           .put('/api/users')

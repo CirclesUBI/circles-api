@@ -1,9 +1,8 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-
-import createCore from './utils/core';
-import setupWeb3 from './utils/setupWeb3';
-import getAccounts from './utils/getAccounts';
+import web3 from 'web3';
+import core from './utils/core';
+import accounts from './utils/accounts';
 import { createTestUser } from './utils/createTestUser';
 import { mockGraphUsers } from './utils/mocks';
 
@@ -54,31 +53,27 @@ async function expectErrorStatusGetEmail(
 describe('Users validation', () => {
   let payload;
   let address;
-  let privateKey;
   let safeAddress;
   let nonce;
   let username;
   let email;
   let signature;
-  let account;
-  const { web3 } = setupWeb3();
-  const core = createCore(web3);
-  const accounts = getAccounts(web3);
+  let account = accounts[0];
 
   beforeEach(async () => {
-    account = accounts[0];
-    payload = await createTestUser(core, accounts[0]);
+    payload = await createTestUser({ core, account });
     address = account.address;
-    privateKey = account.privateKey;
     safeAddress = payload.data.safeAddress;
     nonce = payload.nonce;
-    username = 'donkey';
-    email = 'dk@kong.com';
+    username = payload.data.username;
+    email = payload.data.email;
 
-    signature = getSignature(
-      [address, nonce, safeAddress, username],
-      privateKey,
-    );
+    signature = await getSignature(account, [
+      address,
+      nonce,
+      safeAddress,
+      username,
+    ]);
   });
   afterEach(async () => {
     return await User.destroy({
@@ -362,121 +357,94 @@ describe('Users validation', () => {
         .expect(httpStatus.BAD_REQUEST);
     });
 
-  it('should fail when values are invalid', async () => {
-    await request(app)
-      .post('/api/users')
-      .send({
-        username: 'lala lala lala',
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.BAD_REQUEST);
+    it('should fail when values are invalid', async () => {
+      await request(app)
+        .post('/api/users')
+        .send({
+          username: 'lala lala lala',
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.BAD_REQUEST);
 
-    await request(app)
-      .post('/api/users')
-      .send({
-        email: 'test@',
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.BAD_REQUEST);
-  });
+      await request(app)
+        .post('/api/users')
+        .send({
+          email: 'test@',
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.BAD_REQUEST);
+    });
 
-  it('should return OK when values are alright', async () => {
-    await request(app)
-      .post('/api/users')
-      .send({
-        username: 'lalazebra',
-        email: 'lalazebra@zoo.io',
-      })
-      .set('Accept', 'application/json')
-      .expect(httpStatus.OK);
-  });
-});
-
-describe('DELETE /users/:safeAddress - validation', () => {
-  let address;
-  let privateKey;
-  let safeAddress;
-  let signature;
-
-  beforeEach(() => {
-    const account = web3.eth.accounts.create();
-    address = account.address;
-    privateKey = account.privateKey;
-    safeAddress = randomChecksumAddress();
-    signature = getSignature([address, safeAddress], privateKey);
-  });
-
-  describe('when using invalid parameters', () => {
-    it('should return errors', async () => {
-      const correctBody = {
-        address: address,
-        signature: signature,
-      };
-      // Missing fields
-      await expectErrorStatusInDelete(
-        {
-          ...correctBody,
-          address: 'invalid',
-        },
-        { safeAddress: safeAddress },
-      );
-
-      // Missing signature
-      await expectErrorStatusInDelete(
-        {
-          ...correctBody,
-          signature: '',
-        },
-        { safeAddress: safeAddress },
-      );
-
-      // Wrong address
-      await expectErrorStatusInDelete(
-        {
-          ...correctBody,
-          address: web3.utils.randomHex(21),
-        },
-        { safeAddress: safeAddress },
-      );
-
-      // Wrong address checksum
-      await expectErrorStatusInDelete(
-        {
-          ...correctBody,
-          address: web3.utils.randomHex(20),
-        },
-        { safeAddress: safeAddress },
-      );
+    it('should return OK when values are alright', async () => {
+      await request(app)
+        .post('/api/users')
+        .send({
+          username: 'lalazebra',
+          email: 'lalazebra@zoo.io',
+        })
+        .set('Accept', 'application/json')
+        .expect(httpStatus.OK);
     });
   });
 
-  describe('when using invalid signatures', () => {
-    it('should return errors', async () => {
-      // Wrong address
-      await expectErrorStatusInDelete(
-        {
-          address: randomChecksumAddress(),
-          signature,
-        },
-        { safeAddress: safeAddress },
-        httpStatus.FORBIDDEN,
-      );
+  describe('DELETE /users/:safeAddress - validation', () => {
+    describe('when using invalid parameters', () => {
+      it('should return errors', async () => {
+        const correctBody = {
+          address: address,
+          signature: signature,
+        };
+        // Missing fields
+        await expectErrorStatusInDelete(
+          {
+            ...correctBody,
+            address: 'invalid',
+          },
+          { safeAddress: safeAddress },
+        );
+
+        // Missing signature
+        await expectErrorStatusInDelete(
+          {
+            ...correctBody,
+            signature: '',
+          },
+          { safeAddress: safeAddress },
+        );
+
+        // Wrong address
+        await expectErrorStatusInDelete(
+          {
+            ...correctBody,
+            address: web3.utils.randomHex(21),
+          },
+          { safeAddress: safeAddress },
+        );
+
+        // Wrong address checksum
+        await expectErrorStatusInDelete(
+          {
+            ...correctBody,
+            address: web3.utils.randomHex(20),
+          },
+          { safeAddress: safeAddress },
+        );
+      });
     });
-  });
-});
 
-describe('POST /users/:safeAddress/email - validation', () => {
-  let address;
-  let privateKey;
-  let safeAddress;
-  let signature;
-
-  beforeEach(() => {
-    const account = web3.eth.accounts.create();
-    address = account.address;
-    privateKey = account.privateKey;
-    safeAddress = randomChecksumAddress();
-    signature = getSignature([address, safeAddress], privateKey);
+    describe('when using invalid signatures', () => {
+      it('should return errors', async () => {
+        // Wrong address
+        await expectErrorStatusInDelete(
+          {
+            address: randomChecksumAddress(),
+            signature,
+          },
+          { safeAddress: safeAddress },
+          httpStatus.FORBIDDEN,
+        );
+      });
+    });
   });
 
   describe('POST /users/:safeAddress/email - validation', () => {

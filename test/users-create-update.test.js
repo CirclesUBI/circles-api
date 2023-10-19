@@ -1,9 +1,8 @@
 import httpStatus from 'http-status';
 import { Op } from 'sequelize';
 import request from 'supertest';
-import createCore from './utils/core';
-import setupWeb3 from './utils/setupWeb3';
-import getAccounts from './utils/getAccounts';
+import core from './utils/core';
+import accounts from './utils/accounts';
 import { createTestUser } from './utils/createTestUser';
 import { mockGraphUsers } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
@@ -13,23 +12,19 @@ import app from '~';
 
 describe('Users', () => {
   let payload;
-  const { web3 } = setupWeb3();
-  const core = createCore(web3);
-  const accounts = getAccounts(web3);
+  let account = accounts[0];
+  beforeEach(async () => {
+    payload = await createTestUser({ core, account });
+  });
 
+  afterEach(async () => {
+    return await User.destroy({
+      where: {
+        username: payload.data.username,
+      },
+    });
+  });
   describe('PUT /users - Creating a new user', () => {
-    beforeEach(async () => {
-      payload = await createTestUser(core, accounts[0]);
-    });
-
-    afterEach(async () => {
-      return await User.destroy({
-        where: {
-          username: payload.data.username,
-        },
-      });
-    });
-
     it('should successfully respond and fail when we try again', async () => {
       await request(app)
         .put('/api/users')
@@ -57,21 +52,30 @@ describe('Users', () => {
   describe('PUT /users - Fail when username is too similar', () => {
     let correctPayload;
     const duplicatePayloads = [];
-
     beforeEach(async () => {
-      correctPayload = await createTestUser(core, accounts[0], {
+      correctPayload = await createTestUser({
+        core,
+        account,
         username: 'myUsername',
       });
-      duplicatePayloads[0] = await createTestUser(core, accounts[0], {
+      duplicatePayloads[0] = await createTestUser({
+        core,
+        account,
         username: 'myusername',
       });
-      duplicatePayloads[1] = await createTestUser(core, accounts[0], {
+      duplicatePayloads[1] = await createTestUser({
+        core,
+        account,
         username: 'MYUSERNAME',
       });
-      duplicatePayloads[2] = await createTestUser(core, accounts[0], {
+      duplicatePayloads[2] = await createTestUser({
+        core,
+        account,
         username: 'MyUsername',
       });
-      duplicatePayloads[3] = await createTestUser(core, accounts[0], {
+      duplicatePayloads[3] = await createTestUser({
+        core,
+        account,
         username: 'myUserName',
       });
     });
@@ -102,33 +106,10 @@ describe('Users', () => {
     });
   });
   describe('POST /users/:safeAddress - Updating user data', () => {
-    let payload;
-    let privateKey;
     const newUsername = 'dolfin';
     const newEmail = 'dol@fin.com';
     const newAvatarUrl = 'https://storage.com/image2.jpg';
-    const similarUserName = 'Doggy';
-
-    beforeEach(async () => {
-      const response = await createTestUser(
-        core,
-        accounts[0],
-        { username: 'doggy' },
-        'dk@kong.com',
-        'https://storage.com/image.jpg',
-        true,
-      );
-      payload = response.payload;
-      privateKey = response.privateKey;
-    });
-
-    afterEach(async () => {
-      return await User.destroy({
-        where: {
-          username: payload.data.username,
-        },
-      });
-    });
+    const similarUserName = 'Donkey';
 
     describe('when user was already created', () => {
       it('should successfully respond when I update all the fields', async () => {
@@ -137,11 +118,11 @@ describe('Users', () => {
           .send(payload)
           .set('Accept', 'application/json')
           .expect(httpStatus.CREATED);
-
-        const signature = getSignature(
-          [payload.address, payload.data.safeAddress, newUsername],
-          privateKey,
-        );
+        const signature = await getSignature(account, [
+          payload.address,
+          payload.data.safeAddress,
+          newUsername,
+        ]);
         // Update payload values
         payload.data.username = newUsername;
         payload.data.email = newEmail;
@@ -167,10 +148,11 @@ describe('Users', () => {
           .set('Accept', 'application/json')
           .expect(httpStatus.CREATED);
 
-        const signature = getSignature(
-          [payload.address, payload.data.safeAddress, newUsername],
-          privateKey,
-        );
+        const signature = await getSignature(account, [
+          payload.address,
+          payload.data.safeAddress,
+          newUsername,
+        ]);
         // Update payload values
         payload.data.username = newUsername;
         payload.signature = signature;
@@ -194,10 +176,11 @@ describe('Users', () => {
           .set('Accept', 'application/json')
           .expect(httpStatus.CREATED);
 
-        const signature = getSignature(
-          [payload.address, payload.data.safeAddress, similarUserName],
-          privateKey,
-        );
+        const signature = await getSignature(account, [
+          payload.address,
+          payload.data.safeAddress,
+          similarUserName,
+        ]);
         // Update payload values
         payload.data.username = similarUserName;
         payload.signature = signature;
@@ -221,10 +204,11 @@ describe('Users', () => {
           .set('Accept', 'application/json')
           .expect(httpStatus.CREATED);
 
-        const signature = getSignature(
-          [payload.address, payload.data.safeAddress, payload.data.username],
-          privateKey,
-        );
+        const signature = await getSignature(account, [
+          payload.address,
+          payload.data.safeAddress,
+          payload.data.username,
+        ]);
         // Update payload values
         payload.data.avatarUrl = newAvatarUrl;
         payload.signature = signature;
@@ -241,12 +225,14 @@ describe('Users', () => {
           .expect(httpStatus.OK);
       });
     });
+
     describe('when user was not registered', () => {
       it('should not fail when providing all the data fields', async () => {
-        const signature = getSignature(
-          [payload.address, payload.data.safeAddress, newUsername],
-          privateKey,
-        );
+        const signature = await getSignature(account, [
+          payload.address,
+          payload.data.safeAddress,
+          newUsername,
+        ]);
         // Update payload values
         payload.data.username = newUsername;
         payload.data.email = newEmail;
@@ -268,35 +254,24 @@ describe('Users', () => {
   });
   describe('POST /users/:safeAddress - Fail when username is too similar', () => {
     let correctPayload;
-    let correctPrivateKey;
     let otherPayload;
-    let otherPrivateKey;
+    let account2 = accounts[2];
     const correctOldUsername = 'myUsername';
     const oldUsername = 'kitty';
     const newUsername = 'MYusername';
 
     beforeEach(async () => {
-      const response = await createTestUser(
+      correctPayload = await createTestUser({
         core,
-        accounts[0],
-        { username: correctOldUsername },
-        'dk@kong.com',
-        'https://storage.com/image.jpg',
-        true,
-      );
-      correctPayload = response.payload;
-      correctPrivateKey = response.privateKey;
+        account,
+        username: correctOldUsername,
+      });
 
-      const response2 = await createTestUser(
+      otherPayload = await createTestUser({
         core,
-        accounts[1],
-        { username: oldUsername },
-        'dk@kong.com',
-        'https://storage.com/image.jpg',
-        true,
-      );
-      otherPayload = response2.payload;
-      otherPrivateKey = response2.privateKey;
+        account: account2,
+        username: oldUsername,
+      });
     });
 
     afterEach(async () => {
@@ -329,10 +304,11 @@ describe('Users', () => {
       // Same username already exists
       mockGraphUsers(otherPayload.address, otherPayload.data.safeAddress);
 
-      const signature = getSignature(
-        [otherPayload.address, otherPayload.data.safeAddress, newUsername],
-        otherPrivateKey,
-      );
+      const signature = await getSignature(account2, [
+        otherPayload.address,
+        otherPayload.data.safeAddress,
+        newUsername,
+      ]);
       // Update payload values
       otherPayload.data.username = newUsername;
       otherPayload.signature = signature;
@@ -356,10 +332,11 @@ describe('Users', () => {
       // Same username already exists
       mockGraphUsers(correctPayload.address, correctPayload.data.safeAddress);
 
-      const signature = getSignature(
-        [correctPayload.address, correctPayload.data.safeAddress, newUsername],
-        correctPrivateKey,
-      );
+      const signature = await getSignature(account, [
+        correctPayload.address,
+        correctPayload.data.safeAddress,
+        newUsername,
+      ]);
       // Update payload values
       correctPayload.data.username = newUsername;
       correctPayload.signature = signature;

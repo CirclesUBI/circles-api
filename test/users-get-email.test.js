@@ -1,8 +1,7 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-import createCore from './utils/core';
-import setupWeb3 from './utils/setupWeb3';
-import getAccounts from './utils/getAccounts';
+import core from './utils/core';
+import accounts from './utils/accounts';
 import { createTestUser } from './utils/createTestUser';
 import { mockGraphUsers } from './utils/mocks';
 import { randomChecksumAddress, getSignature } from './utils/common';
@@ -12,22 +11,14 @@ import app from '~';
 
 describe('GET /users/:safeAddress/email - Getting the user email', () => {
   let payload;
-  let privateKey;
-  const { web3 } = setupWeb3();
-  const core = createCore(web3);
-  const accounts = getAccounts(web3);
+  let account = accounts[0];
 
   beforeEach(async () => {
-    const response = await createTestUser(
+    payload = await createTestUser({
       core,
-      accounts[0],
-      { username: 'doggy' },
-      'dk@kong.com',
-      'https://storage.com/image.jpg',
-      true,
-    );
-    payload = response.payload;
-    privateKey = response.privateKey;
+      account,
+      username: 'doggy',
+    });
   });
 
   afterEach(async () => {
@@ -48,10 +39,10 @@ describe('GET /users/:safeAddress/email - Getting the user email', () => {
 
     // Get the email
     mockGraphUsers(payload.address, payload.data.safeAddress);
-    const signature = getSignature(
-      [payload.address, payload.data.safeAddress],
-      privateKey,
-    );
+    const signature = await getSignature(account, [
+      payload.address,
+      payload.data.safeAddress,
+    ]);
     await request(app)
       .post(`/api/users/${payload.data.safeAddress}/email`)
       .send({
@@ -85,11 +76,10 @@ describe('GET /users/:safeAddress/email - Getting the user email', () => {
 
   it('should return an error when signature is valid but entry was not found', async () => {
     // Create a user and not register
-    const account = web3.eth.accounts.create();
+    const account = accounts[1];
     const address = account.address;
-    const privateKey = account.privateKey;
     const safeAddress = randomChecksumAddress();
-    const signature = getSignature([address, safeAddress], privateKey);
+    const signature = await getSignature(account, [address, safeAddress]);
 
     // Get the email
     mockGraphUsers(address, safeAddress);

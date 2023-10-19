@@ -15,13 +15,13 @@ describe('PUT /transfers - Creating a new transfer', () => {
 
   let payload;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     from = randomChecksumAddress();
     to = randomChecksumAddress();
     transactionHash = randomTransactionHash();
     paymentNote = 'Thank you for the banana';
 
-    payload = createTransferPayload({
+    payload = await createTransferPayload({
       from,
       to,
       transactionHash,

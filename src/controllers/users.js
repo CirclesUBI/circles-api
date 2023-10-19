@@ -3,14 +3,13 @@ import Sequelize, { Op } from 'sequelize';
 
 import APIError from '../helpers/errors';
 import User from '../models/users';
-import createCore from '../services/core';
+import core from '../services/core';
 import web3 from '../services/web3';
 import { requestGraph } from '../services/graph';
 import { checkSignature } from '../helpers/signature';
 import { respondWithSuccess } from '../helpers/responses';
 
 const UNSET_NONCE = 0;
-const core = createCore(web3);
 function prepareUserResult(response) {
   return {
     id: response.id,

@@ -1,13 +1,13 @@
 import { createUserPayload } from './users';
 
-export async function createTestUser(
+export async function createTestUser({
   core,
   account,
-  { username = 'donkey' } = {},
+  username = 'donkey',
   email = 'dk@kong.com',
   avatarUrl = 'https://storage.com/image.jpg',
   returnPrivateKey = false,
-) {
+}) {
   const nonce = new Date().getTime();
   const safeAddress = await core.safe.predictAddress(account, { nonce });
   const userPayload = createUserPayload(

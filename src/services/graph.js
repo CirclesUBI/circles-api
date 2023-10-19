@@ -2,11 +2,9 @@ import fetch from 'isomorphic-fetch';
 
 import logger from '../helpers/logger';
 import loop from '../helpers/loop';
-import createCore from '../services/core';
-import web3 from '../services/web3';
+import core from '../services/core';
 
 const PAGINATION_SIZE = 500;
-const core = createCore(web3);
 
 function isOfficialNode() {
   return process.env.GRAPH_NODE_ENDPOINT.includes('api.thegraph.com');
