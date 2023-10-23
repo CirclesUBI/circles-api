@@ -1,7 +1,5 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-
-import core from './utils/core';
 import accounts from './utils/accounts';
 import { createTestUser } from './utils/createTestUser';
 import { mockGraphUsers } from './utils/mocks';
@@ -17,7 +15,7 @@ describe('Delete', () => {
   describe('DELETE /users/:safeAddress - Delete the user entry (idempotent)', () => {
     beforeEach(async () => {
       account = accounts[0];
-      payload = await createTestUser({ core, account });
+      payload = await createTestUser({ account });
     });
     afterEach(async () => {
       return await User.destroy({

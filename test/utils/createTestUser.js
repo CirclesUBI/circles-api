@@ -1,7 +1,7 @@
 import { createUserPayload } from './users';
+import core from './core';
 
 export async function createTestUser({
-  core,
   account,
   username = 'donkey',
   email = 'dk@kong.com',

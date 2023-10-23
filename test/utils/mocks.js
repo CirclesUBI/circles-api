@@ -1,6 +1,5 @@
 import httpStatus from 'http-status';
 import nock from 'nock';
-
 import graphSafesMockData from '../data/graph-safes.json';
 
 export function mockGraphSafes() {

@@ -2,7 +2,6 @@ import httpStatus from 'http-status';
 import request from 'supertest';
 
 import { createTestUser } from './utils/createTestUser';
-import core from './utils/core';
 import accounts from './utils/accounts';
 import { randomChecksumAddress } from './utils/common';
 
@@ -41,7 +40,6 @@ beforeAll(async () => {
       const email = `panda${index + 1}@zoo.org`;
       const avatarUrl = 'https://storage.com/image.jpg';
       item = await createTestUser({
-        core,
         account: accounts[index],
         username,
         email,

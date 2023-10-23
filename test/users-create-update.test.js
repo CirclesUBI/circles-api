@@ -1,7 +1,6 @@
 import httpStatus from 'http-status';
 import { Op } from 'sequelize';
 import request from 'supertest';
-import core from './utils/core';
 import accounts from './utils/accounts';
 import { createTestUser } from './utils/createTestUser';
 import { mockGraphUsers } from './utils/mocks';
@@ -14,7 +13,7 @@ describe('Users', () => {
   let payload;
   let account = accounts[0];
   beforeEach(async () => {
-    payload = await createTestUser({ core, account });
+    payload = await createTestUser({ account });
   });
 
   afterEach(async () => {
@@ -54,27 +53,22 @@ describe('Users', () => {
     const duplicatePayloads = [];
     beforeEach(async () => {
       correctPayload = await createTestUser({
-        core,
         account,
         username: 'myUsername',
       });
       duplicatePayloads[0] = await createTestUser({
-        core,
         account,
         username: 'myusername',
       });
       duplicatePayloads[1] = await createTestUser({
-        core,
         account,
         username: 'MYUSERNAME',
       });
       duplicatePayloads[2] = await createTestUser({
-        core,
         account,
         username: 'MyUsername',
       });
       duplicatePayloads[3] = await createTestUser({
-        core,
         account,
         username: 'myUserName',
       });
@@ -262,13 +256,11 @@ describe('Users', () => {
 
     beforeEach(async () => {
       correctPayload = await createTestUser({
-        core,
         account,
         username: correctOldUsername,
       });
 
       otherPayload = await createTestUser({
-        core,
         account: account2,
         username: oldUsername,
       });

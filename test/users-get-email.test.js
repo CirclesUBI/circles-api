@@ -1,6 +1,5 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-import core from './utils/core';
 import accounts from './utils/accounts';
 import { createTestUser } from './utils/createTestUser';
 import { mockGraphUsers } from './utils/mocks';
@@ -15,7 +14,6 @@ describe('GET /users/:safeAddress/email - Getting the user email', () => {
 
   beforeEach(async () => {
     payload = await createTestUser({
-      core,
       account,
       username: 'doggy',
     });

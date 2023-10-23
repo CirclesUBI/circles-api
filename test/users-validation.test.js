@@ -1,7 +1,6 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
 import web3 from 'web3';
-import core from './utils/core';
 import accounts from './utils/accounts';
 import { createTestUser } from './utils/createTestUser';
 import { mockGraphUsers } from './utils/mocks';
@@ -61,7 +60,7 @@ describe('Users validation', () => {
   let account = accounts[0];
 
   beforeEach(async () => {
-    payload = await createTestUser({ core, account });
+    payload = await createTestUser({ account });
     address = account.address;
     safeAddress = payload.data.safeAddress;
     nonce = payload.nonce;
