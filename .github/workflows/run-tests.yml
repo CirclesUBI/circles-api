@@ -23,10 +23,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Copy circles-api configs
-        working-directory: circles-api
-        run: cp .env.example .env
-
       - name: Setup node
         uses: actions/setup-node@v3
         with:
