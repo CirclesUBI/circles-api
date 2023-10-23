@@ -29,6 +29,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
+      - name: Setup docker repo
+        working-directory: circles-docker
+        run: cp .env.example .env
+
       - name: Get circles-docker repository and copy configs
         uses: actions/checkout@v3
         with:
@@ -36,21 +40,10 @@ jobs:
           ref: main
           path: circles-docker
 
-      - name: Setup docker repo
-        working-directory: circles-docker
-        run: cp .env.example .env
-
-      - name: Container setup via docker-compose 
-        working-directory: circles-docker
-        run: docker compose -f docker-compose.yml  -p circles  up --detach --remove-orphans --build
-
       - name: Download and migrate contracts
         working-directory: circles-docker
         run: ./scripts/migrate-contracts.sh
 
-      - name: Try starting failed services
-        working-directory: circles-docker
-        run: docker compose -f docker-compose.yml -p circles  up --detach --remove-orphans --build
 
       - name: Install dependencies
         run: npm ci
