@@ -22,8 +22,6 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-        with:
-          path: circles-api
 
       - name: Copy circles-api configs
         working-directory: circles-api
@@ -32,7 +30,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version-file: 'circles-api/.nvmrc'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Get circles-docker repository and copy configs
