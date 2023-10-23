@@ -29,16 +29,8 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
-      - name: Get circles-docker repository and copy configs
-        uses: actions/checkout@v4
-        with:
-          repository: CirclesUBI/circles-docker.git
-          ref: main
-          path: circles-docker
-
-      - name: Setup docker repo
-        working-directory: circles-docker
-        run: cp .env.example .env
+      - name: Run local ganache for deploy safe contracts
+        run: npm run ganache
 
       - name: Download and migrate contracts
         working-directory: circles-docker
