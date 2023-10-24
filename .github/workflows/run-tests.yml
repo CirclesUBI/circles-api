@@ -28,11 +28,20 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Get circles-docker repository and copy configs
+        uses: actions/checkout@v3
+        with:
+          repository: CirclesUBI/circles-docker.git
+          ref: main
+          path: circles-docker
 
-      - name: Run local ganache for deploy safe contracts
-        run: npm run ganache
+      - name: Setup docker repo
+        working-directory: circles-docker
+        run: cp .env.example .env
+
+      - name: Container setup via docker-compose only for ganache
+        working-directory: circles-docker
+        run: docker compose -f docker-compose.yml -p circles up --detach --remove-orphans --build ganache
 
       - name: Download and migrate contracts
         working-directory: circles-docker
@@ -40,6 +49,9 @@ jobs:
 
       - name: Setup env file
         run: cp .env.example .env
+
+      - name: Install dependencies
+        run: npm ci
 
       - run: npm run db:migrate
       - run: npm run db:seed
