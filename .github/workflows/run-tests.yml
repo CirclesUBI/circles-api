@@ -56,5 +56,4 @@ jobs:
       - run: npm run db:migrate
       - run: npm run db:seed
       - name: Run tests
-        working-directory: circles-api
         run: npm run test
