@@ -35,9 +35,8 @@ jobs:
         run: npm run ganache
 
       - name: Download and migrate contracts
-        working-directory: circles-docker
         run: ./scripts/migrate-contracts.sh
-
+        
       - name: Setup env file
         run: cp .env.example .env
 
