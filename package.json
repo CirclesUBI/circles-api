@@ -35,7 +35,7 @@
     "worker:serve": "NODE_ENV=development babel-node -r dotenv/config ./src/worker.js --source-maps inline",
     "worker:start": "cross-env NODE_ENV=production node ./build/worker.js",
     "worker:watch": "nodemon --watch ./src --exec npm run worker:serve",
-    "ganache": "ganache -D -d i-i 5777"
+    "ganache": "ganache -D -d -i 5777"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.5",
