@@ -44,8 +44,9 @@ jobs:
         run: docker compose -f docker-compose.yml -p circles up --detach --remove-orphans --build ganache
 
       - name: Download and migrate contracts
+        working-directory: circles-docker
         run: ./scripts/migrate-contracts.sh
-        
+
       - name: Setup env file
         run: cp .env.example .env
 
