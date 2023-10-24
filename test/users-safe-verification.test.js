@@ -1,8 +1,7 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-import core from './utils/core';
 import accounts from './utils/accounts';
-import deploySafeManually from './utils/deploySafeManually';
+import deploySafe from './utils/deploySafe';
 import generateSaltNonce from './utils/generateSaltNonce';
 import { getSignature } from './utils/common';
 
@@ -20,7 +19,7 @@ describe('Safe verification', () => {
     account = accounts[0];
     address = account.address;
     nonce = generateSaltNonce();
-    safeAddress = await deploySafeManually({ account, nonce }, core);
+    safeAddress = await deploySafe({ account, nonce });
     username = 'donkey' + Math.round(Math.random() * 1000);
     email = 'dk@kong.com';
 
