@@ -25,7 +25,6 @@ jobs:
 
 
       - name: Copy core configs
-        working-directory: circles-api
         run: cp .env.example .env
 
       - name: Setup node
