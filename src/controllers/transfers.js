@@ -1,4 +1,5 @@
 import httpStatus from 'http-status';
+import { ethers } from 'ethers';
 
 import APIError from '../helpers/errors';
 import Transfer from '../models/transfers';
@@ -38,7 +39,13 @@ export default {
 
     try {
       // Check signature
-      if (!checkSignature([from, to, transactionHash], signature, address)) {
+      if (
+        !checkSignature(
+          [from, to, transactionHash].join(''),
+          signature,
+          address,
+        )
+      ) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
@@ -70,7 +77,13 @@ export default {
 
     // Check signature
     try {
-      if (!checkSignature([transactionHash], signature, address)) {
+      if (
+        !checkSignature(
+          ethers.utils.arrayify(transactionHash),
+          signature,
+          address,
+        )
+      ) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 

@@ -169,7 +169,7 @@ export default {
       // Check signature
       if (
         !checkSignature(
-          [address, nonce, safeAddress, username],
+          [address, nonce, safeAddress, username].join(''),
           signature,
           address,
         )
@@ -239,7 +239,11 @@ export default {
     try {
       // Check signature
       if (
-        !checkSignature([address, safeAddress, username], signature, address)
+        !checkSignature(
+          [address, safeAddress, username].join(''),
+          signature,
+          address,
+        )
       ) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
@@ -281,7 +285,9 @@ export default {
 
     try {
       // Check signature
-      if (!checkSignature([address, safeAddress], signature, address)) {
+      if (
+        !checkSignature([address, safeAddress].join(''), signature, address)
+      ) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
@@ -334,7 +340,9 @@ export default {
 
     try {
       // Check signature
-      if (!checkSignature([address, safeAddress], signature, address)) {
+      if (
+        !checkSignature([address, safeAddress].join(''), signature, address)
+      ) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
