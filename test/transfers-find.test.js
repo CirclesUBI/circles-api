@@ -14,18 +14,17 @@ import app from '~';
 const NUM_TEST_TRANSFERS = 5;
 
 const transfers = [];
-// const accounts = [];
 
 async function expectTransfer(app, account, { transactionHash, from, to }) {
   mockGraphUsers(account.address, to);
   const signature = await getSignature(account, [transactionHash]);
-
   return await request(app)
     .post(`/api/transfers/${transactionHash}`)
     .send({
       address: account.address,
       signature,
     })
+
     .set('Accept', 'application/json')
     .expect(httpStatus.OK)
     .expect(({ body }) => {
@@ -63,7 +62,6 @@ beforeAll(async () => {
         to,
         transactionHash,
       ]);
-
       await request(app)
         .put('/api/transfers')
         .send({
@@ -78,8 +76,6 @@ beforeAll(async () => {
         })
         .set('Accept', 'application/json')
         .expect(httpStatus.CREATED);
-
-      // accounts.push(account);
 
       transfers.push({
         from,

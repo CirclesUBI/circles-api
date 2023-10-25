@@ -77,13 +77,7 @@ export default {
 
     // Check signature
     try {
-      if (
-        !checkSignature(
-          ethers.utils.arrayify(transactionHash),
-          signature,
-          address,
-        )
-      ) {
+      if (!checkSignature([transactionHash].join(''), signature, address)) {
         throw new APIError(httpStatus.FORBIDDEN, 'Invalid signature');
       }
 
