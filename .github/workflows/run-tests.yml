@@ -22,15 +22,18 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          path: circles-api
 
 
-      - name: Copy core configs
+      - name: Copy api configs
+        working-directory: circles-api
         run: cp .env.example .env
 
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: 'circles-api/.nvmrc'
 
       - name: Get circles-docker repository and copy configs
         uses: actions/checkout@v3
@@ -51,17 +54,18 @@ jobs:
         working-directory: circles-docker
         run: ./scripts/migrate-contracts.sh
 
-      - name: Setup env file
-        run: cp .env.example .env
-
       - name: Install dependencies
+        working-directory: circles-api
         run: npm ci
 
       - name: DB migrate
+        working-directory: circles-api
         run: npm run db:migrate
 
       - name: DB seed
+        working-directory: circles-api
         run: npm run db:seed
 
       - name: Run tests
+        working-directory: circles-api
         run: npm run test
