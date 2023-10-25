@@ -1,7 +1,6 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-
-import web3 from './utils/web3';
+import accounts from './utils/accounts';
 import { mockGraphUsers } from './utils/mocks';
 import {
   randomTransactionHash,
@@ -15,18 +14,17 @@ import app from '~';
 const NUM_TEST_TRANSFERS = 5;
 
 const transfers = [];
-const accounts = [];
 
 async function expectTransfer(app, account, { transactionHash, from, to }) {
   mockGraphUsers(account.address, to);
-  const signature = getSignature([transactionHash], account.privateKey);
-
+  const signature = await getSignature(account, [transactionHash]);
   return await request(app)
     .post(`/api/transfers/${transactionHash}`)
     .send({
       address: account.address,
       signature,
     })
+
     .set('Accept', 'application/json')
     .expect(httpStatus.OK)
     .expect(({ body }) => {
@@ -52,18 +50,18 @@ beforeAll(async () => {
   const items = new Array(NUM_TEST_TRANSFERS).fill(0);
 
   await Promise.all(
-    items.map(async () => {
-      const account = web3.eth.accounts.create();
-      const address = account.address;
-      const privateKey = account.privateKey;
-
+    items.map(async (item, index) => {
+      const address = accounts[index].address;
       const from = randomChecksumAddress();
       const to = randomChecksumAddress();
       const transactionHash = randomTransactionHash();
       const paymentNote = `This is a payment note ${Math.random() * 10000}`;
 
-      const signature = getSignature([from, to, transactionHash], privateKey);
-
+      const signature = await getSignature(accounts[index], [
+        from,
+        to,
+        transactionHash,
+      ]);
       await request(app)
         .put('/api/transfers')
         .send({
@@ -78,8 +76,6 @@ beforeAll(async () => {
         })
         .set('Accept', 'application/json')
         .expect(httpStatus.CREATED);
-
-      accounts.push(account);
 
       transfers.push({
         from,
@@ -116,11 +112,7 @@ describe('POST /transfers/:transactionHash - Resolve by transactionHash', () => 
   it('should throw an error when signature is invalid', async () => {
     const transactionHash = transfers[1].transactionHash;
     const account = accounts[1];
-
-    const signature = getSignature(
-      [randomTransactionHash()],
-      account.privateKey,
-    );
+    const signature = await getSignature(account, [randomTransactionHash()]);
 
     await request(app)
       .post(`/api/transfers/${transactionHash}`)
@@ -141,18 +133,15 @@ describe('POST /transfers/:transactionHash - Resolve by transactionHash', () => 
     let paymentNote;
 
     beforeEach(async () => {
-      sender = web3.eth.accounts.create();
-      receiver = web3.eth.accounts.create();
+      sender = accounts[1];
+      receiver = accounts[2];
 
       from = randomChecksumAddress();
       to = randomChecksumAddress();
       transactionHash = randomTransactionHash();
       paymentNote = 'Thank you!';
 
-      const signature = getSignature(
-        [from, to, transactionHash],
-        sender.privateKey,
-      );
+      const signature = await getSignature(sender, [from, to, transactionHash]);
 
       await request(app)
         .put('/api/transfers')
@@ -174,14 +163,8 @@ describe('POST /transfers/:transactionHash - Resolve by transactionHash', () => 
     });
 
     it('should return the result for only sender or receiver', async () => {
-      const senderSignature = getSignature(
-        [transactionHash],
-        sender.privateKey,
-      );
-      const receiverSignature = getSignature(
-        [transactionHash],
-        receiver.privateKey,
-      );
+      const senderSignature = await getSignature(sender, [transactionHash]);
+      const receiverSignature = await getSignature(receiver, [transactionHash]);
 
       await request(app)
         .post(`/api/transfers/${transactionHash}`)
@@ -204,10 +187,9 @@ describe('POST /transfers/:transactionHash - Resolve by transactionHash', () => 
 
     it('should return an error when signature is valid but entry was not found', async () => {
       const wrongTransactionHash = randomTransactionHash();
-      const senderSignature = getSignature(
-        [wrongTransactionHash],
-        sender.privateKey,
-      );
+      const senderSignature = await getSignature(sender, [
+        wrongTransactionHash,
+      ]);
 
       await request(app)
         .post(`/api/transfers/${wrongTransactionHash}`)
@@ -220,11 +202,8 @@ describe('POST /transfers/:transactionHash - Resolve by transactionHash', () => 
     });
 
     it('should throw an error when sender or receiver is not the signer', async () => {
-      const thirdAccount = web3.eth.accounts.create();
-      const signature = getSignature(
-        [transactionHash],
-        thirdAccount.privateKey,
-      );
+      const thirdAccount = accounts[4];
+      const signature = await getSignature(thirdAccount, [transactionHash]);
 
       mockGraphUsers(thirdAccount.address, randomChecksumAddress());
 

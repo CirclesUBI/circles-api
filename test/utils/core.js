@@ -2,10 +2,10 @@ import CirclesCore from '@circles/core';
 import ethProvider from './ethProvider';
 
 const core = new CirclesCore(ethProvider, {
+  hubAddress: process.env.HUB_ADDRESS,
   apiServiceEndpoint: process.env.API_SERVICE_ENDPOINT,
   fallbackHandlerAddress: process.env.SAFE_DEFAULT_CALLBACK_HANDLER,
   graphNodeEndpoint: process.env.GRAPH_NODE_ENDPOINT,
-  hubAddress: process.env.HUB_ADDRESS,
   pathfinderServiceEndpoint: process.env.PATHFINDER_SERVICE_ENDPOINT,
   pathfinderType: process.env.PATHFINDER_TYPE,
   proxyFactoryAddress: process.env.PROXY_FACTORY_ADDRESS,

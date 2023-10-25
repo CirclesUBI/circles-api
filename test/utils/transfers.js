@@ -1,14 +1,15 @@
-import web3 from './web3';
+import accounts from './accounts';
 import { getSignature } from './common';
 
-export function createTransferPayload({
+export async function createTransferPayload({
   from,
   to,
   transactionHash,
   paymentNote,
 }) {
-  const { address, privateKey } = web3.eth.accounts.create();
-  const signature = getSignature([from, to, transactionHash], privateKey);
+  const account = accounts[0];
+  const address = account.address;
+  const signature = await getSignature(account, [from, to, transactionHash]);
 
   return {
     address,

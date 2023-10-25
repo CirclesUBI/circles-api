@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-
+import accounts from './utils/accounts';
 import web3 from './utils/web3';
 import {
   randomChecksumAddress,
@@ -20,7 +20,6 @@ async function expectErrorStatus(body, status = httpStatus.BAD_REQUEST) {
 
 describe('PUT /transfers - validation', () => {
   let address;
-  let privateKey;
   let signature;
   let from;
   let to;
@@ -28,18 +27,16 @@ describe('PUT /transfers - validation', () => {
   let paymentNote;
   let correctBody;
 
-  beforeEach(() => {
-    const account = web3.eth.accounts.create();
+  beforeEach(async () => {
+    const account = accounts[0];
 
     address = account.address;
-    privateKey = account.privateKey;
-
     from = randomChecksumAddress();
     to = randomChecksumAddress();
     transactionHash = randomTransactionHash();
     paymentNote = 'Thank you for the banana';
 
-    signature = getSignature([from, to, transactionHash], privateKey);
+    signature = await getSignature(account, [from, to, transactionHash]);
 
     correctBody = {
       address,

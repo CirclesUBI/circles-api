@@ -8,8 +8,8 @@ export function randomTransactionHash() {
   return web3.utils.randomHex(32);
 }
 
-export function getSignature(fields, privateKey) {
+export async function getSignature(account, fields) {
   const data = fields.join('');
-  const { signature } = web3.eth.accounts.sign(data, privateKey);
+  const signature = await account.signMessage(data);
   return signature;
 }

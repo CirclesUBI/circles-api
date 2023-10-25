@@ -21,19 +21,51 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          path: circles-api
+
+
+      - name: Copy api configs
+        working-directory: circles-api
+        run: cp .env.example .env
 
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: 'circles-api/.nvmrc'
 
-      - name: Install dependencies
-        run: npm ci
-      - name: Setup env file
+      - name: Get circles-docker repository and copy configs
+        uses: actions/checkout@v3
+        with:
+          repository: CirclesUBI/circles-docker.git
+          ref: relayer-api-test
+          path: circles-docker
+
+      - name: Setup docker repo
+        working-directory: circles-docker
         run: cp .env.example .env
 
-      - run: npm run db:migrate
-      - run: npm run db:seed
-      - run: npm run test
+      - name: Container setup via docker-compose only for ganache
+        working-directory: circles-docker
+        run: docker compose -f docker-compose.yml -f docker-compose.payment-api-pull.yml -p circles up --detach --remove-orphans --build ganache payment-api
+
+      - name: Download and migrate contracts
+        working-directory: circles-docker
+        run: ./scripts/migrate-contracts.sh
+
+      - name: Install dependencies
+        working-directory: circles-api
+        run: npm ci
+
+      - name: DB migrate
+        working-directory: circles-api
+        run: npm run db:migrate
+
+      - name: DB seed
+        working-directory: circles-api
+        run: npm run db:seed
+
+      - name: Run tests
+        working-directory: circles-api
+        run: npm run test

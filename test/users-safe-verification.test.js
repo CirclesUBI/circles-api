@@ -1,214 +1,139 @@
 import httpStatus from 'http-status';
 import request from 'supertest';
-
-import web3 from './utils/web3';
-import { mockRelayerSafe, mockGraphUsers } from './utils/mocks';
-import { randomChecksumAddress, getSignature } from './utils/common';
+import accounts from './utils/accounts';
+import deploySafe from './utils/deploySafe';
+import generateSaltNonce from './utils/generateSaltNonce';
+import { getSignature } from './utils/common';
 
 import app from '~';
-
-describe('PUT /users - Safe verification', () => {
+describe('Safe verification', () => {
+  let account;
   let address;
   let nonce;
-  let privateKey;
   let safeAddress;
   let signature;
   let username;
   let email;
 
-  beforeEach(() => {
-    const account = web3.eth.accounts.create();
-
+  beforeAll(async () => {
+    account = accounts[0];
     address = account.address;
-    privateKey = account.privateKey;
-    safeAddress = randomChecksumAddress();
-    nonce = new Date().getTime();
+    nonce = generateSaltNonce();
+    safeAddress = await deploySafe({ account, nonce });
     username = 'donkey' + Math.round(Math.random() * 1000);
     email = 'dk@kong.com';
 
-    signature = getSignature(
-      [address, nonce, safeAddress, username],
-      privateKey,
-    );
+    signature = await getSignature(account, [
+      address,
+      nonce,
+      safeAddress,
+      username,
+    ]);
   });
 
-  describe('when trying to hijack someones Safe', () => {
-    it('should return an error when we do not get the Safe state right', async () => {
-      // We send a nonce, even though the Safe is already deployed ...
-      mockRelayerSafe({
-        address,
-        nonce,
-        safeAddress,
-        isCreated: true,
-        isDeployed: true,
+  describe('PUT /users', () => {
+    describe('when trying to hijack someones Safe', () => {
+      it('should return an error when we try to create an entry with the same nonce', async () => {
+        return await request(app)
+          .put('/api/users')
+          .send({
+            address,
+            nonce,
+            signature,
+            data: {
+              safeAddress,
+              username,
+              email,
+            },
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.FORBIDDEN);
       });
 
-      return await request(app)
-        .put('/api/users')
-        .send({
+      it('should return an error when we cant guess the right nonce', async () => {
+        const attackerNonce = 123;
+
+        const signature = await getSignature(account, [
           address,
-          nonce,
-          signature,
-          data: {
-            safeAddress,
-            username,
-            email,
-          },
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
-    });
+          attackerNonce,
+          safeAddress,
+          username,
+        ]);
 
-    it('should return an error when we cant guess the right nonce', async () => {
-      const victimAddress = randomChecksumAddress();
-      const victimSafeAddress = randomChecksumAddress();
-      const attackerNonce = 123;
-
-      const signature = getSignature(
-        [address, attackerNonce, victimSafeAddress, username],
-        privateKey,
-      );
-
-      // We try to hijack someone elses safe address
-      mockRelayerSafe({
-        address: victimAddress,
-        nonce,
-        safeAddress: victimSafeAddress,
-        isCreated: true,
-        isDeployed: false,
+        return await request(app)
+          .put('/api/users')
+          .send({
+            address,
+            nonce: attackerNonce,
+            signature,
+            data: {
+              safeAddress: safeAddress,
+              username,
+              email,
+            },
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.BAD_REQUEST);
       });
 
-      // .. but receive this instead
-      mockRelayerSafe({
-        address,
-        nonce: attackerNonce,
-        safeAddress: randomChecksumAddress(),
-        isCreated: false,
-        isDeployed: false,
+      it('should return an error when owner is wrong', async () => {
+        const wrongAccount = accounts[2];
+        const wrongOwnerAddress = wrongAccount.address;
+
+        return await request(app)
+          .put('/api/users')
+          .send({
+            wrongOwnerAddress,
+            signature,
+            data: {
+              safeAddress: safeAddress,
+              username,
+              email,
+            },
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.BAD_REQUEST);
       });
-
-      return await request(app)
-        .put('/api/users')
-        .send({
-          address,
-          nonce: attackerNonce,
-          signature,
-          data: {
-            safeAddress: victimSafeAddress,
-            username,
-            email,
-          },
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
     });
+  });
 
-    it('should return an error when owner is wrong', async () => {
-      const victimAddress = randomChecksumAddress();
-      const victimSafeAddress = randomChecksumAddress();
-
-      const signature = getSignature(
-        [address, 0, victimSafeAddress, username],
-        privateKey,
-      );
-
-      mockRelayerSafe({
-        address: victimAddress,
-        nonce,
-        safeAddress: victimSafeAddress,
-        isCreated: true,
-        isDeployed: true,
+  describe('POST /users/:safeAddress', () => {
+    describe('when trying to hijack someones Safe', () => {
+      it('should return an error when owner is wrong', async () => {
+        const wrongAccount = accounts[2];
+        const wrongOwnerAddress = wrongAccount.address;
+        return await request(app)
+          .post(`/api/users/${safeAddress}`)
+          .send({
+            wrongOwnerAddress,
+            signature,
+            data: {
+              safeAddress: safeAddress,
+              username,
+              email,
+            },
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.BAD_REQUEST);
       });
-
-      return await request(app)
-        .put('/api/users')
-        .send({
-          address,
-          signature,
-          data: {
-            safeAddress: victimSafeAddress,
-            username,
-            email,
-          },
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
     });
   });
-});
 
-describe('POST /users/:safeAddress - Safe verification', () => {
-  let address;
-  let safeAddress;
-  let privateKey;
-  let username;
-  let email;
+  describe('POST /users/:safeAddress/email ', () => {
+    describe('when trying to hijack someones Safe', () => {
+      it('should return an error when owner is wrong', async () => {
+        const wrongAccount = accounts[2];
+        const wrongOwnerAddress = wrongAccount.address;
 
-  beforeEach(() => {
-    const account = web3.eth.accounts.create();
-
-    address = account.address;
-    safeAddress = randomChecksumAddress();
-    privateKey = account.privateKey;
-    username = 'donkey' + Math.round(Math.random() * 1000);
-    email = 'dk@kong.com';
-  });
-
-  describe('when trying to hijack someones Safe', () => {
-    it('should return an error when owner is wrong', async () => {
-      const victimSafeAddress = randomChecksumAddress();
-
-      const signature = getSignature(
-        [address, victimSafeAddress, username],
-        privateKey,
-      );
-
-      mockGraphUsers(address, safeAddress);
-      return await request(app)
-        .post(`/api/users/${victimSafeAddress}`)
-        .send({
-          address,
-          signature,
-          data: {
-            safeAddress: victimSafeAddress,
-            username,
-            email,
-          },
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
-    });
-  });
-});
-
-describe('POST /users/:safeAddress/email - Safe verification', () => {
-  let address;
-  let safeAddress;
-  let privateKey;
-
-  beforeEach(() => {
-    const account = web3.eth.accounts.create();
-
-    address = account.address;
-    safeAddress = randomChecksumAddress();
-    privateKey = account.privateKey;
-  });
-
-  describe('when trying to hijack someones Safe', () => {
-    it('should return an error when owner is wrong', async () => {
-      const victimSafeAddress = randomChecksumAddress();
-
-      const signature = getSignature([address, victimSafeAddress], privateKey);
-
-      mockGraphUsers(address, safeAddress);
-      return await request(app)
-        .post(`/api/users/${victimSafeAddress}/email`)
-        .send({
-          address,
-          signature,
-        })
-        .set('Accept', 'application/json')
-        .expect(httpStatus.BAD_REQUEST);
+        return await request(app)
+          .post(`/api/users/${safeAddress}/email`)
+          .send({
+            wrongOwnerAddress,
+            signature,
+          })
+          .set('Accept', 'application/json')
+          .expect(httpStatus.BAD_REQUEST);
+      });
     });
   });
 });

@@ -2,7 +2,7 @@ import fetch from 'isomorphic-fetch';
 
 import logger from '../helpers/logger';
 import loop from '../helpers/loop';
-import core from './core';
+import core from '../services/core';
 
 const PAGINATION_SIZE = 500;
 
@@ -93,7 +93,6 @@ async function* fetchGraphGenerator(name, fields, extra = '') {
   let lastID = '';
 
   while (hasData) {
-    //console.log({lastID});
     const data = await fetchFromGraph(name, fields, extra, lastID);
     await wait(500);
     hasData = data.length > 0;
