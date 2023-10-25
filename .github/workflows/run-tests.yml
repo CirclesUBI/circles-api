@@ -22,8 +22,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-        with:
-          path: circles-api
+
 
       - name: Copy core configs
         working-directory: circles-api
@@ -57,17 +56,13 @@ jobs:
         run: cp .env.example .env
 
       - name: Install dependencies
-        working-directory: circles-api
         run: npm ci
 
       - name: DB migrate
-        working-directory: circles-api
         run: npm run db:migrate
 
       - name: DB seed
-        working-directory: circles-core
         run: npm run db:seed
 
       - name: Run tests
-        working-directory: circles-core
         run: npm run test
