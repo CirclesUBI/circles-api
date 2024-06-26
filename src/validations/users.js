@@ -38,10 +38,23 @@ export default {
       safeAddress: customJoi.web3().address().addressChecksum(),
     },
   },
-  getEmail: {
+  getPrivateUserData: {
     body: Joi.object({
       address: customJoi.web3().address().addressChecksum().required(),
       signature: Joi.string().length(132).required(),
+    }),
+    params: {
+      safeAddress: customJoi.web3().address().addressChecksum(),
+    },
+  },
+  updateProfileMigrationConsent: {
+    body: Joi.object({
+      address: customJoi.web3().address().addressChecksum().required(),
+      signature: Joi.string().length(132).required(),
+      data: Joi.object({
+        safeAddress: customJoi.web3().address().addressChecksum().required(),
+        profileMigrationConsent: Joi.boolean().required(),
+      }).required(),
     }),
     params: {
       safeAddress: customJoi.web3().address().addressChecksum(),
