@@ -84,7 +84,7 @@
     "pg-copy-streams": "^6.0.5",
     "sequelize": "^6.32.0",
     "sequelize-cli": "^6.6.1",
-    "sharp": "^0.32.1",
+    "sharp": "^0.32.6",
     "web3": "^1.10.0",
     "winston": "^3.9.0"
   }
