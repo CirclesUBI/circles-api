@@ -35,6 +35,11 @@ const User = db.define('users', {
     ...uniqueAndNotNull,
     type: Sequelize.STRING,
   },
+  profileMigrationConsent: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
 });
 
 export default User;
