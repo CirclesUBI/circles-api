@@ -22,8 +22,20 @@ router.get('/', validate(usersValidation.findUsers), usersController.findUsers);
 
 router.post(
   '/:safeAddress/email',
-  validate(usersValidation.getEmail),
+  validate(usersValidation.getPrivateUserData),
   usersController.getEmail,
+);
+
+router.post(
+  '/:safeAddress/get-profile-migration-consent',
+  validate(usersValidation.getPrivateUserData),
+  usersController.getProfileMigrationConsent,
+);
+
+router.post(
+  '/:safeAddress/update-profile-migration-consent',
+  validate(usersValidation.updateProfileMigrationConsent),
+  usersController.updateProfileMigrationConsent,
 );
 
 router.get(

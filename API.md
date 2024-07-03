@@ -410,6 +410,73 @@ Get the email from the entry of the `safeAddress` in the database.
 - `403` Verification failed
 - `404` User entry not found
 
+### Get user profile migration consent
+
+**Request:**
+
+`GET /api/users/<safeAddress>/get-profile-migration-consent`
+
+Get the profile migration consent from the entry of the `safeAddress` in the database.
+
+**Parameters:**
+
+```
+{
+  address: <string>,
+  signature: <string>,
+}
+```
+
+- `address`: Public address of user wallet
+- `signature`: Signed data payload of this request via the users keypair. The data contains: `address + safeAddress`.
+
+**Verification steps:**
+
+1. Check if the `signature` can be verified successfully.
+2. Check if `address` is owner of the given Safe.
+
+**Errors:**
+
+- `400` Parameters missing or malformed
+- `403` Verification failed
+- `404` User entry not found
+
+### Update profile migration consent for a user entry
+
+**Request:**
+
+`POST /api/users/<safeAddress>/update-profile-migration-consent`
+
+Update an entry in the database, assigning a value to `profileMigrationConsent` associated to a `safeAddress`.
+
+**Parameters:**
+
+```
+{
+  address: <string>,
+  signature: <string>,
+  data: {
+    safeAddress: <string>,
+    profileMigrationConsent: <string>
+  }
+}
+```
+
+- `address`: Public address of user wallet
+- `signature`: Signed data payload of this request via the users keypair. The data contains: `address + safeAddress + username`.
+- `data/safeAddress`: Public address of the owned Safe of the user
+- `data/profileMigrationConsent`: Whether or not the user consents the profile migration
+
+**Verification steps:**
+
+1. Check if the `signature` can be verified successfully.
+3. Check if `address` is owner of the given Safe.
+
+**Errors:**
+
+- `400` Parameters missing or malformed, or entry does not exist
+- `403` Verification failed
+
 ### Search news database by date
 
 Resolves multiple news items starting from newest item in the database, via:
