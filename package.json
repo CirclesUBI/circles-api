@@ -60,7 +60,7 @@
     "truffle": "^5.9.4"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.363.0",
+    "@aws-sdk/client-s3": "^3.626.0",
     "@babel/runtime": "^7.22.15",
     "@circles/core": "^4.5.0",
     "@circles/transfer": "^3.1.0",
