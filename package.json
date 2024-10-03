@@ -1,6 +1,6 @@
 {
   "name": "circles-api",
-  "version": "1.11.1-3-gd41853e",
+  "version": "1.11.1-4-gefd38a1",
   "description": "Offchain database and API service for Circles",
   "main": "src/index.js",
   "private": true,
