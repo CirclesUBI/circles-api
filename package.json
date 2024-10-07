@@ -1,6 +1,6 @@
 {
   "name": "circles-api",
-  "version": "1.11.1",
+  "version": "1.11.1-8-gac12594",
   "description": "Offchain database and API service for Circles",
   "main": "src/index.js",
   "private": true,
@@ -60,7 +60,7 @@
     "truffle": "^5.9.4"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.635.0",
+    "@aws-sdk/client-s3": "^3.663.0",
     "@babel/runtime": "^7.25.4",
     "@circles/core": "^4.5.0",
     "@circles/transfer": "^3.1.0",
