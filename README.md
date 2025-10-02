@@ -23,10 +23,10 @@
   </a>
   <!-- Discourse -->
   <a href="https://aboutcircles.com/">
-    <img src="https://img.shields.io/discourse/topics?server=https%3A%2F%2Faboutcircles.com%2F&style=flat-square&color=%23faad26" alt="chat" height="18"/>
+    <img src="https://img.shields.io/badge/About_Circles-Website-blue" alt="chat" height="18"/>
   </a>
   <!-- Twitter -->
-  <a href="https://twitter.com/CirclesUBI">
+  <a href="https://x.com/CirclesUBI">
     <img src="https://img.shields.io/twitter/follow/circlesubi.svg?label=twitter&style=flat-square&color=%23f14d48" alt="Follow Circles" height="18">
   </a>
 </div>
