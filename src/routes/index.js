@@ -3,7 +3,6 @@ import httpStatus from 'http-status';
 
 import APIError from '../helpers/errors';
 import newsRouter from './news';
-import transfersRouter from './transfers';
 import uploadsRouter from './uploads';
 import usersRouter from './users';
 import { respondWithSuccess } from '../helpers/responses';
@@ -15,7 +14,6 @@ router.get('/', (req, res) => {
 });
 
 router.use('/news', newsRouter);
-router.use('/transfers', transfersRouter);
 router.use('/uploads', uploadsRouter);
 router.use('/users', usersRouter);
 
